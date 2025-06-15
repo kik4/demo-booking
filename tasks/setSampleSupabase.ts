@@ -7,11 +7,20 @@ const supabaseClient = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
 
-const res = await supabaseClient.auth.admin.createUser({
+const resAuthUser = await supabaseClient.auth.admin.createUser({
   email: "user@example.com",
   password: "password",
   email_confirm: true,
 });
-await supabaseClient
+if (resAuthUser.error) {
+  console.error(resAuthUser);
+  throw resAuthUser.error;
+}
+
+const resUser = await supabaseClient
   .from("users")
-  .insert({ id: "user", user_id: res.data.user?.id });
+  .insert({ id: "user", user_id: resAuthUser.data.user?.id });
+if (resUser.error) {
+  console.error(resUser);
+  throw resUser.error;
+}
