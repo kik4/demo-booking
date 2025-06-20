@@ -3,13 +3,41 @@ import UserInfo from "./_components/UserInfo";
 
 export default function Page() {
   return (
-    <div className="flex h-screen flex-col items-center justify-center">
-      <h1 className="font-bold text-3xl">Reservations Page</h1>
-      <div className="m-4">
-        <DevLoginButton />
+    <div className="relative min-h-screen bg-white">
+      {/* Background image container */}
+      <div
+        className="absolute top-0 left-0 h-screen w-full bg-center bg-cover bg-no-repeat opacity-90"
+        style={{
+          backgroundImage: "url('/top.webp')",
+          backgroundPosition: "center center",
+        }}
+      >
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-white/80" />
       </div>
-      <div className="m-4">
-        <UserInfo />
+
+      {/* Main content */}
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white/95 p-8 shadow-2xl backdrop-blur-sm">
+          <h1 className="mb-8 text-center font-bold text-4xl text-gray-800 tracking-tight">
+            Reservations
+          </h1>
+
+          <div className="space-y-6">
+            <div className="flex justify-center">
+              <DevLoginButton />
+            </div>
+
+            <div className="border-gray-200 border-t pt-6">
+              <UserInfo />
+            </div>
+          </div>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-10 h-20 w-20 rounded-full bg-blue-100 opacity-60 blur-xl" />
+        <div className="absolute right-10 bottom-20 h-32 w-32 rounded-full bg-purple-100 opacity-40 blur-2xl" />
+        <div className="absolute top-1/2 left-1/4 h-16 w-16 rounded-full bg-pink-100 opacity-50 blur-lg" />
       </div>
     </div>
   );
