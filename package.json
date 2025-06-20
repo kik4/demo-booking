@@ -20,20 +20,20 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.50.0",
     "clsx": "^2.1.1",
-    "next": "15.3.3",
+    "next": "15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@next/env": "^15.3.3",
+    "@next/env": "^15.3.4",
     "@tailwindcss/postcss": "^4.1.10",
-    "@types/node": "^20.19.0",
+    "@types/node": "^22.15.32",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
-    "supabase": "^2.24.3",
+    "supabase": "^2.26.9",
     "tailwindcss": "^4.1.10",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
