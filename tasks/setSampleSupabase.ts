@@ -18,8 +18,8 @@ if (resAuthUser.error) {
 }
 
 const resUser = await supabaseClient
-  .from("users")
-  .insert({ id: "user", user_id: resAuthUser.data.user?.id });
+  .from("profiles")
+  .insert({ name: "テスト太郎", user_id: resAuthUser.data.user.id });
 if (resUser.error) {
   console.error(resUser);
   throw resUser.error;

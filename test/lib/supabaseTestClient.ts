@@ -29,6 +29,7 @@ const getSupabaseConfig = () => {
     serviceKey: supabaseServiceKey,
   };
 };
+const config = getSupabaseConfig();
 
 class MultiClientManager {
   serviceClient: SupabaseClient | undefined;
@@ -40,17 +41,17 @@ class MultiClientManager {
     this.users = new Map();
   }
 
-  async createAnonUser(userId: string) {
-    const config = getSupabaseConfig();
+  async createAnonUser(userId?: string) {
+    const key = `test-user-${generateTestId()}`;
     const client = createClient(config.url, config.anonKey, {
       auth: {
-        storageKey: `test-user-${randomUUID()}`,
+        storageKey: key,
         persistSession: false,
         autoRefreshToken: false,
       },
     });
 
-    this.clients.set(userId, client);
+    this.clients.set(userId || key, client);
     return client;
   }
 
@@ -86,17 +87,13 @@ class MultiClientManager {
 
   getServiceClient() {
     if (!this.serviceClient) {
-      this.serviceClient = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-        {
-          auth: {
-            storageKey: "test-service",
-            persistSession: false,
-            autoRefreshToken: false,
-          },
+      this.serviceClient = createClient(config.url, config.serviceKey, {
+        auth: {
+          storageKey: "test-service",
+          persistSession: false,
+          autoRefreshToken: false,
         },
-      );
+      });
     }
     return this.serviceClient;
   }
@@ -125,6 +122,6 @@ export const multiClientManager = new MultiClientManager();
 export const cleanupTestData = async () => {
   const client = multiClientManager.getServiceClient();
 
-  // テストで作成されたusersレコードを削除
-  await client.from("users").delete();
+  // テストで作成されたprofilesレコードを削除
+  await client.from("profiles").delete().neq("id", 0);
 };

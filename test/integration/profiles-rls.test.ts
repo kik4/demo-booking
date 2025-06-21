@@ -5,14 +5,14 @@ import {
   multiClientManager,
 } from "../lib/supabaseTestClient";
 
-describe("Users RLS (Row Level Security)", () => {
+describe("Profiles RLS (Row Level Security)", () => {
   afterEach(async () => {
     // テストデータをクリーンアップ
     await cleanupTestData();
     await multiClientManager.cleanup();
   });
 
-  describe("ユーザーの作成と読み取り", () => {
+  describe("プロフィールの作成と読み取り", () => {
     it("認証されたユーザーが自分のデータを作成できる", async () => {
       // テストユーザーを作成
       const testId = generateTestId();
@@ -23,22 +23,22 @@ describe("Users RLS (Row Level Security)", () => {
       const { client: authenticatedClient, user } =
         await multiClientManager.createAndSignInUser(testId, email, password);
 
-      // usersテーブルにレコードを作成
-      const userRecord = {
-        id: `user_${testId}`,
+      // profilesテーブルにレコードを作成
+      const profileRecord = {
+        name: `profile_${testId}`,
         user_id: user.id,
       };
 
       const { data, error } = await authenticatedClient
-        .from("users")
-        .insert(userRecord)
+        .from("profiles")
+        .insert(profileRecord)
         .select()
         .single();
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
       if (data) {
-        expect(data.id).toBe(userRecord.id);
+        expect(data.name).toBe(profileRecord.name);
         expect(data.user_id).toBe(user.id);
       }
     });
@@ -56,44 +56,44 @@ describe("Users RLS (Row Level Security)", () => {
       const { client: authenticatedClient2, user: user2 } =
         await multiClientManager.createAndSignInUser(testId2, email2, password);
 
-      // サービスロールクライアントで両方のユーザーのレコードを作成
+      // サービスロールクライアントで両方のプロフィールのレコードを作成
       const serviceClient = multiClientManager.getServiceClient();
 
-      const userRecord1 = {
-        id: `user_${testId1}`,
+      const profileRecord1 = {
+        name: `profile_${testId1}`,
         user_id: user1.id,
       };
-      const userRecord2 = {
-        id: `user_${testId2}`,
+      const profileRecord2 = {
+        name: `profile_${testId2}`,
         user_id: user2.id,
       };
 
-      await serviceClient.from("users").insert([userRecord1, userRecord2]);
+      await serviceClient
+        .from("profiles")
+        .insert([profileRecord1, profileRecord2]);
 
       // user1でサインインして自分のデータのみ取得できることを確認
-      const { data: user1Data, error: user1Error } = await authenticatedClient1
-        .from("users")
-        .select("*");
+      const { data: profile1Data, error: profile1Error } =
+        await authenticatedClient1.from("profiles").select("*");
 
-      expect(user1Error).toBeNull();
-      expect(user1Data).toBeDefined();
-      if (user1Data) {
-        expect(user1Data).toHaveLength(1);
-        expect(user1Data[0].id).toBe(userRecord1.id);
-        expect(user1Data[0].user_id).toBe(user1.id);
+      expect(profile1Error).toBeNull();
+      expect(profile1Data).toBeDefined();
+      if (profile1Data) {
+        expect(profile1Data).toHaveLength(1);
+        expect(profile1Data[0].name).toBe(profileRecord1.name);
+        expect(profile1Data[0].user_id).toBe(user1.id);
       }
 
       // user2でサインインして自分のデータのみ取得できることを確認
-      const { data: user2Data, error: user2Error } = await authenticatedClient2
-        .from("users")
-        .select("*");
+      const { data: profile2Data, error: profile2Error } =
+        await authenticatedClient2.from("profiles").select("*");
 
-      expect(user2Error).toBeNull();
-      expect(user2Data).toBeDefined();
-      if (user2Data) {
-        expect(user2Data).toHaveLength(1);
-        expect(user2Data[0].id).toBe(userRecord2.id);
-        expect(user2Data[0].user_id).toBe(user2.id);
+      expect(profile2Error).toBeNull();
+      expect(profile2Data).toBeDefined();
+      if (profile2Data) {
+        expect(profile2Data).toHaveLength(1);
+        expect(profile2Data[0].name).toBe(profileRecord2.name);
+        expect(profile2Data[0].user_id).toBe(user2.id);
       }
     });
 
@@ -113,38 +113,37 @@ describe("Users RLS (Row Level Security)", () => {
       // サービスロールクライアントで両方のユーザーのレコードを作成
       const serviceClient = multiClientManager.getServiceClient();
 
-      const userRecord1 = {
-        id: `user_${testId1}`,
+      const profileRecord1 = {
+        name: `profile_${testId1}`,
         user_id: user1.id,
       };
-      const userRecord2 = {
-        id: `user_${testId2}`,
+      const profileRecord2 = {
+        name: `profile_${testId2}`,
         user_id: user2.id,
       };
 
-      await serviceClient.from("users").insert([userRecord1, userRecord2]);
-
-      // user2のIDで直接検索しても取得できないことを確認
-      const { data: directAccessData, error: directAccessError } =
-        await authenticatedClient1
-          .from("users")
-          .select("*")
-          .eq("id", userRecord2.id);
-
-      expect(directAccessError).toBeNull();
-      expect(directAccessData).toBeDefined();
-      expect(directAccessData).toHaveLength(0); // RLSにより0件が返される
+      await serviceClient
+        .from("profiles")
+        .insert([profileRecord1, profileRecord2]);
 
       // user2のuser_idで検索しても取得できないことを確認
       const { data: userIdAccessData, error: userIdAccessError } =
         await authenticatedClient1
-          .from("users")
+          .from("profiles")
           .select("*")
           .eq("user_id", user2.id);
 
       expect(userIdAccessError).toBeNull();
       expect(userIdAccessData).toBeDefined();
       expect(userIdAccessData).toHaveLength(0); // RLSにより0件が返される
+
+      // 検索しても取得できないことを確認
+      const { data: directAccessData, error: directAccessError } =
+        await authenticatedClient1.from("profiles").select("*");
+
+      expect(directAccessError).toBeNull();
+      expect(directAccessData).toBeDefined();
+      expect(directAccessData).toHaveLength(1); // RLSにより1件だけが返される
     });
 
     it("サービスロールクライアントは全てのデータにアクセスできる", async () => {
@@ -169,30 +168,32 @@ describe("Users RLS (Row Level Security)", () => {
       // サービスロールクライアントで両方のユーザーのレコードを作成
       const serviceClient = multiClientManager.getServiceClient();
 
-      const userRecord1 = {
-        id: `user_${testId1}`,
+      const profileRecord1 = {
+        name: `profile_${testId1}`,
         user_id: user1.id,
       };
-      const userRecord2 = {
-        id: `user_${testId2}`,
+      const profileRecord2 = {
+        name: `profile_${testId2}`,
         user_id: user2.id,
       };
 
-      await serviceClient.from("users").insert([userRecord1, userRecord2]);
+      await serviceClient
+        .from("profiles")
+        .insert([profileRecord1, profileRecord2]);
 
       // サービスロールクライアントで全てのテストデータを取得
       const { data: allData, error: allDataError } = await serviceClient
-        .from("users")
+        .from("profiles")
         .select("*")
-        .in("id", [userRecord1.id, userRecord2.id]);
+        .in("user_id", [profileRecord1.user_id, profileRecord2.user_id]);
 
       expect(allDataError).toBeNull();
       expect(allData).toBeDefined();
       if (allData) {
         expect(allData).toHaveLength(2);
-        const ids = allData.map((record) => record.id);
-        expect(ids).toContain(userRecord1.id);
-        expect(ids).toContain(userRecord2.id);
+        const ids = allData.map((record) => record.user_id);
+        expect(ids).toContain(profileRecord1.user_id);
+        expect(ids).toContain(profileRecord2.user_id);
       }
     });
   });
@@ -211,20 +212,20 @@ describe("Users RLS (Row Level Security)", () => {
       );
 
       const serviceClient = multiClientManager.getServiceClient();
-      const userRecord = {
-        id: `user_${testId}`,
+      const profileRecord = {
+        name: `profile_${testId}`,
         user_id: user.id,
       };
 
-      await serviceClient.from("users").insert(userRecord);
+      await serviceClient.from("profiles").insert(profileRecord);
 
       // 匿名クライアント（未認証）でデータ取得を試行
-      const anonClient = await multiClientManager.createAnonUser(user.id);
+      const anonClient = await multiClientManager.createAnonUser();
 
       const { data: anonData, error: anonError } = await anonClient
-        .from("users")
+        .from("profiles")
         .select("*")
-        .eq("id", userRecord.id);
+        .eq("user_id", profileRecord.user_id);
 
       // 未認証ユーザーはRLSによりデータを取得できない
       expect(anonError).toBeNull();
@@ -251,19 +252,19 @@ describe("Users RLS (Row Level Security)", () => {
 
       // サービスロールクライアントで全ユーザーのレコードを作成
       const serviceClient = multiClientManager.getServiceClient();
-      const userRecords = users.map((user, index) => ({
-        id: `user_${testIds[index]}`,
+      const profileRecords = users.map((user, index) => ({
+        name: `profile_${testIds[index]}`,
         user_id: user.user.id,
       }));
 
-      await serviceClient.from("users").insert(userRecords);
+      await serviceClient.from("profiles").insert(profileRecords);
 
       // 各ユーザーが並列でサインインして自分のデータのみ取得できることを確認
       const authPromises = users.map(async (user, index) => {
         const authenticatedClient = user.client;
 
         const { data, error } = await authenticatedClient
-          .from("users")
+          .from("profiles")
           .select("*");
 
         expect(error).toBeNull();
@@ -271,7 +272,7 @@ describe("Users RLS (Row Level Security)", () => {
         if (data) {
           expect(data).toHaveLength(1);
           expect(data[0].user_id).toBe(user.user.id);
-          expect(data[0].id).toBe(userRecords[index].id);
+          expect(data[0].name).toBe(profileRecords[index].name);
         }
       });
 

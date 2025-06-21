@@ -34,25 +34,28 @@ export type Database = {
   };
   public: {
     Tables: {
-      users: {
+      profiles: {
         Row: {
           created_at: string;
           deleted_at: string | null;
-          id: string;
+          id: number;
+          name: string;
           updated_at: string;
           user_id: string;
         };
         Insert: {
           created_at?: string;
           deleted_at?: string | null;
-          id: string;
+          id?: number;
+          name: string;
           updated_at?: string;
           user_id?: string;
         };
         Update: {
           created_at?: string;
           deleted_at?: string | null;
-          id?: string;
+          id?: number;
+          name?: string;
           updated_at?: string;
           user_id?: string;
         };

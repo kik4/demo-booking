@@ -3,31 +3,31 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 export default function UserInfo() {
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [profile, setProfile] = useState<{ name: string } | null>(null);
 
   useEffect(() => {
-    const getUser = async () => {
+    const getProfile = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
       const res = await supabase
-        .from("users")
-        .select("id")
+        .from("profiles")
+        .select("name")
         .filter("user_id", "eq", user.id)
         .filter("deleted_at", "is", null)
         .single();
       if (!res.data) return;
-      setUser(res.data);
+      setProfile(res.data);
     };
-    getUser();
+    getProfile();
   }, []);
 
-  if (!user) return <div>未ログイン</div>;
+  if (!profile) return <div>未ログイン</div>;
 
   return (
     <div className="flex flex-col items-center">
-      <p>こんにちは、{user.id} さん！</p>
+      <p>こんにちは、{profile.name} さん！</p>
       <button
         onClick={async () => {
           await supabase.auth.signOut();
