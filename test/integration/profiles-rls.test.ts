@@ -260,6 +260,39 @@ describe("Profiles RLS (Row Level Security)", () => {
     });
   });
 
+  describe("削除されたプロフィールの作成と読み取り", () => {
+    it("認証されたユーザーでも削除された自分のデータは読み取れない", async () => {
+      // テストユーザーを作成
+      const testId = generateTestId();
+      const email = `test-${testId}@example.com`;
+      const password = "testpassword123";
+
+      const { client: authenticatedClient, user } =
+        await multiClientManager.createAndSignInUser(testId, email, password);
+
+      // サービスロールクライアントでプロフィールのレコードを作成
+      const serviceClient = multiClientManager.getServiceClient();
+
+      const profileRecord = {
+        name: `profile_${testId}`,
+        user_id: user.id,
+        deleted_at: new Date(),
+      };
+
+      await serviceClient.from("profiles").insert(profileRecord);
+
+      // テストユーザーでサインインして自分のデータが取得できないことを確認
+      const { data: profileData, error: profileError } =
+        await authenticatedClient.from("profiles").select("*");
+
+      expect(profileError).toBeNull();
+      expect(profileData).toBeDefined();
+      if (profileData) {
+        expect(profileData).toHaveLength(0);
+      }
+    });
+  });
+
   describe("RLSポリシーの動作確認", () => {
     it("未認証ユーザーはデータを読み取れない", async () => {
       // テストユーザーとレコードを作成
