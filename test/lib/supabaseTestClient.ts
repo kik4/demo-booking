@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { Database } from "@/types/database.types";
 import {
   type SupabaseClient,
   type User,
@@ -32,8 +33,8 @@ const getSupabaseConfig = () => {
 const config = getSupabaseConfig();
 
 class MultiClientManager {
-  serviceClient: SupabaseClient | undefined;
-  clients: Map<string, SupabaseClient>;
+  serviceClient: SupabaseClient<Database> | undefined;
+  clients: Map<string, SupabaseClient<Database>>;
   users: Map<string, User>;
 
   constructor() {
@@ -43,7 +44,7 @@ class MultiClientManager {
 
   async createAnonUser(userId?: string) {
     const key = `test-user-${generateTestId()}`;
-    const client = createClient(config.url, config.anonKey, {
+    const client = createClient<Database>(config.url, config.anonKey, {
       auth: {
         storageKey: key,
         persistSession: false,
@@ -87,13 +88,17 @@ class MultiClientManager {
 
   getServiceClient() {
     if (!this.serviceClient) {
-      this.serviceClient = createClient(config.url, config.serviceKey, {
-        auth: {
-          storageKey: "test-service",
-          persistSession: false,
-          autoRefreshToken: false,
+      this.serviceClient = createClient<Database>(
+        config.url,
+        config.serviceKey,
+        {
+          auth: {
+            storageKey: "test-service",
+            persistSession: false,
+            autoRefreshToken: false,
+          },
         },
-      });
+      );
     }
     return this.serviceClient;
   }

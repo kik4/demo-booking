@@ -276,7 +276,7 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord = {
         name: `profile_${testId}`,
         user_id: user.id,
-        deleted_at: new Date(),
+        deleted_at: new Date().toISOString(),
       };
 
       await serviceClient.from("profiles").insert(profileRecord);
@@ -287,8 +287,51 @@ describe("Profiles RLS (Row Level Security)", () => {
 
       expect(profileError).toBeNull();
       expect(profileData).toBeDefined();
+      expect(profileData).toHaveLength(0);
+    });
+
+    it("認証されたユーザーでも削除された自分のデータは更新できない", async () => {
+      // テストユーザーを作成
+      const testId = generateTestId();
+      const email = `test-${testId}@example.com`;
+      const password = "testpassword123";
+
+      const { client: authenticatedClient, user } =
+        await multiClientManager.createAndSignInUser(testId, email, password);
+
+      // サービスロールクライアントでプロフィールのレコードを作成
+      const serviceClient = multiClientManager.getServiceClient();
+
+      const profileRecord = {
+        name: `profile_${testId}`,
+        user_id: user.id,
+        deleted_at: new Date().toISOString(),
+      };
+
+      await serviceClient.from("profiles").insert(profileRecord);
+
+      // テストユーザーでサインインして自分のデータが更新できないことを確認
+      const { count, error } = await authenticatedClient
+        .from("profiles")
+        .update({ name: "テスト一郎" }, { count: "exact" })
+        .eq("user_id", profileRecord.user_id);
+
+      expect(error).toBeNull();
+      expect(count).toEqual(0);
+
+      // 更新されていないことのチェック
+      const { data: profileData, error: profileError } = await serviceClient
+        .from("profiles")
+        .select("user_id, name, deleted_at");
+      expect(profileError).toBeNull();
+      expect(profileData).toBeDefined();
+      expect(profileData).toHaveLength(1);
       if (profileData) {
-        expect(profileData).toHaveLength(0);
+        expect(profileData[0].user_id).toEqual(profileRecord.user_id);
+        expect(profileData[0].name).toEqual(profileRecord.name);
+        expect(`${profileData[0].deleted_at}Z`).toEqual(
+          profileRecord.deleted_at,
+        );
       }
     });
   });
