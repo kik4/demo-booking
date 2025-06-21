@@ -137,13 +137,16 @@ describe("Profiles RLS (Row Level Security)", () => {
       expect(userIdAccessData).toBeDefined();
       expect(userIdAccessData).toHaveLength(0); // RLSにより0件が返される
 
-      // 検索しても取得できないことを確認
+      // 検索しても自分のものしか取得できないことを確認
       const { data: directAccessData, error: directAccessError } =
-        await authenticatedClient1.from("profiles").select("*");
+        await authenticatedClient2.from("profiles").select("*");
 
       expect(directAccessError).toBeNull();
       expect(directAccessData).toBeDefined();
       expect(directAccessData).toHaveLength(1); // RLSにより1件だけが返される
+      if (directAccessData) {
+        expect(directAccessData[0].user_id).toEqual(user2.id);
+      }
     });
 
     it("サービスロールクライアントは全てのデータにアクセスできる", async () => {
