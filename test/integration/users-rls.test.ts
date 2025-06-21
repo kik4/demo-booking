@@ -1,24 +1,15 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   cleanupTestData,
-  createAuthenticatedClient,
-  createServiceRoleClient,
-  createTestUser,
-  deleteTestUsers,
   generateTestId,
-  signInTestUser,
+  multiClientManager,
 } from "../lib/supabaseTestClient";
 
 describe("Users RLS (Row Level Security)", () => {
-  const testUsers: Array<{ id: string; email: string }> = [];
-  const testUserRecords: string[] = [];
-
   afterEach(async () => {
     // テストデータをクリーンアップ
-    await cleanupTestData(testUserRecords);
-    await deleteTestUsers(testUsers.map((u) => u.id));
-    testUsers.length = 0;
-    testUserRecords.length = 0;
+    await cleanupTestData();
+    await multiClientManager.cleanup();
   });
 
   describe("ユーザーの作成と読み取り", () => {
@@ -28,14 +19,9 @@ describe("Users RLS (Row Level Security)", () => {
       const email = `test-${testId}@example.com`;
       const password = "testpassword123";
 
-      const user = await createTestUser(email, password);
-      testUsers.push({ id: user.id, email });
-
       // ユーザーでサインイン
-      const { session } = await signInTestUser(email, password);
-      const authenticatedClient = createAuthenticatedClient(
-        session.access_token,
-      );
+      const { client: authenticatedClient, user } =
+        await multiClientManager.createAndSignInUser(testId, email, password);
 
       // usersテーブルにレコードを作成
       const userRecord = {
@@ -54,7 +40,6 @@ describe("Users RLS (Row Level Security)", () => {
       if (data) {
         expect(data.id).toBe(userRecord.id);
         expect(data.user_id).toBe(user.id);
-        testUserRecords.push(data.id);
       }
     });
 
@@ -66,15 +51,13 @@ describe("Users RLS (Row Level Security)", () => {
       const email2 = `test-${testId2}@example.com`;
       const password = "testpassword123";
 
-      const user1 = await createTestUser(email1, password);
-      const user2 = await createTestUser(email2, password);
-      testUsers.push(
-        { id: user1.id, email: email1 },
-        { id: user2.id, email: email2 },
-      );
+      const { client: authenticatedClient1, user: user1 } =
+        await multiClientManager.createAndSignInUser(testId1, email1, password);
+      const { client: authenticatedClient2, user: user2 } =
+        await multiClientManager.createAndSignInUser(testId2, email2, password);
 
       // サービスロールクライアントで両方のユーザーのレコードを作成
-      const serviceClient = createServiceRoleClient();
+      const serviceClient = multiClientManager.getServiceClient();
 
       const userRecord1 = {
         id: `user_${testId1}`,
@@ -86,14 +69,8 @@ describe("Users RLS (Row Level Security)", () => {
       };
 
       await serviceClient.from("users").insert([userRecord1, userRecord2]);
-      testUserRecords.push(userRecord1.id, userRecord2.id);
 
       // user1でサインインして自分のデータのみ取得できることを確認
-      const { session: session1 } = await signInTestUser(email1, password);
-      const authenticatedClient1 = createAuthenticatedClient(
-        session1.access_token,
-      );
-
       const { data: user1Data, error: user1Error } = await authenticatedClient1
         .from("users")
         .select("*");
@@ -107,11 +84,6 @@ describe("Users RLS (Row Level Security)", () => {
       }
 
       // user2でサインインして自分のデータのみ取得できることを確認
-      const { session: session2 } = await signInTestUser(email2, password);
-      const authenticatedClient2 = createAuthenticatedClient(
-        session2.access_token,
-      );
-
       const { data: user2Data, error: user2Error } = await authenticatedClient2
         .from("users")
         .select("*");
@@ -133,15 +105,13 @@ describe("Users RLS (Row Level Security)", () => {
       const email2 = `test-${testId2}@example.com`;
       const password = "testpassword123";
 
-      const user1 = await createTestUser(email1, password);
-      const user2 = await createTestUser(email2, password);
-      testUsers.push(
-        { id: user1.id, email: email1 },
-        { id: user2.id, email: email2 },
-      );
+      const { client: authenticatedClient1, user: user1 } =
+        await multiClientManager.createAndSignInUser(testId1, email1, password);
+      const { client: authenticatedClient2, user: user2 } =
+        await multiClientManager.createAndSignInUser(testId2, email2, password);
 
       // サービスロールクライアントで両方のユーザーのレコードを作成
-      const serviceClient = createServiceRoleClient();
+      const serviceClient = multiClientManager.getServiceClient();
 
       const userRecord1 = {
         id: `user_${testId1}`,
@@ -153,13 +123,6 @@ describe("Users RLS (Row Level Security)", () => {
       };
 
       await serviceClient.from("users").insert([userRecord1, userRecord2]);
-      testUserRecords.push(userRecord1.id, userRecord2.id);
-
-      // user1でサインインしてuser2のデータを直接取得しようとする
-      const { session: session1 } = await signInTestUser(email1, password);
-      const authenticatedClient1 = createAuthenticatedClient(
-        session1.access_token,
-      );
 
       // user2のIDで直接検索しても取得できないことを確認
       const { data: directAccessData, error: directAccessError } =
@@ -192,15 +155,19 @@ describe("Users RLS (Row Level Security)", () => {
       const email2 = `test-${testId2}@example.com`;
       const password = "testpassword123";
 
-      const user1 = await createTestUser(email1, password);
-      const user2 = await createTestUser(email2, password);
-      testUsers.push(
-        { id: user1.id, email: email1 },
-        { id: user2.id, email: email2 },
+      const { user: user1 } = await multiClientManager.createAndSignInUser(
+        testId1,
+        email1,
+        password,
+      );
+      const { user: user2 } = await multiClientManager.createAndSignInUser(
+        testId2,
+        email2,
+        password,
       );
 
       // サービスロールクライアントで両方のユーザーのレコードを作成
-      const serviceClient = createServiceRoleClient();
+      const serviceClient = multiClientManager.getServiceClient();
 
       const userRecord1 = {
         id: `user_${testId1}`,
@@ -212,7 +179,6 @@ describe("Users RLS (Row Level Security)", () => {
       };
 
       await serviceClient.from("users").insert([userRecord1, userRecord2]);
-      testUserRecords.push(userRecord1.id, userRecord2.id);
 
       // サービスロールクライアントで全てのテストデータを取得
       const { data: allData, error: allDataError } = await serviceClient
@@ -238,21 +204,22 @@ describe("Users RLS (Row Level Security)", () => {
       const email = `test-${testId}@example.com`;
       const password = "testpassword123";
 
-      const user = await createTestUser(email, password);
-      testUsers.push({ id: user.id, email });
+      const { user } = await multiClientManager.createAndSignInUser(
+        testId,
+        email,
+        password,
+      );
 
-      const serviceClient = createServiceRoleClient();
+      const serviceClient = multiClientManager.getServiceClient();
       const userRecord = {
         id: `user_${testId}`,
         user_id: user.id,
       };
 
       await serviceClient.from("users").insert(userRecord);
-      testUserRecords.push(userRecord.id);
 
       // 匿名クライアント（未認証）でデータ取得を試行
-      const { createAnonClient } = await import("../lib/supabaseTestClient");
-      const anonClient = createAnonClient();
+      const anonClient = await multiClientManager.createAnonUser(user.id);
 
       const { data: anonData, error: anonError } = await anonClient
         .from("users")
@@ -273,32 +240,27 @@ describe("Users RLS (Row Level Security)", () => {
 
       // 並列でユーザーを作成
       const users = await Promise.all(
-        emails.map((email) => createTestUser(email, password)),
-      );
-
-      testUsers.push(
-        ...users.map((user, index) => ({
-          id: user.id,
-          email: emails[index],
-        })),
+        emails.map((email, index) =>
+          multiClientManager.createAndSignInUser(
+            testIds[index],
+            email,
+            password,
+          ),
+        ),
       );
 
       // サービスロールクライアントで全ユーザーのレコードを作成
-      const serviceClient = createServiceRoleClient();
+      const serviceClient = multiClientManager.getServiceClient();
       const userRecords = users.map((user, index) => ({
         id: `user_${testIds[index]}`,
-        user_id: user.id,
+        user_id: user.user.id,
       }));
 
       await serviceClient.from("users").insert(userRecords);
-      testUserRecords.push(...userRecords.map((record) => record.id));
 
       // 各ユーザーが並列でサインインして自分のデータのみ取得できることを確認
       const authPromises = users.map(async (user, index) => {
-        const { session } = await signInTestUser(emails[index], password);
-        const authenticatedClient = createAuthenticatedClient(
-          session.access_token,
-        );
+        const authenticatedClient = user.client;
 
         const { data, error } = await authenticatedClient
           .from("users")
@@ -308,7 +270,7 @@ describe("Users RLS (Row Level Security)", () => {
         expect(data).toBeDefined();
         if (data) {
           expect(data).toHaveLength(1);
-          expect(data[0].user_id).toBe(user.id);
+          expect(data[0].user_id).toBe(user.user.id);
           expect(data[0].id).toBe(userRecords[index].id);
         }
       });

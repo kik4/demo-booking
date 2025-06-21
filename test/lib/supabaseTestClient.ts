@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
-import type { Database } from "@/types/database.types";
-import { type SupabaseClient, createClient } from "@supabase/supabase-js";
+import {
+  type SupabaseClient,
+  type User,
+  createClient,
+} from "@supabase/supabase-js";
 
 // テスト用のユニークなIDを生成（並列実行対応）
 export const generateTestId = () => randomUUID().replace(/-/g, "_");
@@ -27,103 +30,101 @@ const getSupabaseConfig = () => {
   };
 };
 
-// シングルトンクライアント
-let serviceRoleClient: SupabaseClient<Database> | null = null;
-let anonClient: SupabaseClient<Database> | null = null;
+class MultiClientManager {
+  serviceClient: SupabaseClient | undefined;
+  clients: Map<string, SupabaseClient>;
+  users: Map<string, User>;
 
-// サービスロール用のSupabaseクライアントを作成
-export const createServiceRoleClient = () => {
-  if (!serviceRoleClient) {
+  constructor() {
+    this.clients = new Map();
+    this.users = new Map();
+  }
+
+  async createAnonUser(userId: string) {
     const config = getSupabaseConfig();
-    serviceRoleClient = createClient<Database>(config.url, config.serviceKey, {
+    const client = createClient(config.url, config.anonKey, {
       auth: {
-        autoRefreshToken: false,
+        storageKey: `test-user-${randomUUID()}`,
         persistSession: false,
+        autoRefreshToken: false,
       },
     });
-  }
-  return serviceRoleClient;
-};
 
-// 匿名ユーザー用のクライアントを作成
-export const createAnonClient = () => {
-  if (!anonClient) {
-    const config = getSupabaseConfig();
-    anonClient = createClient<Database>(config.url, config.anonKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
+    this.clients.set(userId, client);
+    return client;
+  }
+
+  async createAndSignInUser(userId: string, email: string, password: string) {
+    // サービスロールでユーザー作成
+    const serviceClient = this.getServiceClient();
+    const { data: userData, error } = await serviceClient.auth.admin.createUser(
+      {
+        email,
+        password,
+        email_confirm: true,
       },
-    });
-  }
-  return anonClient;
-};
+    );
 
-// 認証されたユーザー用のクライアントを作成
-export const createAuthenticatedClient = (accessToken: string) => {
-  const config = getSupabaseConfig();
+    if (error) throw error;
 
-  return createClient<Database>(config.url, config.anonKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-    global: {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  });
-};
+    this.users.set(userId, userData.user);
 
-// テストユーザーを作成するヘルパー関数
-export const createTestUser = async (email: string, password: string) => {
-  const client = createServiceRoleClient();
+    // 匿名クライアントでサインイン
+    const client = await this.createAnonUser(userId);
+    await client.auth.signInWithPassword({ email, password });
 
-  const { data, error } = await client.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-  });
-
-  if (error) {
-    throw new Error(`Failed to create test user: ${error.message}`);
+    return { client, user: userData.user };
   }
 
-  return data.user;
-};
-
-// テストユーザーでサインインしてアクセストークンを取得
-export const signInTestUser = async (email: string, password: string) => {
-  const client = createAnonClient();
-
-  const { data, error } = await client.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    throw new Error(`Failed to sign in test user: ${error.message}`);
+  getClient(userId: string) {
+    return this.clients.get(userId);
   }
 
-  return data;
-};
+  getUser(userId: string) {
+    return this.users.get(userId);
+  }
+
+  getServiceClient() {
+    if (!this.serviceClient) {
+      this.serviceClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: {
+            storageKey: "test-service",
+            persistSession: false,
+            autoRefreshToken: false,
+          },
+        },
+      );
+    }
+    return this.serviceClient;
+  }
+
+  async cleanup() {
+    const serviceClient = this.getServiceClient();
+
+    // 全ユーザーをサインアウト
+    for (const client of this.clients.values()) {
+      await client.auth.signOut();
+    }
+
+    // 作成したユーザーを削除
+    for (const user of this.users.values()) {
+      await serviceClient.auth.admin.deleteUser(user.id);
+    }
+
+    this.clients.clear();
+    this.users.clear();
+  }
+}
+
+export const multiClientManager = new MultiClientManager();
 
 // テストデータをクリーンアップ
-export const cleanupTestData = async (userIds: string[]) => {
-  const client = createServiceRoleClient();
+export const cleanupTestData = async () => {
+  const client = multiClientManager.getServiceClient();
 
   // テストで作成されたusersレコードを削除
-  if (userIds.length > 0) {
-    await client.from("users").delete().in("id", userIds);
-  }
-};
-
-// テストユーザーを削除
-export const deleteTestUsers = async (userIds: string[]) => {
-  const client = createServiceRoleClient();
-
-  for (const userId of userIds) {
-    await client.auth.admin.deleteUser(userId);
-  }
+  await client.from("users").delete();
 };
