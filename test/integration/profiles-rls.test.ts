@@ -199,6 +199,65 @@ describe("Profiles RLS (Row Level Security)", () => {
         expect(ids).toContain(profileRecord2.user_id);
       }
     });
+
+    it("認証されたユーザーが自分のデータのみを更新できる", async () => {
+      // 2つのテストユーザーを作成
+      const testId1 = generateTestId();
+      const testId2 = generateTestId();
+      const email1 = `test-${testId1}@example.com`;
+      const email2 = `test-${testId2}@example.com`;
+      const password = "testpassword123";
+
+      const { client: authenticatedClient1, user: user1 } =
+        await multiClientManager.createAndSignInUser(testId1, email1, password);
+      const { client: authenticatedClient2, user: user2 } =
+        await multiClientManager.createAndSignInUser(testId2, email2, password);
+
+      // サービスロールクライアントで両方のプロフィールのレコードを作成
+      const serviceClient = multiClientManager.getServiceClient();
+
+      const profileRecord1 = {
+        name: `profile_${testId1}`,
+        user_id: user1.id,
+      };
+      const profileRecord2 = {
+        name: `profile_${testId2}`,
+        user_id: user2.id,
+      };
+
+      await serviceClient
+        .from("profiles")
+        .insert([profileRecord1, profileRecord2]);
+
+      // user1でサインインして自分のデータが更新できることを確認
+      const { count: count1, error: error1 } = await authenticatedClient1
+        .from("profiles")
+        .update({ name: "テスト一郎" }, { count: "exact" })
+        .eq("user_id", profileRecord1.user_id);
+
+      expect(error1).toBeNull();
+      expect(count1).toEqual(1);
+
+      // user2でサインインしてuser1のデータを更新できないことを確認
+      const { count: count2, error: error2 } = await authenticatedClient2
+        .from("profiles")
+        .update({ name: "テスト次郎" }, { count: "exact" })
+        .eq("user_id", profileRecord1.user_id);
+
+      expect(error2).toBeNull();
+      expect(count2).toEqual(0);
+
+      // データを読み込んでチェック
+      const res = await authenticatedClient1
+        .from("profiles")
+        .select("user_id, name")
+        .single();
+      expect(res.data).toBeDefined();
+      if (res.data) {
+        expect(res.data.user_id).toEqual(user1.id);
+        expect(res.data.name).toEqual("テスト一郎");
+      }
+    });
   });
 
   describe("RLSポリシーの動作確認", () => {
