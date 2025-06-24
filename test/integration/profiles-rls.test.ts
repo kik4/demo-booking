@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { normalizeDateTime } from "@/app/_lib/normalizeDateTime";
+import { normalizeDateTime } from "@/lib/normalizeDateTime";
 import {
   cleanupTestData,
   generateTestId,

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "../_lib/supabaseClientServer";
+import { createClient } from "../../lib/supabaseClientServer";
 import UserInfo from "./_components/UserInfo";
 
 export default async function HomePage() {

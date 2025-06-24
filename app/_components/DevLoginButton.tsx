@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { supabase } from "../_lib/supabaseClient";
+import { supabase } from "../../lib/supabaseClient";
 
 export function DevLoginButton() {
   const router = useRouter();

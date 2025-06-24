@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeDateTime } from "@/app/_lib/normalizeDateTime";
+import { normalizeDateTime } from "@/lib/normalizeDateTime";
 
 describe("normalizeDateTime", () => {
   describe("正常なケース", () => {
