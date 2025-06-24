@@ -24,17 +24,17 @@ export function DevLoginButtonContainer() {
       <p>開発用ログイン</p>
       <button
         type="button"
-        onClick={() => handleDevLogin("new")}
-        className="rounded bg-blue-500 px-4 py-2 text-white"
-      >
-        未登録ユーザでログイン
-      </button>
-      <button
-        type="button"
         onClick={() => handleDevLogin("user")}
         className="rounded bg-green-500 px-4 py-2 text-white"
       >
-        新規ユーザーでログイン
+        登録ユーザーでログイン
+      </button>
+      <button
+        type="button"
+        onClick={() => handleDevLogin("new")}
+        className="rounded bg-blue-500 px-4 py-2 text-white"
+      >
+        未登録ユーザーでログイン
       </button>
     </div>
   );
