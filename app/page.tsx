@@ -1,4 +1,5 @@
 import { DevLoginButtonContainer } from "./_components/DevLoginButtonContainer";
+import { LoginButtonContainer } from "./_components/LoginButtonContainer";
 
 export default function Page() {
   return (
@@ -24,7 +25,11 @@ export default function Page() {
 
           <div className="space-y-6">
             <div className="flex justify-center">
-              <DevLoginButtonContainer />
+              {process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? (
+                <DevLoginButtonContainer />
+              ) : (
+                <LoginButtonContainer />
+              )}
             </div>
           </div>
         </div>
