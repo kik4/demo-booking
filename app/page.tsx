@@ -1,4 +1,4 @@
-import { DevLoginButton } from "./_components/DevLoginButton";
+import { DevLoginButtonContainer } from "./_components/DevLoginButtonContainer";
 
 export default function Page() {
   return (
@@ -24,7 +24,7 @@ export default function Page() {
 
           <div className="space-y-6">
             <div className="flex justify-center">
-              <DevLoginButton />
+              <DevLoginButtonContainer />
             </div>
           </div>
         </div>

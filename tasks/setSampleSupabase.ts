@@ -7,20 +7,36 @@ const supabaseClient = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
 
-const resAuthUser = await supabaseClient.auth.admin.createUser({
-  email: "user@example.com",
-  password: "password",
-  email_confirm: true,
-});
-if (resAuthUser.error) {
-  console.error(resAuthUser);
-  throw resAuthUser.error;
+// user 登録だけのユーザー
+{
+  const user = await supabaseClient.auth.admin.createUser({
+    email: "new@example.com",
+    password: "password",
+    email_confirm: true,
+  });
+  if (user.error) {
+    console.error(user);
+    throw user.error;
+  }
 }
 
-const resUser = await supabaseClient
-  .from("profiles")
-  .insert({ name: "テスト太郎", user_id: resAuthUser.data.user.id });
-if (resUser.error) {
-  console.error(resUser);
-  throw resUser.error;
+// プロフィール登録をしたユーザー
+{
+  const user = await supabaseClient.auth.admin.createUser({
+    email: "user@example.com",
+    password: "password",
+    email_confirm: true,
+  });
+  if (user.error) {
+    console.error(user);
+    throw user.error;
+  }
+
+  const resProfile = await supabaseClient
+    .from("profiles")
+    .insert({ name: "テスト太郎", user_id: user.data.user.id });
+  if (resProfile.error) {
+    console.error(resProfile);
+    throw resProfile.error;
+  }
 }
