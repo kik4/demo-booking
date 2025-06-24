@@ -9,14 +9,12 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  console.log(user);
-
   if (!user) {
     redirect("/");
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="relative min-h-screen bg-gradient-to-br from-yellow-50 to-amber-100">
       <div
         className="absolute inset-x-0 top-0 z-0 h-96 bg-center bg-cover"
         style={{
