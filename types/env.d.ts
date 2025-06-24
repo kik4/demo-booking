@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/noUnusedVariables: process.env のプロパティとして使用 */
 namespace NodeJS {
   interface ProcessEnv {
     NEXT_PUBLIC_VERCEL_ENV: string;

@@ -29,6 +29,7 @@ export default function UserInfo() {
     <div className="flex flex-col items-center">
       <p>こんにちは、{profile.name} さん！</p>
       <button
+        type="button"
         onClick={async () => {
           await supabase.auth.signOut();
           location.reload();

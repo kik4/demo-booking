@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import type { Database } from "@/types/database.types";
 import {
+  createClient,
   type SupabaseClient,
   type User,
-  createClient,
 } from "@supabase/supabase-js";
+import type { Database } from "@/types/database.types";
 
 // テスト用のユニークなIDを生成（並列実行対応）
 export const generateTestId = () => randomUUID().replace(/-/g, "_");
