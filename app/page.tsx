@@ -5,7 +5,7 @@ export default function Page() {
     <div className="relative min-h-screen bg-white">
       {/* Background image container */}
       <div
-        className="absolute top-0 left-0 h-screen w-full bg-center bg-cover bg-no-repeat opacity-90"
+        className="absolute top-0 left-0 h-screen w-full bg-center bg-cover bg-no-repeat opacity-90 blur-sm"
         style={{
           backgroundImage: "url('/top.webp')",
           backgroundPosition: "center center",
