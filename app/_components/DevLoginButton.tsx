@@ -1,8 +1,11 @@
 "use client";
 
-import { supabase } from "../lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { supabase } from "../_lib/supabaseClient";
 
 export function DevLoginButton() {
+  const router = useRouter();
+
   const handleDevLogin = async () => {
     const { error } = await supabase.auth.signInWithPassword({
       email: "user@example.com",
@@ -12,7 +15,7 @@ export function DevLoginButton() {
       console.error("Dev login error:", error);
     } else {
       console.log("Dev user logged in");
-      location.reload();
+      router.push("/home");
     }
   };
 

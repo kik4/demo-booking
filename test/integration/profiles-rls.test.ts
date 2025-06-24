@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { normalizeDateTime } from "@/app/_lib/normalizeDateTime";
 import {
   cleanupTestData,
   generateTestId,
@@ -305,7 +306,7 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord = {
         name: `profile_${testId}`,
         user_id: user.id,
-        deleted_at: new Date().toISOString(),
+        deleted_at: new Date("2000-01-01T09:00:00Z").toISOString(),
       };
 
       await serviceClient.from("profiles").insert(profileRecord);
@@ -329,7 +330,8 @@ describe("Profiles RLS (Row Level Security)", () => {
       if (profileData) {
         expect(profileData[0].user_id).toEqual(profileRecord.user_id);
         expect(profileData[0].name).toEqual(profileRecord.name);
-        expect(`${profileData[0].deleted_at}Z`).toEqual(
+        expect(profileData[0].deleted_at).toBeDefined();
+        expect(normalizeDateTime(profileData[0].deleted_at || "")).toEqual(
           profileRecord.deleted_at,
         );
       }

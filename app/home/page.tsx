@@ -1,6 +1,20 @@
-import UserInfo from "../_components/UserInfo";
+import { redirect } from "next/navigation";
+import { createClient } from "../_lib/supabaseClientServer";
+import UserInfo from "./_components/UserInfo";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  console.log(user);
+
+  if (!user) {
+    redirect("/");
+  }
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div

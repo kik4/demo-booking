@@ -1,5 +1,4 @@
 import { DevLoginButton } from "./_components/DevLoginButton";
-import UserInfo from "./_components/UserInfo";
 
 export default function Page() {
   return (
@@ -26,10 +25,6 @@ export default function Page() {
           <div className="space-y-6">
             <div className="flex justify-center">
               <DevLoginButton />
-            </div>
-
-            <div className="border-gray-200 border-t pt-6">
-              <UserInfo />
             </div>
           </div>
         </div>
