@@ -40,19 +40,13 @@ export default function RegisterPage() {
         return;
       }
 
-      // プロフィールを作成または更新
-      const { error: upsertError } = await supabase.from("profiles").upsert(
-        {
-          user_id: user.id,
-          name: name.trim(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "user_id",
-        },
-      );
+      // プロフィールを作成
+      const { error: insertError } = await supabase.from("profiles").insert({
+        user_id: user.id,
+        name: name.trim(),
+      });
 
-      if (upsertError) {
+      if (insertError) {
         setError("登録に失敗しました。もう一度お試しください。");
         return;
       }
