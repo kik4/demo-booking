@@ -1,12 +1,23 @@
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { createClient } from "@/lib/supabaseClientServer";
 
 interface AuthenticatedLayoutProps {
   children: ReactNode;
 }
 
-export default function AuthenticatedLayout({
+export default async function AuthenticatedLayout({
   children,
 }: AuthenticatedLayoutProps) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-yellow-50 to-amber-100">
       <div

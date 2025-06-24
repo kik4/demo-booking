@@ -1,18 +1,6 @@
-import { redirect } from "next/navigation";
-import { createClient } from "../../../lib/supabaseClientServer";
 import UserInfo from "./_components/UserInfo";
 
 export default async function HomePage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/");
-  }
-
   return (
     <div className="pt-24 pb-8">
       <div className="mx-auto max-w-4xl">
