@@ -18,8 +18,8 @@ export default function Page() {
       {/* Main content */}
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4">
         <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white/95 p-8 shadow-2xl backdrop-blur-sm">
-          <h1 className="mb-8 text-center font-bold text-4xl text-gray-800 tracking-tight">
-            Reservations
+          <h1 className="mb-8 text-center font-bold text-3xl text-gray-800 tracking-tight">
+            デモ予約システム
           </h1>
 
           <div className="space-y-6">

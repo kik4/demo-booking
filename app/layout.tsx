@@ -15,8 +15,8 @@ const notoSansJp = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "デモ予約アプリ : kik4",
-  description: "デモ予約アプリ created by kik4",
+  title: "デモ予約システム : kik4",
+  description: "デモ予約システム created by kik4",
 };
 
 export default function RootLayout({
