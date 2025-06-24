@@ -7,6 +7,42 @@ const supabaseClient = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
 
+// データベースリセット
+console.log("Resetting database...");
+
+// 既存のプロフィールデータを削除
+const { error: profilesError } = await supabaseClient
+  .from("profiles")
+  .delete()
+  .gt("id", 0);
+
+if (profilesError) {
+  console.error("Error deleting profiles:", profilesError);
+  throw profilesError;
+}
+
+// 既存のテストユーザーを削除
+const { data: existingUsers, error: listError } =
+  await supabaseClient.auth.admin.listUsers();
+if (listError) {
+  console.error("Error listing users:", listError);
+  throw listError;
+}
+
+for (const user of existingUsers.users) {
+  if (user.email === "new@example.com" || user.email === "user@example.com") {
+    const { error: deleteError } = await supabaseClient.auth.admin.deleteUser(
+      user.id,
+    );
+    if (deleteError) {
+      console.error("Error deleting user:", deleteError);
+      throw deleteError;
+    }
+  }
+}
+
+console.log("Database reset completed. Inserting sample data...");
+
 // user 登録だけのユーザー
 {
   const user = await supabaseClient.auth.admin.createUser({
@@ -40,3 +76,5 @@ const supabaseClient = createClient<Database>(
     throw resProfile.error;
   }
 }
+
+console.log("Sample data insertion completed successfully!");
