@@ -3,7 +3,6 @@ import { z } from "zod";
 export const profileValidationSchema = z.object({
   name: z
     .string()
-    .min(1, "名前は必須項目です")
     .trim()
     .min(2, "名前は2文字以上で入力してください")
     .max(100, "名前は100文字以内で入力してください"),
