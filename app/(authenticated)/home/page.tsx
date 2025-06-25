@@ -42,7 +42,7 @@ export default function HomePage() {
             </h1>
             <WelcomeMessage />
             <p className="mt-2 text-gray-600">
-              予約の作成・確認・変更・キャンセルが行えます
+              予約の登録・確認・変更・キャンセルが行えます
             </p>
           </div>
 
@@ -59,7 +59,7 @@ export default function HomePage() {
 
             <div className="neumorphism-card-green p-6">
               <h3 className="mb-2 font-semibold text-xl">新規予約</h3>
-              <p className="mb-4 text-green-100">新しい予約を作成できます</p>
+              <p className="mb-4 text-green-100">新しい予約が登録できます</p>
               <button type="button" className="neumorphism-button-glass">
                 予約する
               </button>
