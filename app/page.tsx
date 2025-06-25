@@ -19,9 +19,14 @@ export default function Page() {
       {/* Main content */}
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4">
         <div className="neumorphism-raised w-full max-w-md border-0 p-8">
-          <h1 className="mb-8 text-center font-bold text-3xl text-gray-800 tracking-tight">
+          <h1 className="mb-4 text-center font-bold text-3xl text-gray-800 tracking-tight">
             デモ予約システム
           </h1>
+
+          <div className="mb-6 text-center text-gray-500 text-xs">
+            <p>※ これはデモアプリです。実際のサービスは提供されません。</p>
+            <p>個人情報の入力はお控えください。</p>
+          </div>
 
           <div className="space-y-6">
             <div className="flex justify-center">
