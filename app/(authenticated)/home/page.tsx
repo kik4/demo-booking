@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { WelcomeMessage } from "@/app/_components/WelcomeMessage";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -11,8 +12,10 @@ export default function HomePage() {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Logout error:", error);
+      toast.error("ログアウトに失敗しました");
     } else {
       router.push("/");
+      toast.success("ログアウトしました");
     }
   };
 

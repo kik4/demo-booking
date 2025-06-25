@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Lato, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import clsx from "clsx";
+import { Toaster } from "react-hot-toast";
 
 const lato = Lato({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
         )}
       >
         {children}
+        <Toaster position="top-right" />
       </body>
     </html>
   );
