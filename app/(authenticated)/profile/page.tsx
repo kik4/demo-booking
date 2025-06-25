@@ -67,7 +67,13 @@ export default async function ProfilePage() {
                 生年月日
               </span>
               <p className="mt-1 text-gray-900 text-lg">
-                {profile.date_of_birth}
+                {new Date(profile.date_of_birth)
+                  .toLocaleDateString("ja-JP", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  })
+                  .replace(/(\d{4})\/(\d{2})\/(\d{2})/, "$1年$2月$3日")}
               </p>
             </div>
           </div>
