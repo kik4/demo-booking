@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId } from "react";
+import { SEX_OPTIONS } from "@/lib/constants";
 import { type RegisterFormState, registerAction } from "./actions";
 
 export default function RegisterPage() {
@@ -96,10 +97,11 @@ export default function RegisterPage() {
               <option value="" disabled>
                 性別を選択してください
               </option>
-              <option value="1">男性</option>
-              <option value="2">女性</option>
-              <option value="0">回答しない</option>
-              <option value="9">その他</option>
+              {SEX_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
             {state.errors?.sex && (
               <div className="mt-1 text-red-500 text-sm">

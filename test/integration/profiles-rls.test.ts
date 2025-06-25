@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { SEX_CODES } from "@/lib/constants";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
 import {
   cleanupTestData,
@@ -28,7 +29,7 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord = {
         name: `profile_${testId}`,
         name_hiragana: `ぷろふぃーる${testId}`,
-        sex: 1,
+        sex: SEX_CODES.MALE,
         date_of_birth: "1990-01-01",
         user_id: user.id,
       };
@@ -66,14 +67,14 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord1 = {
         name: `profile_${testId1}`,
         name_hiragana: `ぷろふぃーる${testId1}`,
-        sex: 1,
+        sex: SEX_CODES.MALE,
         date_of_birth: "1990-01-01",
         user_id: user1.id,
       };
       const profileRecord2 = {
         name: `profile_${testId2}`,
         name_hiragana: `ぷろふぃーる${testId2}`,
-        sex: 2,
+        sex: SEX_CODES.FEMALE,
         date_of_birth: "1991-02-02",
         user_id: user2.id,
       };
@@ -126,14 +127,14 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord1 = {
         name: `profile_${testId1}`,
         name_hiragana: `ぷろふぃーる${testId1}`,
-        sex: 1,
+        sex: SEX_CODES.MALE,
         date_of_birth: "1990-01-01",
         user_id: user1.id,
       };
       const profileRecord2 = {
         name: `profile_${testId2}`,
         name_hiragana: `ぷろふぃーる${testId2}`,
-        sex: 2,
+        sex: SEX_CODES.FEMALE,
         date_of_birth: "1991-02-02",
         user_id: user2.id,
       };
@@ -190,14 +191,14 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord1 = {
         name: `profile_${testId1}`,
         name_hiragana: `ぷろふぃーる${testId1}`,
-        sex: 1,
+        sex: SEX_CODES.MALE,
         date_of_birth: "1990-01-01",
         user_id: user1.id,
       };
       const profileRecord2 = {
         name: `profile_${testId2}`,
         name_hiragana: `ぷろふぃーる${testId2}`,
-        sex: 2,
+        sex: SEX_CODES.FEMALE,
         date_of_birth: "1991-02-02",
         user_id: user2.id,
       };
@@ -241,14 +242,14 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord1 = {
         name: `profile_${testId1}`,
         name_hiragana: `ぷろふぃーる${testId1}`,
-        sex: 1,
+        sex: SEX_CODES.MALE,
         date_of_birth: "1990-01-01",
         user_id: user1.id,
       };
       const profileRecord2 = {
         name: `profile_${testId2}`,
         name_hiragana: `ぷろふぃーる${testId2}`,
-        sex: 2,
+        sex: SEX_CODES.FEMALE,
         date_of_birth: "1991-02-02",
         user_id: user2.id,
       };
@@ -304,7 +305,7 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord = {
         name: `profile_${testId}`,
         name_hiragana: `ぷろふぃーる${testId}`,
-        sex: 0,
+        sex: SEX_CODES.NOT_KNOWN,
         date_of_birth: "1990-01-01",
         user_id: user.id,
         deleted_at: new Date().toISOString(),
@@ -336,7 +337,7 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord = {
         name: `profile_${testId}`,
         name_hiragana: `ぷろふぃーる${testId}`,
-        sex: 9,
+        sex: SEX_CODES.NOT_APPLICABLE,
         date_of_birth: "1990-01-01",
         user_id: user.id,
         deleted_at: new Date("2000-01-01T09:00:00Z").toISOString(),
@@ -388,7 +389,7 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecord = {
         name: `profile_${testId}`,
         name_hiragana: `ぷろふぃーる${testId}`,
-        sex: 1,
+        sex: SEX_CODES.MALE,
         date_of_birth: "1990-01-01",
         user_id: user.id,
       };
@@ -431,7 +432,7 @@ describe("Profiles RLS (Row Level Security)", () => {
       const profileRecords = users.map((user, index) => ({
         name: `profile_${testIds[index]}`,
         name_hiragana: `ぷろふぃーる${testIds[index]}`,
-        sex: index % 2 === 0 ? 1 : 2,
+        sex: index % 2 === 0 ? SEX_CODES.MALE : SEX_CODES.FEMALE,
         date_of_birth: `199${index}-01-01`,
         user_id: user.user.id,
       }));

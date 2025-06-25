@@ -1,4 +1,5 @@
 import * as v from "valibot";
+import { SEX_CODES } from "@/lib/constants";
 
 export const profileValidationSchema = v.object({
   name: v.pipe(
@@ -17,7 +18,7 @@ export const profileValidationSchema = v.object({
   sex: v.pipe(
     v.number(),
     v.integer("性別は整数で入力してください"),
-    v.picklist([0, 1, 2, 9], "性別は0, 1, 2, 9のいずれかを選択してください"),
+    v.picklist(Object.values(SEX_CODES), "性別は有効な値を選択してください"),
   ),
   dateOfBirth: v.pipe(
     v.string(),

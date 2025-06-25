@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId, useState } from "react";
 import toast from "react-hot-toast";
+import { SEX_OPTIONS } from "@/lib/constants";
 import { supabase } from "@/lib/supabaseClient";
 import { type EditProfileFormState, editProfileAction } from "./actions";
 
@@ -152,10 +153,11 @@ export default function EditProfilePage() {
                 <option value="" disabled>
                   性別を選択してください
                 </option>
-                <option value="1">男性</option>
-                <option value="2">女性</option>
-                <option value="0">回答しない</option>
-                <option value="9">その他</option>
+                {SEX_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
               {state.errors?.sex && (
                 <p className="mt-1 text-red-600 text-sm">

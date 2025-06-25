@@ -1,5 +1,6 @@
 import "./utils/envConfig";
 import { createClient } from "@supabase/supabase-js";
+import { SEX_CODES } from "@/lib/constants";
 import type { Database } from "@/types/database.types";
 
 const supabaseClient = createClient<Database>(
@@ -71,7 +72,7 @@ console.log("Database reset completed. Inserting sample data...");
   const resProfile = await supabaseClient.from("profiles").insert({
     name: "テスト太郎",
     name_hiragana: "てすとたろう",
-    sex: 1,
+    sex: SEX_CODES.MALE,
     date_of_birth: "1990-01-01",
     user_id: user.data.user.id,
   });
