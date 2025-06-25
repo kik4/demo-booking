@@ -68,16 +68,26 @@ export default function HomePage() {
             <div className="neumorphism-card-purple p-6">
               <h3 className="mb-2 font-semibold text-xl">プロフィール</h3>
               <p className="mb-4 text-purple-100">
-                アカウント情報を管理できます
+                プロフィール情報の確認・編集ができます
               </p>
               <button
                 type="button"
-                onClick={() => router.push("/profile/edit")}
+                onClick={() => router.push("/profile")}
                 className="neumorphism-button-glass"
               >
-                設定
+                プロフィール
               </button>
             </div>
+          </div>
+
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={() => router.push("/profile/delete")}
+              className="neumorphism-button-danger px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+            >
+              アカウント削除
+            </button>
           </div>
         </div>
       </div>

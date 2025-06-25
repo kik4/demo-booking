@@ -204,7 +204,7 @@ export default function EditProfilePage() {
               </button>
               <button
                 type="button"
-                onClick={() => router.push("/home")}
+                onClick={() => router.push("/profile")}
                 disabled={pending}
                 className="neumorphism-button-secondary flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
               >
