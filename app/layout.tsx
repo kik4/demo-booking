@@ -35,6 +35,19 @@ export default function RootLayout({
         )}
       >
         {children}
+        <footer className="fixed right-0 bottom-0 left-0 z-50 py-2 text-center">
+          <p className="text-gray-500 text-xs">
+            ©{" "}
+            <a
+              href="https://kik4.work/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-gray-700"
+            >
+              kik4
+            </a>
+          </p>
+        </footer>
         <Toaster position="top-right" />
       </body>
     </html>
