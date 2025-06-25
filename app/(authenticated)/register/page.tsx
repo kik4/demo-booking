@@ -20,7 +20,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
+      <div className="neumorphism-card w-full max-w-md p-8">
         <h1 className="mb-6 text-center font-bold text-2xl text-gray-900">
           新規登録
         </h1>
@@ -37,7 +37,7 @@ export default function RegisterPage() {
               type="text"
               id={nameId}
               name="name"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="お名前を入力してください"
               maxLength={100}
               disabled={isPending}
@@ -52,7 +52,7 @@ export default function RegisterPage() {
           </div>
 
           {state.errors?._form && (
-            <div className="rounded-md bg-red-50 p-3 text-red-500 text-sm">
+            <div className="neumorphism-input rounded-md bg-red-100 p-3 text-red-500 text-sm">
               {state.errors._form.map((error, _index) => (
                 <div key={error}>{error}</div>
               ))}
@@ -62,7 +62,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full rounded-md bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="neumorphism-button-primary w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isPending ? "登録中..." : "登録"}
           </button>

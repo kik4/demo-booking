@@ -70,7 +70,7 @@ export default function EditProfilePage() {
   return (
     <div className="py-12">
       <div className="mx-auto max-w-md">
-        <div className="rounded-lg bg-white p-8 shadow-lg">
+        <div className="neumorphism-card p-8">
           <h1 className="mb-6 text-center font-bold text-2xl text-gray-900">
             プロフィール編集
           </h1>
@@ -88,7 +88,7 @@ export default function EditProfilePage() {
                 id={nameInputId}
                 name="name"
                 defaultValue={currentName}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="名前を入力してください"
                 disabled={pending}
               />
@@ -100,7 +100,7 @@ export default function EditProfilePage() {
             </div>
 
             {state.errors?._form && (
-              <div className="rounded-md bg-red-50 p-4">
+              <div className="neumorphism-input rounded-md bg-red-100 p-4">
                 <p className="text-red-800 text-sm">{state.errors._form[0]}</p>
               </div>
             )}
@@ -109,7 +109,7 @@ export default function EditProfilePage() {
               <button
                 type="submit"
                 disabled={pending}
-                className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                className="neumorphism-button-primary flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
               >
                 {pending ? "更新中..." : "更新"}
               </button>
@@ -117,7 +117,7 @@ export default function EditProfilePage() {
                 type="button"
                 onClick={() => router.push("/home")}
                 disabled={pending}
-                className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                className="neumorphism-button-secondary flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
               >
                 キャンセル
               </button>

@@ -22,12 +22,12 @@ export default function HomePage() {
   return (
     <div className="pt-24 pb-8">
       <div className="mx-auto max-w-4xl">
-        <div className="rounded-3xl bg-white p-8 shadow-xl">
+        <div className="neumorphism-raised p-8">
           <div className="mb-4 flex justify-end">
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-gray-600 text-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+              className="neumorphism-button-secondary px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
             >
               ログアウト
             </button>
@@ -43,31 +43,25 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white shadow-lg">
+            <div className="neumorphism-card-blue p-6">
               <h3 className="mb-2 font-semibold text-xl">予約管理</h3>
               <p className="mb-4 text-blue-100">
                 予約の確認・変更・キャンセルができます
               </p>
-              <button
-                type="button"
-                className="rounded-lg bg-white/20 px-4 py-2 font-medium backdrop-blur-sm transition-all hover:bg-white/30"
-              >
+              <button type="button" className="neumorphism-button-glass">
                 予約を見る
               </button>
             </div>
 
-            <div className="rounded-2xl bg-gradient-to-r from-green-500 to-green-600 p-6 text-white shadow-lg">
+            <div className="neumorphism-card-green p-6">
               <h3 className="mb-2 font-semibold text-xl">新規予約</h3>
               <p className="mb-4 text-green-100">新しい予約を作成できます</p>
-              <button
-                type="button"
-                className="rounded-lg bg-white/20 px-4 py-2 font-medium backdrop-blur-sm transition-all hover:bg-white/30"
-              >
+              <button type="button" className="neumorphism-button-glass">
                 予約する
               </button>
             </div>
 
-            <div className="rounded-2xl bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white shadow-lg">
+            <div className="neumorphism-card-purple p-6">
               <h3 className="mb-2 font-semibold text-xl">プロフィール</h3>
               <p className="mb-4 text-purple-100">
                 アカウント情報を管理できます
@@ -75,7 +69,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => router.push("/profile/edit")}
-                className="rounded-lg bg-white/20 px-4 py-2 font-medium backdrop-blur-sm transition-all hover:bg-white/30"
+                className="neumorphism-button-glass"
               >
                 設定
               </button>

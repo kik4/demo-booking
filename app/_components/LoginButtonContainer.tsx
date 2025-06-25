@@ -23,7 +23,7 @@ export function LoginButtonContainer() {
       <button
         type="button"
         onClick={() => handleOAuthLogin("google")}
-        className="flex w-full max-w-xs items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="neumorphism-button-secondary flex w-full max-w-xs items-center justify-center gap-3 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         <svg
           className="h-5 w-5"
@@ -54,7 +54,7 @@ export function LoginButtonContainer() {
       <button
         type="button"
         onClick={() => handleOAuthLogin("github")}
-        className="flex w-full max-w-xs items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="neumorphism-button-secondary flex w-full max-w-xs items-center justify-center gap-3 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         <svg
           className="h-5 w-5"
@@ -71,7 +71,7 @@ export function LoginButtonContainer() {
       <button
         type="button"
         onClick={() => handleOAuthLogin("twitter")}
-        className="flex w-full max-w-xs items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="neumorphism-button-secondary flex w-full max-w-xs items-center justify-center gap-3 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         <svg
           className="h-5 w-5"

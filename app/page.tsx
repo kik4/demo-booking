@@ -18,7 +18,7 @@ export default function Page() {
 
       {/* Main content */}
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white/95 p-8 shadow-2xl backdrop-blur-sm">
+        <div className="neumorphism-raised w-full max-w-md border-0 p-8">
           <h1 className="mb-8 text-center font-bold text-3xl text-gray-800 tracking-tight">
             デモ予約システム
           </h1>

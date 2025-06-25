@@ -25,14 +25,14 @@ export function DevLoginButtonContainer() {
       <button
         type="button"
         onClick={() => handleDevLogin("user")}
-        className="rounded bg-green-500 px-4 py-2 text-white"
+        className="neumorphism-pressed px-6 py-3 text-gray-700"
       >
         登録ユーザーでログイン
       </button>
       <button
         type="button"
         onClick={() => handleDevLogin("new")}
-        className="rounded bg-blue-500 px-4 py-2 text-white"
+        className="neumorphism-pressed px-6 py-3 text-gray-700"
       >
         未登録ユーザーでログイン
       </button>
