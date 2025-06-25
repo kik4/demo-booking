@@ -37,14 +37,14 @@ export default async function ProfilePage() {
               <span className="block font-medium text-gray-700 text-sm">
                 名前
               </span>
-              <p className="mt-1 text-gray-900 text-sm">{profile.name}</p>
+              <p className="mt-1 text-gray-900 text-lg">{profile.name}</p>
             </div>
 
             <div>
               <span className="block font-medium text-gray-700 text-sm">
                 ひらがな
               </span>
-              <p className="mt-1 text-gray-900 text-sm">
+              <p className="mt-1 text-gray-900 text-lg">
                 {profile.name_hiragana}
               </p>
             </div>
@@ -53,7 +53,7 @@ export default async function ProfilePage() {
               <span className="block font-medium text-gray-700 text-sm">
                 性別
               </span>
-              <p className="mt-1 text-gray-900 text-sm">
+              <p className="mt-1 text-gray-900 text-lg">
                 {profile.sex === 1
                   ? "男性"
                   : profile.sex === 2
@@ -66,7 +66,7 @@ export default async function ProfilePage() {
               <span className="block font-medium text-gray-700 text-sm">
                 生年月日
               </span>
-              <p className="mt-1 text-gray-900 text-sm">
+              <p className="mt-1 text-gray-900 text-lg">
                 {profile.date_of_birth}
               </p>
             </div>
