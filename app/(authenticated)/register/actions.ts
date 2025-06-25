@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabaseClientServer";
+import { validateProfile } from "@/lib/validation";
 
 export interface RegisterFormState {
   errors?: {
@@ -16,19 +17,10 @@ export async function registerAction(
 ): Promise<RegisterFormState> {
   const name = formData.get("name") as string;
 
-  // サーバーサイドバリデーション
-  const errors: RegisterFormState["errors"] = {};
+  const validation = validateProfile({ name });
 
-  if (!name || !name.trim()) {
-    errors.name = ["名前は必須項目です"];
-  } else if (name.length > 100) {
-    errors.name = ["名前は100文字以内で入力してください"];
-  } else if (name.trim().length < 2) {
-    errors.name = ["名前は2文字以上で入力してください"];
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { errors };
+  if (!validation.success) {
+    return { errors: validation.errors };
   }
 
   try {
@@ -50,7 +42,7 @@ export async function registerAction(
     // プロフィールを作成
     const { error: insertError } = await supabase.from("profiles").insert({
       user_id: user.id,
-      name: name.trim(),
+      name: validation.data.name,
     });
 
     if (insertError) {
