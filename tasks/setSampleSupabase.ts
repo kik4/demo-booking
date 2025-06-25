@@ -48,6 +48,32 @@ for (const user of existingUsers.users) {
 
 console.log("Database reset completed. Inserting sample data...");
 
+// 管理者ユーザー
+{
+  const user = await supabaseClient.auth.admin.createUser({
+    email: "admin@example.com",
+    password: "password",
+    email_confirm: true,
+  });
+  if (user.error) {
+    console.error(user);
+    throw user.error;
+  }
+
+  const resProfile = await supabaseClient.from("profiles").insert({
+    name: "管理者",
+    name_hiragana: "かんりしゃ",
+    sex: SEX_CODES.NOT_KNOWN,
+    date_of_birth: "1990-01-01",
+    user_id: user.data.user.id,
+    role: "admin",
+  });
+  if (resProfile.error) {
+    console.error(resProfile);
+    throw resProfile.error;
+  }
+}
+
 // user 登録だけのユーザー
 {
   const user = await supabaseClient.auth.admin.createUser({
@@ -79,32 +105,6 @@ console.log("Database reset completed. Inserting sample data...");
     sex: SEX_CODES.MALE,
     date_of_birth: "1990-01-01",
     user_id: user.data.user.id,
-  });
-  if (resProfile.error) {
-    console.error(resProfile);
-    throw resProfile.error;
-  }
-}
-
-// 管理者ユーザー
-{
-  const user = await supabaseClient.auth.admin.createUser({
-    email: "admin@example.com",
-    password: "password",
-    email_confirm: true,
-  });
-  if (user.error) {
-    console.error(user);
-    throw user.error;
-  }
-
-  const resProfile = await supabaseClient.from("profiles").insert({
-    name: "管理者",
-    name_hiragana: "かんりしゃ",
-    sex: SEX_CODES.NOT_KNOWN,
-    date_of_birth: "1990-01-01",
-    user_id: user.data.user.id,
-    role: "admin",
   });
   if (resProfile.error) {
     console.error(resProfile);
