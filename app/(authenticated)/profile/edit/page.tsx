@@ -61,7 +61,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (state.success) {
-      router.push("/home");
+      router.push("/profile");
       toast.success("プロフィールを更新しました", {
         className: "neumorphism-toast-success",
       });
