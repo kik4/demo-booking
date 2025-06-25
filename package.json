@@ -19,6 +19,7 @@
     "supabase:reset": "supabase db reset",
     "supabase:diff": "supabase db diff",
     "supabase:type": "supabase gen types typescript --local > types/database.types.ts",
+    "supabase:test": "pnpm supabase test db",
     "supabase:sample": "tsx ./tasks/setSampleSupabase.ts "
   },
   "dependencies": {
