@@ -47,9 +47,19 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <div className="neumorphism-card-blue p-6">
+            <div className="neumorphism-card-green flex flex-col p-6">
+              <h3 className="mb-2 font-semibold text-xl">新規予約</h3>
+              <p className="mb-4 flex-grow text-green-100">
+                新しい予約を登録できます
+              </p>
+              <button type="button" className="neumorphism-button-glass">
+                予約する
+              </button>
+            </div>
+
+            <div className="neumorphism-card-blue flex flex-col p-6">
               <h3 className="mb-2 font-semibold text-xl">予約管理</h3>
-              <p className="mb-4 text-blue-100">
+              <p className="mb-4 flex-grow text-blue-100">
                 予約の確認・変更・キャンセルができます
               </p>
               <button type="button" className="neumorphism-button-glass">
@@ -57,17 +67,9 @@ export default function HomePage() {
               </button>
             </div>
 
-            <div className="neumorphism-card-green p-6">
-              <h3 className="mb-2 font-semibold text-xl">新規予約</h3>
-              <p className="mb-4 text-green-100">新しい予約が登録できます</p>
-              <button type="button" className="neumorphism-button-glass">
-                予約する
-              </button>
-            </div>
-
-            <div className="neumorphism-card-purple p-6">
+            <div className="neumorphism-card-purple flex flex-col p-6">
               <h3 className="mb-2 font-semibold text-xl">プロフィール</h3>
-              <p className="mb-4 text-purple-100">
+              <p className="mb-4 flex-grow text-purple-100">
                 プロフィール情報の確認・編集ができます
               </p>
               <button
@@ -75,7 +77,7 @@ export default function HomePage() {
                 onClick={() => router.push("/profile")}
                 className="neumorphism-button-glass"
               >
-                プロフィール
+                確認・編集
               </button>
             </div>
           </div>
