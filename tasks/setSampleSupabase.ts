@@ -68,9 +68,13 @@ console.log("Database reset completed. Inserting sample data...");
     throw user.error;
   }
 
-  const resProfile = await supabaseClient
-    .from("profiles")
-    .insert({ name: "テスト太郎", user_id: user.data.user.id });
+  const resProfile = await supabaseClient.from("profiles").insert({
+    name: "テスト太郎",
+    name_hiragana: "てすとたろう",
+    sex: 1,
+    date_of_birth: "1990-01-01",
+    user_id: user.data.user.id,
+  });
   if (resProfile.error) {
     console.error(resProfile);
     throw resProfile.error;

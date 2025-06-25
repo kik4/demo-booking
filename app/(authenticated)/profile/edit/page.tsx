@@ -8,9 +8,15 @@ import { type EditProfileFormState, editProfileAction } from "./actions";
 
 export default function EditProfilePage() {
   const [currentName, setCurrentName] = useState("");
+  const [currentNameHiragana, setCurrentNameHiragana] = useState("");
+  const [currentSex, setCurrentSex] = useState<number | null>(null);
+  const [currentDateOfBirth, setCurrentDateOfBirth] = useState("");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const nameInputId = useId();
+  const nameHiraganaInputId = useId();
+  const sexInputId = useId();
+  const dateOfBirthInputId = useId();
 
   const [state, formAction, pending] = useActionState<
     EditProfileFormState,
@@ -31,13 +37,16 @@ export default function EditProfilePage() {
 
         const { data } = await supabase
           .from("profiles")
-          .select("name")
+          .select("name, name_hiragana, sex, date_of_birth")
           .eq("user_id", user.id)
           .is("deleted_at", null)
           .single();
 
         if (data) {
           setCurrentName(data.name);
+          setCurrentNameHiragana(data.name_hiragana);
+          setCurrentSex(data.sex);
+          setCurrentDateOfBirth(data.date_of_birth);
         }
       } catch (error) {
         console.error("プロフィール取得エラー:", error);
@@ -83,7 +92,7 @@ export default function EditProfilePage() {
                 htmlFor={nameInputId}
                 className="block font-medium text-gray-700 text-sm"
               >
-                名前
+                お名前 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -91,12 +100,88 @@ export default function EditProfilePage() {
                 name="name"
                 defaultValue={currentName}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="名前を入力してください"
+                placeholder="お名前を入力してください"
                 disabled={pending}
+                maxLength={100}
               />
               {state.errors?.name && (
                 <p className="mt-1 text-red-600 text-sm">
                   {state.errors.name[0]}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor={nameHiraganaInputId}
+                className="block font-medium text-gray-700 text-sm"
+              >
+                お名前（ひらがな） <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id={nameHiraganaInputId}
+                name="nameHiragana"
+                defaultValue={currentNameHiragana}
+                className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="おなまえをひらがなでにゅうりょくしてください"
+                disabled={pending}
+                maxLength={100}
+              />
+              {state.errors?.nameHiragana && (
+                <p className="mt-1 text-red-600 text-sm">
+                  {state.errors.nameHiragana[0]}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor={sexInputId}
+                className="block font-medium text-gray-700 text-sm"
+              >
+                性別 <span className="text-red-500">*</span>
+              </label>
+              <select
+                id={sexInputId}
+                name="sex"
+                defaultValue={currentSex?.toString() || ""}
+                className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                disabled={pending}
+              >
+                <option value="" disabled>
+                  性別を選択してください
+                </option>
+                <option value="1">男性</option>
+                <option value="2">女性</option>
+                <option value="0">回答しない</option>
+                <option value="9">その他</option>
+              </select>
+              {state.errors?.sex && (
+                <p className="mt-1 text-red-600 text-sm">
+                  {state.errors.sex[0]}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor={dateOfBirthInputId}
+                className="block font-medium text-gray-700 text-sm"
+              >
+                生年月日 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id={dateOfBirthInputId}
+                name="dateOfBirth"
+                defaultValue={currentDateOfBirth}
+                className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                disabled={pending}
+              />
+              {state.errors?.dateOfBirth && (
+                <p className="mt-1 text-red-600 text-sm">
+                  {state.errors.dateOfBirth[0]}
                 </p>
               )}
             </div>

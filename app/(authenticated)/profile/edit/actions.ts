@@ -6,6 +6,9 @@ import { validateProfile } from "@/lib/validation";
 export interface EditProfileFormState {
   errors?: {
     name?: string[];
+    nameHiragana?: string[];
+    sex?: string[];
+    dateOfBirth?: string[];
     _form?: string[];
   };
   success?: boolean;
@@ -16,8 +19,16 @@ export async function editProfileAction(
   formData: FormData,
 ): Promise<EditProfileFormState> {
   const name = formData.get("name") as string;
+  const nameHiragana = formData.get("nameHiragana") as string;
+  const sex = formData.get("sex") as string;
+  const dateOfBirth = formData.get("dateOfBirth") as string;
 
-  const validation = validateProfile({ name });
+  const validation = validateProfile({
+    name,
+    nameHiragana,
+    sex: sex ? Number.parseInt(sex, 10) : undefined,
+    dateOfBirth,
+  });
 
   if (!validation.success) {
     return { errors: validation.errors };
@@ -44,6 +55,9 @@ export async function editProfileAction(
       .from("profiles")
       .update({
         name: validation.data.name,
+        name_hiragana: validation.data.nameHiragana,
+        sex: validation.data.sex,
+        date_of_birth: validation.data.dateOfBirth,
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", user.id)

@@ -7,6 +7,27 @@ export const profileValidationSchema = v.object({
     v.minLength(2, "名前は2文字以上で入力してください"),
     v.maxLength(100, "名前は100文字以内で入力してください"),
   ),
+  nameHiragana: v.pipe(
+    v.string(),
+    v.trim(),
+    v.minLength(2, "ひらがな名前は2文字以上で入力してください"),
+    v.maxLength(100, "ひらがな名前は100文字以内で入力してください"),
+    v.regex(/^[ひらがな\u3040-\u309F\u30FC\s]+$/, "ひらがなで入力してください"),
+  ),
+  sex: v.pipe(
+    v.number(),
+    v.integer("性別は整数で入力してください"),
+    v.picklist([0, 1, 2, 9], "性別は0, 1, 2, 9のいずれかを選択してください"),
+  ),
+  dateOfBirth: v.pipe(
+    v.string(),
+    v.trim(),
+    v.isoDate("生年月日は正しい日付形式で入力してください"),
+    v.maxValue(
+      new Date().toISOString().split("T")[0],
+      "生年月日は今日以前の日付を入力してください",
+    ),
+  ),
 });
 
 export type ProfileValidationInput = v.InferInput<

@@ -10,6 +10,9 @@ export default function RegisterPage() {
     FormData
   >(registerAction, {});
   const nameId = useId();
+  const nameHiraganaId = useId();
+  const sexId = useId();
+  const dateOfBirthId = useId();
   const router = useRouter();
 
   useEffect(() => {
@@ -45,6 +48,85 @@ export default function RegisterPage() {
             {state.errors?.name && (
               <div className="mt-1 text-red-500 text-sm">
                 {state.errors.name.map((error, _index) => (
+                  <div key={error}>{error}</div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor={nameHiraganaId}
+              className="mb-2 block font-medium text-gray-700 text-sm"
+            >
+              お名前（ひらがな） <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id={nameHiraganaId}
+              name="nameHiragana"
+              className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="おなまえをひらがなでにゅうりょくしてください"
+              maxLength={100}
+              disabled={isPending}
+            />
+            {state.errors?.nameHiragana && (
+              <div className="mt-1 text-red-500 text-sm">
+                {state.errors.nameHiragana.map((error, _index) => (
+                  <div key={error}>{error}</div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor={sexId}
+              className="mb-2 block font-medium text-gray-700 text-sm"
+            >
+              性別 <span className="text-red-500">*</span>
+            </label>
+            <select
+              id={sexId}
+              name="sex"
+              className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isPending}
+              defaultValue=""
+            >
+              <option value="" disabled>
+                性別を選択してください
+              </option>
+              <option value="1">男性</option>
+              <option value="2">女性</option>
+              <option value="0">回答しない</option>
+              <option value="9">その他</option>
+            </select>
+            {state.errors?.sex && (
+              <div className="mt-1 text-red-500 text-sm">
+                {state.errors.sex.map((error, _index) => (
+                  <div key={error}>{error}</div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor={dateOfBirthId}
+              className="mb-2 block font-medium text-gray-700 text-sm"
+            >
+              生年月日 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              id={dateOfBirthId}
+              name="dateOfBirth"
+              className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isPending}
+            />
+            {state.errors?.dateOfBirth && (
+              <div className="mt-1 text-red-500 text-sm">
+                {state.errors.dateOfBirth.map((error, _index) => (
                   <div key={error}>{error}</div>
                 ))}
               </div>
