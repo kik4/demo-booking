@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Toaster } from "react-hot-toast";
 
 interface AuthenticatedLayoutProps {
   children: ReactNode;
@@ -18,6 +19,7 @@ export default function AuthenticatedLayout({
         }}
       />
       <div className="container relative z-10 mx-auto px-4">{children}</div>
+      <Toaster position="top-right" />
     </div>
   );
 }

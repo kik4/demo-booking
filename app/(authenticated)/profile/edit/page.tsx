@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId, useState } from "react";
+import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabaseClient";
 import { type EditProfileFormState, editProfileAction } from "./actions";
 
@@ -50,6 +51,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (state.success) {
+      toast.success("プロフィールを更新しました");
       router.push("/home");
     }
   }, [state.success, router]);
