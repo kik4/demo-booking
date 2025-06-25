@@ -34,11 +34,15 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 認証が必要なルートの保護
-  if (
+  // ルート判定
+  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
+  const isUserRoute =
     request.nextUrl.pathname.startsWith("/home") ||
-    request.nextUrl.pathname.startsWith("/register")
-  ) {
+    request.nextUrl.pathname.startsWith("/profile");
+  const isRegisterRoute = request.nextUrl.pathname.startsWith("/register");
+
+  // 認証が必要なルートの保護
+  if (isUserRoute || isRegisterRoute || isAdminRoute) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
@@ -46,11 +50,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // /homeアクセス時のprofileレコード存在チェック
-  if (request.nextUrl.pathname.startsWith("/home") && user) {
+  // 各ルートのprofileチェック
+  if ((isUserRoute || isAdminRoute) && user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id")
+      .select("id, role")
       .eq("user_id", user.id)
       .is("deleted_at", null)
       .single();
@@ -58,6 +62,22 @@ export async function middleware(request: NextRequest) {
     if (!profile) {
       const url = request.nextUrl.clone();
       url.pathname = "/register";
+      return NextResponse.redirect(url);
+    }
+
+    const isAdmin = profile.role === "admin";
+
+    // 管理者ユーザーが一般ユーザー向けページにアクセス
+    if (isAdmin && isUserRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      return NextResponse.redirect(url);
+    }
+
+    // 一般ユーザーが管理者ページにアクセス
+    if (!isAdmin && isAdminRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/home";
       return NextResponse.redirect(url);
     }
   }

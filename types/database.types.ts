@@ -42,6 +42,7 @@ export type Database = {
           id: number;
           name: string;
           name_hiragana: string;
+          role: string;
           sex: number;
           updated_at: string;
           user_id: string;
@@ -53,6 +54,7 @@ export type Database = {
           id?: number;
           name: string;
           name_hiragana: string;
+          role?: string;
           sex: number;
           updated_at?: string;
           user_id?: string;
@@ -64,6 +66,7 @@ export type Database = {
           id?: number;
           name?: string;
           name_hiragana?: string;
+          role?: string;
           sex?: number;
           updated_at?: string;
           user_id?: string;

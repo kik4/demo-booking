@@ -31,7 +31,11 @@ if (listError) {
 }
 
 for (const user of existingUsers.users) {
-  if (user.email === "new@example.com" || user.email === "user@example.com") {
+  if (
+    user.email === "new@example.com" ||
+    user.email === "user@example.com" ||
+    user.email === "admin@example.com"
+  ) {
     const { error: deleteError } = await supabaseClient.auth.admin.deleteUser(
       user.id,
     );
@@ -75,6 +79,32 @@ console.log("Database reset completed. Inserting sample data...");
     sex: SEX_CODES.MALE,
     date_of_birth: "1990-01-01",
     user_id: user.data.user.id,
+  });
+  if (resProfile.error) {
+    console.error(resProfile);
+    throw resProfile.error;
+  }
+}
+
+// 管理者ユーザー
+{
+  const user = await supabaseClient.auth.admin.createUser({
+    email: "admin@example.com",
+    password: "password",
+    email_confirm: true,
+  });
+  if (user.error) {
+    console.error(user);
+    throw user.error;
+  }
+
+  const resProfile = await supabaseClient.from("profiles").insert({
+    name: "管理者",
+    name_hiragana: "かんりしゃ",
+    sex: SEX_CODES.NOT_KNOWN,
+    date_of_birth: "1990-01-01",
+    user_id: user.data.user.id,
+    role: "admin",
   });
   if (resProfile.error) {
     console.error(resProfile);
