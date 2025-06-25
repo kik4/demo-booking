@@ -61,12 +61,17 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (state.success) {
+      router.push("/home");
       toast.success("プロフィールを更新しました", {
         className: "neumorphism-toast-success",
       });
-      router.push("/home");
     }
   }, [state.success, router]);
+
+  // 成功時は早期リターンしてフォームを表示しない
+  if (state.success) {
+    return null;
+  }
 
   if (loading) {
     return (
