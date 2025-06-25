@@ -71,6 +71,7 @@ export default function HomePage() {
               </p>
               <button
                 type="button"
+                onClick={() => router.push("/profile/edit")}
                 className="rounded-lg bg-white/20 px-4 py-2 font-medium backdrop-blur-sm transition-all hover:bg-white/30"
               >
                 設定
