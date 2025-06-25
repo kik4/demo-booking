@@ -81,3 +81,26 @@ button:not(:disabled):hover {
     @apply bg-white/30 shadow-[1px_1px_2px_rgba(0,0,0,0.1),-1px_-1px_2px_rgba(255,255,255,0.3)];
   }
 }
+
+/* Toast neumorphism styling */
+.neumorphism-toast-success {
+  background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
+  box-shadow:
+    6px 6px 12px rgba(0, 0, 0, 0.15),
+    -6px -6px 12px rgba(255, 255, 255, 0.7) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: #065f46 !important;
+  font-weight: 500 !important;
+}
+
+.neumorphism-toast-error {
+  background: linear-gradient(145deg, #fee2e2, #fecaca) !important;
+  box-shadow:
+    6px 6px 12px rgba(0, 0, 0, 0.15),
+    -6px -6px 12px rgba(255, 255, 255, 0.7) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: #7f1d1d !important;
+  font-weight: 500 !important;
+}
