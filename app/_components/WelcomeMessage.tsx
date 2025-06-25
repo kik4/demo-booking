@@ -5,7 +5,7 @@ import { supabase } from "../../lib/supabaseClient";
 
 export function WelcomeMessage() {
   const [profileName, setProfileName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -15,7 +15,7 @@ export function WelcomeMessage() {
         } = await supabase.auth.getUser();
 
         if (!user) {
-          setLoading(false);
+          setIsLoaded(true);
           return;
         }
 
@@ -32,19 +32,19 @@ export function WelcomeMessage() {
       } catch (_err) {
         // エラーは無視して、名前なしで表示
       } finally {
-        setLoading(false);
+        setIsLoaded(true);
       }
     }
 
     fetchProfile();
   }, []);
 
-  if (loading) {
-    return <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />;
-  }
-
   return (
-    <p className="font-semibold text-gray-700 text-lg">
+    <p
+      className={`font-semibold text-gray-700 text-lg transition-opacity duration-500 ${
+        isLoaded ? "opacity-100" : "opacity-0"
+      }`}
+    >
       {profileName ? `${profileName}さん、ようこそ` : "ようこそ"}
     </p>
   );
