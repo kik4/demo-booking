@@ -2,7 +2,7 @@
 -- プロフィールのRLS（行レベルセキュリティ）機能の包括的なpgTAPテスト
 
 BEGIN;
-SELECT plan(26);
+SELECT plan(33);
 
 -- テスト用のユーザーIDを作成（実際のUUID形式）
 INSERT INTO auth.users (
@@ -53,6 +53,20 @@ INSERT INTO auth.users (
     'authenticated',
     'authenticated',
     'test3@example.com',
+    crypt('testpassword123', gen_salt('bf')),
+    NOW(),
+    NOW(),
+    NOW(),
+    '',
+    '',
+    '',
+    ''
+), (
+    '550e8400-e29b-41d4-a716-446655440004'::uuid,
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'testadmin@example.com',
     crypt('testpassword123', gen_salt('bf')),
     NOW(),
     NOW(),
@@ -412,6 +426,93 @@ SELECT is(
 );
 
 -- =============================================================================
+-- Adminユーザーのアクセステスト
+-- =============================================================================
+
+-- adminユーザーのプロフィールを作成（サービスロール）
+RESET role;
+INSERT INTO profiles (
+    user_id,
+    name,
+    name_hiragana,
+    sex,
+    date_of_birth,
+    role
+) VALUES (
+    '550e8400-e29b-41d4-a716-446655440004'::uuid,
+    'admin_user',
+    'あどみんゆーざー',
+    1,
+    '1985-01-01',
+    'admin'
+);
+
+-- テスト26: adminユーザーは全てのユーザーのプロフィールを閲覧できる
+SET LOCAL role authenticated;
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440004", "role": "authenticated"}';
+
+SELECT is(
+    (SELECT COUNT(*)::int FROM profiles WHERE deleted_at IS NULL),
+    3,
+    'adminユーザーは全てのユーザーのプロフィールを閲覧できる'
+);
+
+-- テスト27: adminユーザーは他のユーザーの具体的なデータを参照できる
+SELECT ok(
+    EXISTS(
+        SELECT 1 FROM profiles 
+        WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid 
+        AND name = 'テスト一郎'
+    ),
+    'adminユーザーは他のユーザーの具体的なデータを参照できる'
+);
+
+-- テスト28: adminユーザーは削除されたプロフィールも見える（管理者権限）
+SELECT is(
+    (SELECT COUNT(*)::int FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440003'::uuid),
+    1,
+    'adminユーザーは削除されたプロフィールも見える（管理者権限）'
+);
+
+-- テスト29: 通常のユーザーはadminのプロフィールも含めて自分のもの以外は見えない
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440001", "role": "authenticated"}';
+
+SELECT is(
+    (SELECT COUNT(*)::int FROM profiles),
+    1,
+    '通常のユーザーはadminのプロフィールも含めて自分のもの以外は見えない'
+);
+
+-- テスト30: is_admin_user()関数が正しく動作することを確認
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440004", "role": "authenticated"}';
+
+SELECT ok(
+    is_admin_user(),
+    'is_admin_user()関数がadminユーザーに対してtrueを返す'
+);
+
+-- テスト31: is_admin_user()関数が通常ユーザーに対してfalseを返すことを確認
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440001", "role": "authenticated"}';
+
+SELECT ok(
+    NOT is_admin_user(),
+    'is_admin_user()関数が通常ユーザーに対してfalseを返す'
+);
+
+-- テスト32: adminユーザーが自分のプロフィールも正常に閲覧できることを確認
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440004", "role": "authenticated"}';
+
+SELECT ok(
+    EXISTS(
+        SELECT 1 FROM profiles 
+        WHERE user_id = '550e8400-e29b-41d4-a716-446655440004'::uuid 
+        AND name = 'admin_user'
+        AND role = 'admin'
+    ),
+    'adminユーザーが自分のプロフィールも正常に閲覧できる'
+);
+
+-- =============================================================================
 -- クリーンアップ
 -- =============================================================================
 
@@ -420,13 +521,15 @@ RESET role;
 DELETE FROM profiles WHERE user_id IN (
     '550e8400-e29b-41d4-a716-446655440001'::uuid, 
     '550e8400-e29b-41d4-a716-446655440002'::uuid,
-    '550e8400-e29b-41d4-a716-446655440003'::uuid
+    '550e8400-e29b-41d4-a716-446655440003'::uuid,
+    '550e8400-e29b-41d4-a716-446655440004'::uuid
 );
 
 DELETE FROM auth.users WHERE id IN (
     '550e8400-e29b-41d4-a716-446655440001'::uuid, 
     '550e8400-e29b-41d4-a716-446655440002'::uuid,
-    '550e8400-e29b-41d4-a716-446655440003'::uuid
+    '550e8400-e29b-41d4-a716-446655440003'::uuid,
+    '550e8400-e29b-41d4-a716-446655440004'::uuid
 );
 
 SELECT finish();
