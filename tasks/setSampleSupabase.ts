@@ -64,7 +64,7 @@ console.log("Database reset completed. Inserting sample data...");
     name: "管理者",
     name_hiragana: "かんりしゃ",
     sex: SEX_CODES.NOT_KNOWN,
-    date_of_birth: "1990-01-01",
+    date_of_birth: "1991-12-31",
     user_id: user.data.user.id,
     role: "admin",
   });
