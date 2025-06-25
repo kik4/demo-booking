@@ -1,17 +1,42 @@
-import UserInfo from "./_components/UserInfo";
+"use client";
 
-export default async function HomePage() {
+import { useRouter } from "next/navigation";
+import { WelcomeMessage } from "@/app/_components/WelcomeMessage";
+import { supabase } from "@/lib/supabaseClient";
+
+export default function HomePage() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Logout error:", error);
+    } else {
+      router.push("/");
+    }
+  };
+
   return (
     <div className="pt-24 pb-8">
       <div className="mx-auto max-w-4xl">
         <div className="rounded-3xl bg-white p-8 shadow-xl">
-          <div className="mb-8 text-center">
-            <h1 className="mb-4 font-bold text-4xl text-gray-800">ホーム</h1>
-            <p className="text-gray-600">予約システムへようこそ</p>
+          <div className="mb-4 flex justify-end">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-gray-300 bg-transparent px-3 py-1 text-gray-600 text-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+            >
+              ログアウト
+            </button>
           </div>
-
-          <div className="mb-8">
-            <UserInfo />
+          <div className="mb-8 text-center">
+            <h1 className="mb-4 font-bold text-4xl text-gray-800">
+              デモ予約システム
+            </h1>
+            <WelcomeMessage />
+            <p className="mt-2 text-gray-600">
+              予約の作成・確認・変更・キャンセルが行えます
+            </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
