@@ -2,7 +2,7 @@
 -- プロフィールのRLS（行レベルセキュリティ）機能の包括的なpgTAPテスト
 
 BEGIN;
-SELECT plan(33);
+SELECT plan(42);
 
 -- テスト用のユーザーIDを作成（実際のUUID形式）
 INSERT INTO auth.users (
@@ -510,6 +510,84 @@ SELECT ok(
         AND role = 'admin'
     ),
     'adminユーザーが自分のプロフィールも正常に閲覧できる'
+);
+
+-- =============================================================================
+-- 追加のソフトデリートテスト（profile_soft_delete.test.sqlから統合）
+-- =============================================================================
+
+-- テスト33: deleted_atが初期状態でNULLであることを確認
+SELECT is(
+    (SELECT deleted_at FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid),
+    NULL,
+    'deleted_atが初期状態でNULL'
+);
+
+-- テスト34: サービスロールでソフトデリートを実行
+RESET role;
+UPDATE profiles 
+SET deleted_at = NOW() 
+WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid;
+
+SELECT isnt(
+    (SELECT deleted_at FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid),
+    NULL,
+    'ソフトデリートが実行され、deleted_atに値が設定される'
+);
+
+-- テスト35: ソフトデリート後、RLSポリシーによりプロフィールが取得できない
+SET LOCAL role authenticated;
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440001", "role": "authenticated"}';
+
+SELECT is(
+    (SELECT COUNT(*)::int FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid),
+    0,
+    'ソフトデリート後、RLSポリシーによりプロフィールが取得できない'
+);
+
+-- テスト36: サービスロールでは削除されたレコードも取得できる
+RESET role;
+SELECT is(
+    (SELECT COUNT(*)::int FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid),
+    1,
+    'サービスロールでは削除されたレコードも取得できる'
+);
+
+-- テスト37: 削除されたプロフィールは他のユーザーからも見えない
+SET LOCAL role authenticated;
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440002", "role": "authenticated"}';
+
+SELECT is(
+    (SELECT COUNT(*)::int FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid),
+    0,
+    '削除されたプロフィールは他のユーザーからも見えない'
+);
+
+-- テスト38: user2は自分のプロフィールは正常に取得できる
+SELECT is(
+    (SELECT COUNT(*)::int FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid),
+    1,
+    'user2は自分のプロフィールは正常に取得できる'
+);
+
+-- テスト39: user2のプロフィールはdeleted_atがNULL
+SELECT is(
+    (SELECT deleted_at FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid),
+    NULL,
+    'user2のプロフィールはdeleted_atがNULL'
+);
+
+-- テスト40: RLSポリシーがprofilesテーブルに適用されていることを確認
+SELECT ok(
+    has_table_privilege('profiles', 'SELECT'),
+    'profilesテーブルにSELECT権限がある'
+);
+
+-- テスト41: 削除されたレコードのdeleted_atフィールドが正しく設定されている
+RESET role;
+SELECT ok(
+    (SELECT deleted_at FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid) IS NOT NULL,
+    '削除されたレコードのdeleted_atフィールドが正しく設定されている'
 );
 
 -- =============================================================================
