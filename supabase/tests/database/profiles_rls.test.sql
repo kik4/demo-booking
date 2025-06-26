@@ -336,7 +336,7 @@ SELECT ok(
         SELECT 1 FROM pg_policies 
         WHERE tablename = 'profiles' 
         AND cmd = 'SELECT' 
-        AND policyname = 'Enable users to view their own data only'
+        AND policyname = 'Enable users to view accessible profiles'
     ),
     'selectポリシーが存在する'
 );
