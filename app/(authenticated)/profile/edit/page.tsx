@@ -104,7 +104,7 @@ export default function EditProfilePage() {
                 type="text"
                 id={nameInputId}
                 name="name"
-                defaultValue={currentName}
+                defaultValue={state.formData?.name || currentName}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="お名前を入力してください"
                 disabled={pending}
@@ -128,7 +128,9 @@ export default function EditProfilePage() {
                 type="text"
                 id={nameHiraganaInputId}
                 name="nameHiragana"
-                defaultValue={currentNameHiragana}
+                defaultValue={
+                  state.formData?.nameHiragana || currentNameHiragana
+                }
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="おなまえをひらがなでにゅうりょくしてください"
                 disabled={pending}
@@ -151,7 +153,10 @@ export default function EditProfilePage() {
               <select
                 id={sexInputId}
                 name="sex"
-                defaultValue={currentSex?.toString() || ""}
+                key={state.formData?.sex || currentSex?.toString() || "empty"}
+                defaultValue={
+                  state.formData?.sex || currentSex?.toString() || ""
+                }
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 disabled={pending}
               >
@@ -159,7 +164,7 @@ export default function EditProfilePage() {
                   性別を選択してください
                 </option>
                 {SEX_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
+                  <option key={option.value} value={option.value.toString()}>
                     {option.label}
                   </option>
                 ))}
@@ -182,7 +187,7 @@ export default function EditProfilePage() {
                 type="date"
                 id={dateOfBirthInputId}
                 name="dateOfBirth"
-                defaultValue={currentDateOfBirth}
+                defaultValue={state.formData?.dateOfBirth || currentDateOfBirth}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 disabled={pending}
               />
