@@ -45,6 +45,7 @@ export default function RegisterPage() {
               placeholder="お名前を入力してください"
               maxLength={100}
               disabled={isPending}
+              defaultValue={state.formData?.name || ""}
             />
             {state.errors?.name && (
               <div className="mt-1 text-red-500 text-sm">
@@ -70,6 +71,7 @@ export default function RegisterPage() {
               placeholder="おなまえをひらがなでにゅうりょくしてください"
               maxLength={100}
               disabled={isPending}
+              defaultValue={state.formData?.nameHiragana || ""}
             />
             {state.errors?.nameHiragana && (
               <div className="mt-1 text-red-500 text-sm">
@@ -92,13 +94,14 @@ export default function RegisterPage() {
               name="sex"
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isPending}
-              defaultValue=""
+              key={state.formData?.sex || "empty"}
+              defaultValue={state.formData?.sex || ""}
             >
               <option value="" disabled>
                 性別を選択してください
               </option>
               {SEX_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
+                <option key={option.value} value={option.value.toString()}>
                   {option.label}
                 </option>
               ))}
@@ -125,6 +128,7 @@ export default function RegisterPage() {
               name="dateOfBirth"
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isPending}
+              defaultValue={state.formData?.dateOfBirth || ""}
             />
             {state.errors?.dateOfBirth && (
               <div className="mt-1 text-red-500 text-sm">

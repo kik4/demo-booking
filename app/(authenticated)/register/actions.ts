@@ -12,6 +12,12 @@ export interface RegisterFormState {
     _form?: string[];
   };
   success?: boolean;
+  formData?: {
+    name: string;
+    nameHiragana: string;
+    sex: string;
+    dateOfBirth: string;
+  };
 }
 
 export async function registerAction(
@@ -31,7 +37,10 @@ export async function registerAction(
   });
 
   if (!validation.success) {
-    return { errors: validation.errors };
+    return {
+      errors: validation.errors,
+      formData: { name, nameHiragana, sex, dateOfBirth },
+    };
   }
 
   try {
@@ -47,6 +56,7 @@ export async function registerAction(
         errors: {
           _form: ["認証が必要です"],
         },
+        formData: { name, nameHiragana, sex, dateOfBirth },
       };
     }
 
@@ -64,6 +74,7 @@ export async function registerAction(
         errors: {
           _form: ["登録に失敗しました。もう一度お試しください。"],
         },
+        formData: { name, nameHiragana, sex, dateOfBirth },
       };
     }
 
@@ -73,6 +84,7 @@ export async function registerAction(
       errors: {
         _form: ["予期しないエラーが発生しました"],
       },
+      formData: { name, nameHiragana, sex, dateOfBirth },
     };
   }
 }
