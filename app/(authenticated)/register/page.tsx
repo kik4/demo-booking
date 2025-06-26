@@ -22,6 +22,11 @@ export default function RegisterPage() {
     }
   }, [state.success, router]);
 
+  // 成功時は早期リターンしてフォームを表示しない
+  if (state.success) {
+    return null;
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="neumorphism-card w-full max-w-md p-8">
