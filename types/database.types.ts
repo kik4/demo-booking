@@ -34,6 +34,50 @@ export type Database = {
   };
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          created_at: string;
+          deleted_at: string | null;
+          end_time: string;
+          id: number;
+          notes: string;
+          profile_id: number;
+          service_name: string;
+          start_time: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          deleted_at?: string | null;
+          end_time: string;
+          id?: number;
+          notes: string;
+          profile_id: number;
+          service_name: string;
+          start_time: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          deleted_at?: string | null;
+          end_time?: string;
+          id?: number;
+          notes?: string;
+          profile_id?: number;
+          service_name?: string;
+          start_time?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bookings_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           created_at: string;
@@ -78,7 +122,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      is_admin_user: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
     };
     Enums: {
       [_ in never]: never;
