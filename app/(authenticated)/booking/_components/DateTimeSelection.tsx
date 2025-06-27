@@ -1,7 +1,11 @@
 "use client";
 
 import { isHoliday } from "japanese-holidays";
-import { useId } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
+import {
+  type ExistingBooking,
+  getExistingBookingsForDateAction,
+} from "../actions";
 
 interface DateTimeSelectionProps {
   selectedDate: string;
@@ -26,6 +30,49 @@ export function DateTimeSelection({
 }: DateTimeSelectionProps) {
   const dateInputId = useId();
   const timeSelectId = useId();
+  const [existingBookings, setExistingBookings] = useState<ExistingBooking[]>(
+    [],
+  );
+
+  // Check if a date is valid (not Wednesday, Sunday, or holiday)
+  const isValidDate = useCallback((dateString: string) => {
+    if (!dateString) return true; // Allow empty for validation message
+
+    const date = new Date(dateString);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 3 = Wednesday
+
+    // Check for Wednesday or Sunday
+    if (dayOfWeek === 0 || dayOfWeek === 3) {
+      return false;
+    }
+
+    // Check for Japanese holidays
+    if (isHoliday(date)) {
+      return false;
+    }
+
+    return true;
+  }, []);
+
+  // Fetch existing bookings when date changes
+  useEffect(() => {
+    if (!selectedDate || !isValidDate(selectedDate)) {
+      setExistingBookings([]);
+      return;
+    }
+
+    getExistingBookingsForDateAction(selectedDate)
+      .then((result) => {
+        if (result.success && result.bookings) {
+          setExistingBookings(result.bookings);
+        } else {
+          setExistingBookings([]);
+        }
+      })
+      .catch(() => {
+        setExistingBookings([]);
+      });
+  }, [selectedDate, isValidDate]);
 
   // Generate available time slots based on business hours
   const generateTimeSlots = () => {
@@ -64,27 +111,23 @@ export function DateTimeSelection({
     return slots;
   };
 
-  const timeSlots = generateTimeSlots();
+  // Check if a time slot overlaps with existing bookings
+  const isTimeSlotAvailable = (startTime: string, endTime: string) => {
+    const slotStart = new Date(`${selectedDate}T${startTime}:00`);
+    const slotEnd = new Date(`${selectedDate}T${endTime}:00`);
 
-  // Check if a date is valid (not Wednesday, Sunday, or holiday)
-  const isValidDate = (dateString: string) => {
-    if (!dateString) return true; // Allow empty for validation message
+    return !existingBookings.some((booking) => {
+      const bookingStart = new Date(booking.start_time);
+      const bookingEnd = new Date(booking.end_time);
 
-    const date = new Date(dateString);
-    const dayOfWeek = date.getDay(); // 0 = Sunday, 3 = Wednesday
-
-    // Check for Wednesday or Sunday
-    if (dayOfWeek === 0 || dayOfWeek === 3) {
-      return false;
-    }
-
-    // Check for Japanese holidays
-    if (isHoliday(date)) {
-      return false;
-    }
-
-    return true;
+      // Check if there's any overlap
+      return slotStart < bookingEnd && slotEnd > bookingStart;
+    });
   };
+
+  const timeSlots = generateTimeSlots().filter((slot) =>
+    isTimeSlotAvailable(slot.start, slot.end),
+  );
 
   // Check if the date is a holiday
   const getHolidayInfo = (dateString: string) => {
@@ -204,6 +247,16 @@ export function DateTimeSelection({
             </optgroup>
           )}
         </select>
+
+        {selectedDate &&
+          isValidDate(selectedDate) &&
+          timeSlots.length === 0 && (
+            <div className="neumorphism-card mt-3 bg-red-50 p-3">
+              <p className="text-red-700 text-sm">
+                この日はすべての時間帯が予約済みです。他の日をお選びください。
+              </p>
+            </div>
+          )}
       </div>
 
       {selectedTime && selectedEndTime && (
