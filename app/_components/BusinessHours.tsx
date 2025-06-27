@@ -21,7 +21,7 @@ export function BusinessHours({ className = "" }: BusinessHoursProps) {
       <div className="neumorphism-raised overflow-x-auto">
         <table className="min-w-full">
           <thead>
-            <tr className="border-amber-300/50 border-b bg-amber-100/50">
+            <tr className="bg-amber-100/50">
               <th className="px-6 py-3 text-left font-medium text-gray-500 text-xs uppercase tracking-wider" />
               {days.map((day) => (
                 <th
@@ -68,12 +68,16 @@ export function BusinessHours({ className = "" }: BusinessHoursProps) {
                 </td>
               ))}
             </tr>
+            <tr>
+              <td className="bg-amber-100/50" colSpan={8}>
+                <p className="py-2 text-center text-gray-600 text-sm">
+                  休業日：水曜・日曜・祝日
+                </p>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <p className="mt-4 text-center text-gray-600 text-sm">
-        休業日：水曜・日曜・祝日
-      </p>
     </div>
   );
 }
