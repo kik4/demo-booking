@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { BusinessHours } from "@/app/_components/BusinessHours";
 import { WelcomeMessage } from "@/app/_components/WelcomeMessage";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -80,6 +81,10 @@ export default function HomePage() {
                 確認・編集
               </button>
             </div>
+          </div>
+
+          <div className="mt-8">
+            <BusinessHours />
           </div>
 
           <div className="mt-8 flex justify-center">
