@@ -4,10 +4,13 @@ import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabaseClient";
+import {
+  type CreateBookingFormState,
+  createBookingAction,
+} from "./_actions/createBookingAction";
 import { BookingConfirmation } from "./_components/BookingConfirmation";
 import { DateTimeSelection } from "./_components/DateTimeSelection";
 import { ServiceSelection } from "./_components/ServiceSelection";
-import { type CreateBookingFormState, createBookingAction } from "./actions";
 
 type Step = 1 | 2 | 3;
 

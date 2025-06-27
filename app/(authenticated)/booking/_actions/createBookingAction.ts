@@ -172,15 +172,15 @@ export async function createBookingAction(
     }
 
     // Check for overlapping bookings (system-wide, not just current user)
-    const checkStartDateTime = new Date(`${date}T${startTime}:00`);
-    const checkEndDateTime = new Date(`${date}T${endTime}:00`);
+    const startDateTime = new Date(`${date}T${startTime}:00+09:00`);
+    const endDateTime = new Date(`${date}T${endTime}:00+09:00`);
 
     const { data: existingBookings, error: checkError } = await supabase
       .from("bookings")
       .select("id, start_time, end_time")
       .is("deleted_at", null)
-      .gte("end_time", checkStartDateTime.toISOString())
-      .lte("start_time", checkEndDateTime.toISOString());
+      .gte("end_time", startDateTime.toISOString())
+      .lte("start_time", endDateTime.toISOString());
 
     if (checkError) {
       console.error("Overlap check error:", checkError);
@@ -218,9 +218,6 @@ export async function createBookingAction(
     }
 
     // Create booking
-    const startDateTime = new Date(`${date}T${startTime}:00`);
-    const endDateTime = new Date(`${date}T${endTime}:00`);
-
     const { error: bookingError } = await supabase.from("bookings").insert({
       profile_id: profile.id,
       service_name: serviceName,
@@ -265,58 +262,4 @@ export async function createBookingAction(
   }
 
   redirect("/home?booking=success");
-}
-
-export async function getExistingBookingsForDateAction(date: string): Promise<{
-  success: boolean;
-  bookings?: ExistingBooking[];
-  error?: string;
-}> {
-  try {
-    const supabase = await createClient();
-
-    // Get current user for authentication check
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return {
-        success: false,
-        error: "認証エラーが発生しました",
-      };
-    }
-
-    // Get ALL bookings for the specific date (system-wide)
-    const startOfDay = new Date(`${date}T00:00:00`);
-    const endOfDay = new Date(`${date}T23:59:59`);
-
-    const { data: bookings, error: bookingsError } = await supabase
-      .from("bookings")
-      .select("id, start_time, end_time")
-      .is("deleted_at", null)
-      .gte("start_time", startOfDay.toISOString())
-      .lte("start_time", endOfDay.toISOString())
-      .order("start_time", { ascending: true });
-
-    if (bookingsError) {
-      console.error("Bookings fetch error:", bookingsError);
-      return {
-        success: false,
-        error: "予約情報の取得に失敗しました",
-      };
-    }
-
-    return {
-      success: true,
-      bookings: bookings || [],
-    };
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return {
-      success: false,
-      error: "予期しないエラーが発生しました",
-    };
-  }
 }

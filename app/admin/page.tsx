@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SEX_LABELS } from "@/lib/constants";
+import { SEX_LABELS } from "@/lib/sexCode";
 
 import { getUsers } from "./actions";
 

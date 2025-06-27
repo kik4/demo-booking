@@ -1,6 +1,6 @@
 import "./utils/envConfig";
 import { createClient } from "@supabase/supabase-js";
-import { SEX_CODES } from "@/lib/constants";
+import { SEX_CODES } from "@/lib/sexCode";
 import type { Database } from "@/types/database.types";
 
 const supabaseClient = createClient<Database>(

@@ -3,9 +3,9 @@
 import { isHoliday } from "japanese-holidays";
 import { useCallback, useEffect, useId, useState } from "react";
 import {
-  type ExistingBooking,
-  getExistingBookingsForDateAction,
-} from "../actions";
+  type AvailableTimeSlot,
+  getAvailableTimeSlotsForDateAction,
+} from "../_actions/getAvailableTimeSlotsForDateAction";
 
 interface DateTimeSelectionProps {
   selectedDate: string;
@@ -30,9 +30,7 @@ export function DateTimeSelection({
 }: DateTimeSelectionProps) {
   const dateInputId = useId();
   const timeSelectId = useId();
-  const [existingBookings, setExistingBookings] = useState<ExistingBooking[]>(
-    [],
-  );
+  const [availableSlots, setAvailableSlots] = useState<AvailableTimeSlot[]>([]);
 
   // Check if a date is valid (not Wednesday, Sunday, or holiday)
   const isValidDate = useCallback((dateString: string) => {
@@ -54,80 +52,71 @@ export function DateTimeSelection({
     return true;
   }, []);
 
-  // Fetch existing bookings when date changes
+  // Fetch available time slots when date changes
   useEffect(() => {
     if (!selectedDate || !isValidDate(selectedDate)) {
-      setExistingBookings([]);
+      setAvailableSlots([]);
       return;
     }
 
-    getExistingBookingsForDateAction(selectedDate)
+    getAvailableTimeSlotsForDateAction(selectedDate)
       .then((result) => {
-        if (result.success && result.bookings) {
-          setExistingBookings(result.bookings);
+        if (result.success && result.availableSlots) {
+          setAvailableSlots(result.availableSlots);
         } else {
-          setExistingBookings([]);
+          setAvailableSlots([]);
         }
       })
       .catch(() => {
-        setExistingBookings([]);
+        setAvailableSlots([]);
       });
   }, [selectedDate, isValidDate]);
 
-  // Generate available time slots based on business hours
-  const generateTimeSlots = () => {
+  // Generate time slots for the selected service duration
+  const generateTimeSlotsForService = () => {
+    if (!availableSlots.length) return [];
+
     const slots = [];
+    const timeInterval = 30; // 30分間隔
 
-    // Morning slots: 9:00-13:00
-    for (let hour = 9; hour < 13; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const startTime = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
-        const endHour = hour + Math.floor((minute + serviceDuration) / 60);
-        const endMinute = (minute + serviceDuration) % 60;
+    for (const availableSlot of availableSlots) {
+      const slotStart = new Date(
+        `${selectedDate}T${availableSlot.start_time}:00`,
+      );
+      const slotEnd = new Date(`${selectedDate}T${availableSlot.end_time}:00`);
 
-        // Check if service fits within morning slot
-        if (endHour < 13 || (endHour === 13 && endMinute === 0)) {
-          const endTime = `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}`;
-          slots.push({ start: startTime, end: endTime, period: "morning" });
+      // 30分間隔で開始時刻を生成
+      let currentTime = new Date(slotStart);
+
+      while (currentTime < slotEnd) {
+        // サービス終了時刻を計算
+        const serviceEndTime = new Date(
+          currentTime.getTime() + serviceDuration * 60 * 1000,
+        );
+
+        // サービスがこの空き時間内に収まるかチェック
+        if (serviceEndTime <= slotEnd) {
+          const startTimeString = `${currentTime.getHours().toString().padStart(2, "0")}:${currentTime.getMinutes().toString().padStart(2, "0")}`;
+          const endTimeString = `${serviceEndTime.getHours().toString().padStart(2, "0")}:${serviceEndTime.getMinutes().toString().padStart(2, "0")}`;
+
+          slots.push({
+            start: startTimeString,
+            end: endTimeString,
+            period: currentTime.getHours() < 13 ? "morning" : "afternoon",
+          });
         }
-      }
-    }
 
-    // Afternoon slots: 15:00-19:00
-    for (let hour = 15; hour < 19; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const startTime = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
-        const endHour = hour + Math.floor((minute + serviceDuration) / 60);
-        const endMinute = (minute + serviceDuration) % 60;
-
-        // Check if service fits within afternoon slot
-        if (endHour < 19 || (endHour === 19 && endMinute === 0)) {
-          const endTime = `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}`;
-          slots.push({ start: startTime, end: endTime, period: "afternoon" });
-        }
+        // 次の時間間隔に進む
+        currentTime = new Date(
+          currentTime.getTime() + timeInterval * 60 * 1000,
+        );
       }
     }
 
     return slots;
   };
 
-  // Check if a time slot overlaps with existing bookings
-  const isTimeSlotAvailable = (startTime: string, endTime: string) => {
-    const slotStart = new Date(`${selectedDate}T${startTime}:00`);
-    const slotEnd = new Date(`${selectedDate}T${endTime}:00`);
-
-    return !existingBookings.some((booking) => {
-      const bookingStart = new Date(booking.start_time);
-      const bookingEnd = new Date(booking.end_time);
-
-      // Check if there's any overlap
-      return slotStart < bookingEnd && slotEnd > bookingStart;
-    });
-  };
-
-  const timeSlots = generateTimeSlots().filter((slot) =>
-    isTimeSlotAvailable(slot.start, slot.end),
-  );
+  const timeSlots = generateTimeSlotsForService();
 
   // Check if the date is a holiday
   const getHolidayInfo = (dateString: string) => {
