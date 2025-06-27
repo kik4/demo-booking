@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { BusinessHours } from "@/app/_components/BusinessHours";
 import { WelcomeMessage } from "@/app/_components/WelcomeMessage";
@@ -8,6 +9,22 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function HomePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const hasShownToast = useRef(false);
+
+  useEffect(() => {
+    const bookingStatus = searchParams.get("booking");
+    if (bookingStatus === "success" && !hasShownToast.current) {
+      hasShownToast.current = true;
+      toast.success("予約が完了しました！", {
+        className: "neumorphism-toast-success",
+      });
+      // Clear the query parameter immediately to prevent re-execution
+      const url = new URL(window.location.href);
+      url.searchParams.delete("booking");
+      router.replace(url.pathname + url.search);
+    }
+  }, [searchParams, router]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -53,7 +70,11 @@ export default function HomePage() {
               <p className="mb-4 flex-grow text-green-100">
                 新しい予約を登録できます
               </p>
-              <button type="button" className="neumorphism-button-glass">
+              <button
+                type="button"
+                onClick={() => router.push("/booking")}
+                className="neumorphism-button-glass"
+              >
                 予約する
               </button>
             </div>
