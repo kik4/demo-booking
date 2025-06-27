@@ -38,14 +38,14 @@ export function BusinessHours({ className = "" }: BusinessHoursProps) {
               <td className="whitespace-nowrap px-6 py-4 font-medium text-gray-800 text-sm">
                 午前
                 <br />
-                <span className="text-gray-600 text-xs">10:00～13:00</span>
+                <span className="text-gray-600 text-sm">10:00～13:00</span>
               </td>
               {days.map((day, index) => (
                 <td
                   key={`${day}-morning`}
                   className="whitespace-nowrap px-6 py-4 text-center"
                 >
-                  <span className="font-medium text-gray-600 text-lg">
+                  <span className="font-medium text-amber-600 text-lg">
                     {getStatus(index, "morning")}
                   </span>
                 </td>
@@ -62,7 +62,7 @@ export function BusinessHours({ className = "" }: BusinessHoursProps) {
                   key={`${day}-afternoon`}
                   className="whitespace-nowrap px-6 py-4 text-center"
                 >
-                  <span className="font-medium text-gray-600 text-lg">
+                  <span className="font-medium text-amber-600 text-lg">
                     {getStatus(index, "afternoon")}
                   </span>
                 </td>
