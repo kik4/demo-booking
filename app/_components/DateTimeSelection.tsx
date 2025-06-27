@@ -1,5 +1,6 @@
 "use client";
 
+import { isHoliday } from "japanese-holidays";
 import { useId } from "react";
 
 interface DateTimeSelectionProps {
@@ -65,13 +66,32 @@ export function DateTimeSelection({
 
   const timeSlots = generateTimeSlots();
 
-  // Check if a date is valid (not Wednesday or Sunday)
+  // Check if a date is valid (not Wednesday, Sunday, or holiday)
   const isValidDate = (dateString: string) => {
     if (!dateString) return true; // Allow empty for validation message
 
     const date = new Date(dateString);
     const dayOfWeek = date.getDay(); // 0 = Sunday, 3 = Wednesday
-    return dayOfWeek !== 0 && dayOfWeek !== 3;
+
+    // Check for Wednesday or Sunday
+    if (dayOfWeek === 0 || dayOfWeek === 3) {
+      return false;
+    }
+
+    // Check for Japanese holidays
+    if (isHoliday(date)) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Check if the date is a holiday
+  const getHolidayInfo = (dateString: string) => {
+    if (!dateString) return false;
+
+    const date = new Date(dateString);
+    return isHoliday(date);
   };
 
   // Get minimum date (tomorrow)
@@ -105,7 +125,7 @@ export function DateTimeSelection({
         <div className="space-y-1 text-amber-700 text-sm">
           <p>午前: 9:00 - 13:00</p>
           <p>午後: 15:00 - 19:00</p>
-          <p className="text-red-600">休業日: 水曜日・日曜日・祝日</p>
+          <p className="text-red-600">休業日: 水曜日・日曜日・祝日・年末年始</p>
           <p className="text-red-600">土曜日午後は休業</p>
         </div>
       </div>
@@ -127,9 +147,24 @@ export function DateTimeSelection({
           disabled={disabled}
         />
         {selectedDate && !isValidDate(selectedDate) && (
-          <p className="mt-1 text-red-600 text-sm">
-            水曜日と日曜日は休業日です。他の日をお選びください。
-          </p>
+          <div className="mt-1 text-red-600 text-sm">
+            {(() => {
+              const date = new Date(selectedDate);
+              const dayOfWeek = date.getDay();
+              const isHolidayDate = getHolidayInfo(selectedDate);
+
+              if (isHolidayDate) {
+                return "祝日のため休業日です。他の日をお選びください。";
+              }
+              if (dayOfWeek === 0) {
+                return "日曜日は休業日です。他の日をお選びください。";
+              }
+              if (dayOfWeek === 3) {
+                return "水曜日は休業日です。他の日をお選びください。";
+              }
+              return "選択された日は休業日です。他の日をお選びください。";
+            })()}
+          </div>
         )}
       </div>
 

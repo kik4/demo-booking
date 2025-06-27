@@ -1,5 +1,6 @@
 "use server";
 
+import { isHoliday } from "japanese-holidays";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import * as v from "valibot";
@@ -69,6 +70,42 @@ export async function createBookingAction(
 
     return {
       errors: errors,
+      formData: {
+        serviceId,
+        serviceName,
+        date,
+        startTime,
+        endTime,
+        notes,
+      },
+    };
+  }
+
+  // Additional validation for business days
+  const bookingDate = new Date(date);
+  const dayOfWeek = bookingDate.getDay(); // 0 = Sunday, 3 = Wednesday
+
+  if (dayOfWeek === 0 || dayOfWeek === 3) {
+    return {
+      errors: {
+        date: ["水曜日と日曜日は休業日です。他の日をお選びください。"],
+      },
+      formData: {
+        serviceId,
+        serviceName,
+        date,
+        startTime,
+        endTime,
+        notes,
+      },
+    };
+  }
+
+  if (isHoliday(bookingDate)) {
+    return {
+      errors: {
+        date: ["祝日は休業日です。他の日をお選びください。"],
+      },
       formData: {
         serviceId,
         serviceName,
