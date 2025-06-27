@@ -198,7 +198,7 @@ export default function BookingsPage() {
               onClick={() => router.push("/booking")}
               className="neumorphism-button-primary px-6 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              新規予約を作成
+              新規予約をする
             </button>
           </div>
         </div>
