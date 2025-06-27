@@ -84,7 +84,11 @@ export default function HomePage() {
               <p className="mb-4 flex-grow text-blue-100">
                 予約の確認・変更・キャンセルができます
               </p>
-              <button type="button" className="neumorphism-button-glass">
+              <button
+                type="button"
+                onClick={() => router.push("/bookings")}
+                className="neumorphism-button-glass"
+              >
                 予約を見る
               </button>
             </div>
