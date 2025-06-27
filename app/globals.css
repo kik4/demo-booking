@@ -20,103 +20,86 @@ button:not(:disabled):hover {
   cursor: pointer;
 }
 
-@layer utilities {
-  .neumorphism-raised {
-    @apply rounded-3xl bg-orange-50 shadow-[8px_8px_16px_rgba(154,52,18,0.25),-8px_-8px_16px_rgba(255,247,237,0.9)];
-  }
+@utility neumorphism-raised {
+  @apply rounded-3xl bg-orange-50 shadow-[8px_8px_16px_rgba(154,52,18,0.25),-8px_-8px_16px_rgba(255,247,237,0.9)];
+}
 
-  .neumorphism-card {
-    @apply rounded-2xl bg-orange-50 shadow-[6px_6px_12px_rgba(154,52,18,0.25),-6px_-6px_12px_rgba(255,247,237,0.9)];
-  }
+@utility neumorphism-card {
+  @apply rounded-2xl bg-orange-50 shadow-[6px_6px_12px_rgba(154,52,18,0.25),-6px_-6px_12px_rgba(255,247,237,0.9)];
+}
 
-  .neumorphism-pressed {
-    @apply rounded-2xl bg-orange-50 shadow-[inset_-3px_-3px_6px_rgba(255,247,237,1),inset_3px_3px_6px_rgba(154,52,18,0.18)] transition-all duration-150;
-  }
-
-  .neumorphism-pressed:hover {
+@utility neumorphism-pressed {
+  @apply rounded-2xl bg-orange-50 shadow-[inset_-3px_-3px_6px_rgba(255,247,237,1),inset_3px_3px_6px_rgba(154,52,18,0.18)] transition-all duration-150;
+  &:hover {
     @apply shadow-[inset_-2px_-2px_4px_rgba(255,247,237,1),inset_2px_2px_4px_rgba(154,52,18,0.18)];
   }
-
-  .neumorphism-pressed:active {
+  &:active {
     @apply shadow-[inset_3px_3px_6px_rgba(154,52,18,0.3),inset_-1px_-1px_3px_rgba(255,247,237,1)];
   }
+}
 
-  .neumorphism-input {
-    @apply rounded-lg bg-orange-50 shadow-[inset_2px_2px_4px_rgba(154,52,18,0.18),inset_-2px_-2px_4px_rgba(255,247,237,1)] border-0 focus:shadow-[inset_3px_3px_6px_rgba(154,52,18,0.25),inset_-1px_-1px_3px_rgba(255,247,237,1)];
-  }
+@utility neumorphism-input {
+  @apply rounded-lg bg-orange-50 shadow-[inset_2px_2px_4px_rgba(154,52,18,0.18),inset_-2px_-2px_4px_rgba(255,247,237,1)] border-0 focus:shadow-[inset_3px_3px_6px_rgba(154,52,18,0.25),inset_-1px_-1px_3px_rgba(255,247,237,1)];
+}
 
-  .neumorphism-button-primary {
-    @apply rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 text-white font-medium shadow-[6px_6px_12px_rgba(154,52,18,0.25),-6px_-6px_12px_rgba(255,247,237,0.3)] transition-all duration-200 border-0;
-  }
-
-  .neumorphism-button-primary:hover {
+@utility neumorphism-button-primary {
+  @apply rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 text-white font-medium shadow-[6px_6px_12px_rgba(154,52,18,0.25),-6px_-6px_12px_rgba(255,247,237,0.3)] transition-all duration-200 border-0;
+  &:hover {
     @apply shadow-[4px_4px_8px_rgba(154,52,18,0.25),-4px_-4px_8px_rgba(255,247,237,0.3)] transform translate-y-[-1px];
   }
-
-  .neumorphism-button-primary:active {
+  &:active {
     @apply shadow-[inset_2px_2px_4px_rgba(154,52,18,0.3),inset_-2px_-2px_4px_rgba(255,247,237,0.3)] transform translate-y-0;
   }
+}
 
-  .neumorphism-button-secondary {
-    @apply rounded-lg bg-orange-50 text-gray-700 shadow-[3px_3px_6px_rgba(154,52,18,0.25),-3px_-3px_6px_rgba(255,247,237,0.9)] transition-all duration-150;
-  }
-
-  .neumorphism-button-secondary:hover {
+@utility neumorphism-button-secondary {
+  @apply rounded-lg bg-orange-50 text-gray-700 shadow-[3px_3px_6px_rgba(154,52,18,0.25),-3px_-3px_6px_rgba(255,247,237,0.9)] transition-all duration-150;
+  &:hover {
     @apply shadow-[2px_2px_4px_rgba(154,52,18,0.25),-2px_-2px_4px_rgba(255,247,237,0.9)];
   }
+}
 
-  .neumorphism-button-danger {
-    @apply rounded-lg bg-gradient-to-br from-red-400 to-red-600 text-white font-medium shadow-[6px_6px_12px_rgba(154,52,18,0.25),-6px_-6px_12px_rgba(255,247,237,0.3)] transition-all duration-200 border-0;
-  }
-
-  .neumorphism-button-danger:hover {
+@utility neumorphism-button-danger {
+  @apply rounded-lg bg-gradient-to-br from-red-400 to-red-600 text-white font-medium shadow-[6px_6px_12px_rgba(154,52,18,0.25),-6px_-6px_12px_rgba(255,247,237,0.3)] transition-all duration-200 border-0;
+  &:hover {
     @apply shadow-[4px_4px_8px_rgba(154,52,18,0.25),-4px_-4px_8px_rgba(255,247,237,0.3)] transform translate-y-[-1px];
   }
-
-  .neumorphism-button-danger:active {
+  &:active {
     @apply shadow-[inset_2px_2px_4px_rgba(154,52,18,0.3),inset_-2px_-2px_4px_rgba(255,247,237,0.3)] transform translate-y-0;
   }
+}
 
-  .neumorphism-card-blue {
-    @apply rounded-2xl bg-gradient-to-r from-blue-400 to-blue-500 text-white shadow-[6px_6px_12px_rgba(154,52,18,0.25),-3px_-3px_8px_rgba(255,247,237,0.3)];
-  }
+@utility neumorphism-card-blue {
+  @apply rounded-2xl bg-gradient-to-r from-blue-400 to-blue-500 text-white shadow-[6px_6px_12px_rgba(154,52,18,0.25),-3px_-3px_8px_rgba(255,247,237,0.3)];
+}
 
-  .neumorphism-card-green {
-    @apply rounded-2xl bg-gradient-to-r from-green-400 to-green-500 text-white shadow-[6px_6px_12px_rgba(154,52,18,0.25),-3px_-3px_8px_rgba(255,247,237,0.3)];
-  }
+@utility neumorphism-card-green {
+  @apply rounded-2xl bg-gradient-to-r from-green-400 to-green-500 text-white shadow-[6px_6px_12px_rgba(154,52,18,0.25),-3px_-3px_8px_rgba(255,247,237,0.3)];
+}
 
-  .neumorphism-card-purple {
-    @apply rounded-2xl bg-gradient-to-r from-purple-400 to-purple-500 text-white shadow-[6px_6px_12px_rgba(154,52,18,0.25),-3px_-3px_8px_rgba(255,247,237,0.3)];
-  }
+@utility neumorphism-card-purple {
+  @apply rounded-2xl bg-gradient-to-r from-purple-400 to-purple-500 text-white shadow-[6px_6px_12px_rgba(154,52,18,0.25),-3px_-3px_8px_rgba(255,247,237,0.3)];
+}
 
-  .neumorphism-button-glass {
-    @apply rounded-lg bg-white/20 px-4 py-2 font-medium shadow-[2px_2px_4px_rgba(154,52,18,0.15),-1px_-1px_2px_rgba(255,247,237,0.4)] backdrop-blur-sm transition-all duration-150;
-  }
-
-  .neumorphism-button-glass:hover {
+@utility neumorphism-button-glass {
+  @apply rounded-lg bg-white/20 px-4 py-2 font-medium shadow-[2px_2px_4px_rgba(154,52,18,0.15),-1px_-1px_2px_rgba(255,247,237,0.4)] backdrop-blur-sm transition-all duration-150;
+  &:hover {
     @apply bg-white/30 shadow-[1px_1px_2px_rgba(154,52,18,0.15),-1px_-1px_2px_rgba(255,247,237,0.5)];
   }
 }
 
-/* Toast neumorphism styling */
-.neumorphism-toast-success {
+@utility neumorphism-toast-success {
+  @apply rounded-xl border-0 font-medium text-green-800;
   background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
   box-shadow:
     6px 6px 12px rgba(154, 52, 18, 0.25),
     -6px -6px 12px rgba(255, 247, 237, 0.8) !important;
-  border: none !important;
-  border-radius: 12px !important;
-  color: #065f46 !important;
-  font-weight: 500 !important;
 }
 
-.neumorphism-toast-error {
+@utility neumorphism-toast-error {
+  @apply rounded-xl border-0 font-medium text-red-900;
   background: linear-gradient(145deg, #fee2e2, #fecaca) !important;
   box-shadow:
     6px 6px 12px rgba(154, 52, 18, 0.25),
     -6px -6px 12px rgba(255, 247, 237, 0.8) !important;
-  border: none !important;
-  border-radius: 12px !important;
-  color: #7f1d1d !important;
-  font-weight: 500 !important;
 }
