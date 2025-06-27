@@ -3,9 +3,9 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
-import { BusinessHours } from "@/app/_components/BusinessHours";
-import { WelcomeMessage } from "@/app/_components/WelcomeMessage";
 import { supabase } from "@/lib/supabaseClient";
+import { BusinessHours } from "./_components/BusinessHours";
+import { WelcomeMessage } from "./_components/WelcomeMessage";
 
 export default function HomePage() {
   const router = useRouter();

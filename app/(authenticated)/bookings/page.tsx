@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { BookingDetail } from "@/app/_components/BookingDetail";
-import { BookingList } from "@/app/_components/BookingList";
 import { supabase } from "@/lib/supabaseClient";
+import { BookingDetail } from "./_components/BookingDetail";
+import { BookingList } from "./_components/BookingList";
 import { type Booking, getBookingsAction } from "./actions";
 
 export default function BookingsPage() {

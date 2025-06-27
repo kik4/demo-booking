@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { BookingConfirmation } from "@/app/_components/BookingConfirmation";
-import { DateTimeSelection } from "@/app/_components/DateTimeSelection";
-import { ServiceSelection } from "@/app/_components/ServiceSelection";
 import { supabase } from "@/lib/supabaseClient";
+import { BookingConfirmation } from "./_components/BookingConfirmation";
+import { DateTimeSelection } from "./_components/DateTimeSelection";
+import { ServiceSelection } from "./_components/ServiceSelection";
 import { type CreateBookingFormState, createBookingAction } from "./actions";
 
 type Step = 1 | 2 | 3;
