@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SEX_LABELS, type SexCode } from "@/lib/constants";
 import { createClient } from "@/lib/supabaseClientServer";
 
 export default async function ProfilePage() {
@@ -54,11 +55,7 @@ export default async function ProfilePage() {
                 性別
               </span>
               <p className="mt-1 text-gray-900 text-lg">
-                {profile.sex === 1
-                  ? "男性"
-                  : profile.sex === 2
-                    ? "女性"
-                    : "その他"}
+                {SEX_LABELS[profile.sex as SexCode] || "不明"}
               </p>
             </div>
 
