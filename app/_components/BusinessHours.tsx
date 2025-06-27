@@ -35,7 +35,7 @@ export function BusinessHours({ className = "" }: BusinessHoursProps) {
             <tr className="transition-colors duration-150 hover:bg-amber-200/50 hover:bg-opacity-30">
               <td className="whitespace-nowrap py-3 font-medium text-gray-800 text-xs sm:px-6 sm:py-4 sm:text-sm">
                 <div className="text-center">
-                  10:00
+                  9:00
                   <br />
                   <span className="text-gray-400 text-xs">▼</span>
                   <br />
