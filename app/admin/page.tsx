@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TOKYO_TZ_OFFSET } from "@/lib/constants";
+import { normalizeDateTime } from "@/lib/normalizeDateTime";
 import { SEX_LABELS } from "@/lib/sexCode";
 import { getAllBookings, getUsers } from "./actions";
 
@@ -20,10 +20,8 @@ export default async function AdminPage() {
   };
 
   const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Date(
-      date.getTime() + TOKYO_TZ_OFFSET * 60 * 60 * 1000,
-    ).toLocaleString("ja-JP", {
+    const date = new Date(normalizeDateTime(dateString));
+    return date.toLocaleString("ja-JP", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
