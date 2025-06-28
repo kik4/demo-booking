@@ -88,7 +88,7 @@ export async function createBookingAction(
   }
 
   // Additional validation for business days
-  const bookingDate = new Date(date);
+  const bookingDate = new Date(`${date}T00:00+09:00`);
   const dayOfWeek = bookingDate.getDay(); // 0 = Sunday, 3 = Wednesday
 
   if (dayOfWeek === 0 || dayOfWeek === 3) {
