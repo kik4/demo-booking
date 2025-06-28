@@ -1,8 +1,10 @@
 "use server";
 
 import { isHoliday } from "japanese-holidays";
+import { decimalHoursToTimeString } from "@/lib/decimalHoursToTimeString";
 import { splitRange } from "@/lib/splitRange";
 import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
+import { timeToDecimalHours } from "@/lib/timeToDecimalHours";
 
 export interface AvailableTimeSlot {
   start_time: string;
@@ -81,16 +83,16 @@ export async function getAvailableTimeSlotsForDateAction(
     // Create business hours periods
     let businessPeriods: Array<{ start: number; end: number }> = [
       {
-        start: morningStart.getHours() + morningStart.getMinutes() / 60,
-        end: morningEnd.getHours() + morningEnd.getMinutes() / 60,
+        start: timeToDecimalHours(morningStart),
+        end: timeToDecimalHours(morningEnd),
       }, // Morning: 9:00-13:00
     ];
 
     // Add afternoon period if not Saturday
     if (dayOfWeek !== 6) {
       businessPeriods.push({
-        start: afternoonStart.getHours() + afternoonStart.getMinutes() / 60,
-        end: afternoonEnd.getHours() + afternoonEnd.getMinutes() / 60,
+        start: timeToDecimalHours(afternoonStart),
+        end: timeToDecimalHours(afternoonEnd),
       }); // Afternoon: 15:00-19:00
     }
 
@@ -123,18 +125,10 @@ export async function getAvailableTimeSlotsForDateAction(
 
     // Calculate available time slots for each business period
     const availableSlots: AvailableTimeSlot[] = [];
-
-    // Helper function to format decimal hours to HH:MM
-    function formatTime(decimalHours: number): string {
-      const hours = Math.floor(decimalHours);
-      const minutes = Math.round((decimalHours - hours) * 60);
-      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
-    }
-
     for (const businessPeriod of businessPeriods) {
       availableSlots.push({
-        start_time: formatTime(businessPeriod.start),
-        end_time: formatTime(businessPeriod.end),
+        start_time: decimalHoursToTimeString(businessPeriod.start),
+        end_time: decimalHoursToTimeString(businessPeriod.end),
       });
     }
 
