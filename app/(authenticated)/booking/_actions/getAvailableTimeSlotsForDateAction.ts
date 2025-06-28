@@ -103,8 +103,8 @@ export async function getAvailableTimeSlotsForDateAction(
         const endTime = new Date(booking.end_time);
 
         return {
-          start: startTime.getHours() + 9 + startTime.getMinutes() / 60,
-          end: endTime.getHours() + 9 + endTime.getMinutes() / 60,
+          start: timeToDecimalHours(startTime),
+          end: timeToDecimalHours(endTime),
         };
       }) || [];
 
