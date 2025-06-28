@@ -1,9 +1,8 @@
 import "./utils/envConfig";
 import { createClient } from "@supabase/supabase-js";
 import { SEX_CODES } from "@/lib/sexCode";
-import type { Database } from "@/types/database.types";
 
-const supabaseClient = createClient<Database>(
+const supabaseClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
@@ -11,12 +10,21 @@ const supabaseClient = createClient<Database>(
 // データベースリセット
 console.log("Resetting database...");
 
+// 既存の予約データを削除
+const { error: bookingsError } = await supabaseClient
+  .from("bookings")
+  .delete()
+  .gt("id", 0);
+if (bookingsError) {
+  console.error("Error deleting bookings:", bookingsError);
+  throw bookingsError;
+}
+
 // 既存のプロフィールデータを削除
 const { error: profilesError } = await supabaseClient
   .from("profiles")
   .delete()
   .gt("id", 0);
-
 if (profilesError) {
   console.error("Error deleting profiles:", profilesError);
   throw profilesError;
@@ -99,16 +107,45 @@ console.log("Database reset completed. Inserting sample data...");
     throw user.error;
   }
 
-  const resProfile = await supabaseClient.from("profiles").insert({
-    name: "テスト太郎",
-    name_hiragana: "てすとたろう",
-    sex: SEX_CODES.MALE,
-    date_of_birth: "1990-01-01",
-    user_id: user.data.user.id,
-  });
+  const resProfile = await supabaseClient
+    .from("profiles")
+    .insert({
+      id: 1,
+      name: "テスト太郎",
+      name_hiragana: "てすとたろう",
+      sex: SEX_CODES.MALE,
+      date_of_birth: "1990-01-01",
+      user_id: user.data.user.id,
+    })
+    .select()
+    .single();
   if (resProfile.error) {
     console.error(resProfile);
     throw resProfile.error;
+  }
+
+  const day = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  const resBookings = await supabaseClient.from("bookings").insert([
+    {
+      profile_id: resProfile.data.id,
+      service_name: "カット",
+      notes: "初めてです",
+      start_time: "2025-05-01T07:00:00Z",
+      end_time: "2025-05-01T08:00:00Z",
+    },
+    {
+      profile_id: resProfile.data.id,
+      service_name: "パーマ",
+      notes: "",
+      start_time: `${day}T00:30:00Z`,
+      end_time: `${day}T03:00:00Z`,
+    },
+  ]);
+  if (resBookings.error) {
+    console.error(resBookings);
+    throw resBookings.error;
   }
 }
 
