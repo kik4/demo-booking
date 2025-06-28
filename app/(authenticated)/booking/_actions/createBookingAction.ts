@@ -177,7 +177,7 @@ export async function createBookingAction(
     // Check for overlapping bookings (system-wide, not just current user)
     const { availableSlots } = await getAvailableTimeSlotsForDate(date);
     if (
-      getIsAvailableTimeSlot(
+      !getIsAvailableTimeSlot(
         { start_time: startTime, end_time: endTime },
         availableSlots,
       )

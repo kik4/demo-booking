@@ -2,7 +2,7 @@ import { isHoliday } from "japanese-holidays";
 import { decimalHoursToTimeString } from "@/lib/decimalHoursToTimeString";
 import { splitRange } from "@/lib/splitRange";
 import { createServiceClient } from "@/lib/supabaseClientServer";
-import { timeToDecimalHours } from "@/lib/timeToDecimalHours";
+import { timeToDecimalHoursInTokyo } from "@/lib/timeToDecimalHoursInTokyo";
 
 export interface AvailableTimeSlot {
   start_time: string;
@@ -55,16 +55,16 @@ export async function getAvailableTimeSlotsForDate(date: string): Promise<{
   // Create business hours periods
   let businessPeriods: Array<{ start: number; end: number }> = [
     {
-      start: timeToDecimalHours(morningStart),
-      end: timeToDecimalHours(morningEnd),
+      start: timeToDecimalHoursInTokyo(morningStart),
+      end: timeToDecimalHoursInTokyo(morningEnd),
     }, // Morning: 9:00-13:00
   ];
 
   // Add afternoon period if not Saturday
   if (dayOfWeek !== 6) {
     businessPeriods.push({
-      start: timeToDecimalHours(afternoonStart),
-      end: timeToDecimalHours(afternoonEnd),
+      start: timeToDecimalHoursInTokyo(afternoonStart),
+      end: timeToDecimalHoursInTokyo(afternoonEnd),
     }); // Afternoon: 15:00-19:00
   }
 
@@ -75,8 +75,8 @@ export async function getAvailableTimeSlotsForDate(date: string): Promise<{
       const endTime = new Date(booking.end_time);
 
       return {
-        start: timeToDecimalHours(startTime),
-        end: timeToDecimalHours(endTime),
+        start: timeToDecimalHoursInTokyo(startTime),
+        end: timeToDecimalHoursInTokyo(endTime),
       };
     }) || [];
 
