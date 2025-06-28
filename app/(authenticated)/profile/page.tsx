@@ -23,7 +23,7 @@ export default async function ProfilePage() {
     .single();
 
   if (profileError || !profile) {
-    redirect(ROUTES.USER.REGISTER);
+    redirect(ROUTES.REGISTER);
   }
 
   return (

@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES, UserRouteValues } from "@/lib/routes";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -37,12 +37,10 @@ export async function middleware(request: NextRequest) {
 
   // ルート判定
   const isAdminRoute = request.nextUrl.pathname.startsWith(ROUTES.ADMIN.ROOT);
-  const isUserRoute =
-    request.nextUrl.pathname.startsWith(ROUTES.USER.HOME) ||
-    request.nextUrl.pathname.startsWith(ROUTES.USER.PROFILE.ROOT);
-  const isRegisterRoute = request.nextUrl.pathname.startsWith(
-    ROUTES.USER.REGISTER,
+  const isUserRoute = UserRouteValues.some((v) =>
+    request.nextUrl.pathname.startsWith(v),
   );
+  const isRegisterRoute = request.nextUrl.pathname.startsWith(ROUTES.REGISTER);
 
   // 認証が必要なルートの保護
   if (isUserRoute || isRegisterRoute || isAdminRoute) {
@@ -64,7 +62,7 @@ export async function middleware(request: NextRequest) {
 
     if (!profile) {
       const url = request.nextUrl.clone();
-      url.pathname = ROUTES.USER.REGISTER;
+      url.pathname = ROUTES.REGISTER;
       return NextResponse.redirect(url);
     }
 
