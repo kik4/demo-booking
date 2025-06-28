@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import * as v from "valibot";
 import { getAvailableTimeSlotsForDate } from "@/lib/getAvailableTimeSlotsForDate";
 import { getIsAvailableTimeSlot } from "@/lib/getIsAvailableTimeSlot";
+import { ROUTES } from "@/lib/routes";
 import { createClient } from "@/lib/supabaseClientServer";
 
 export interface ExistingBooking {
@@ -227,7 +228,7 @@ export async function createBookingAction(
       };
     }
 
-    revalidatePath("/home");
+    revalidatePath(ROUTES.USER.HOME);
   } catch (error) {
     console.error("Unexpected error:", error);
     return {
@@ -245,5 +246,5 @@ export async function createBookingAction(
     };
   }
 
-  redirect("/home?booking=success");
+  redirect(`${ROUTES.USER.HOME}?booking=success`);
 }

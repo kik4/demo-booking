@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { ROUTES } from "@/lib/routes";
 import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
 
 export async function deleteAccount() {
@@ -32,5 +33,5 @@ export async function deleteAccount() {
   // ユーザーをログアウト
   await supabase.auth.signOut();
 
-  redirect("/");
+  redirect(ROUTES.ROOT);
 }

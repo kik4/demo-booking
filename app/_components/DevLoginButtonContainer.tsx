@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ROUTES } from "@/lib/routes";
 import { supabase } from "../../lib/supabaseClient";
 
 export function DevLoginButtonContainer() {
@@ -15,7 +16,7 @@ export function DevLoginButtonContainer() {
       console.error("Dev login error:", error);
     } else {
       console.log("Dev user logged in");
-      router.push("/home");
+      router.push(ROUTES.USER.HOME);
     }
   };
 

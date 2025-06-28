@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId, useState } from "react";
 import toast from "react-hot-toast";
+import { ROUTES } from "@/lib/routes";
 import { SEX_OPTIONS } from "@/lib/sexCode";
 import { supabase } from "@/lib/supabaseClient";
 import { type EditProfileFormState, editProfileAction } from "./actions";
@@ -32,7 +33,7 @@ export default function EditProfilePage() {
         } = await supabase.auth.getUser();
 
         if (!user) {
-          router.push("/login");
+          router.push(ROUTES.ROOT);
           return;
         }
 
@@ -61,7 +62,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (state.success) {
-      router.push("/profile");
+      router.push(ROUTES.USER.PROFILE.ROOT);
       toast.success("プロフィールを更新しました", {
         className: "neumorphism-toast-success",
       });
@@ -214,7 +215,7 @@ export default function EditProfilePage() {
               </button>
               <button
                 type="button"
-                onClick={() => router.push("/profile")}
+                onClick={() => router.push(ROUTES.USER.PROFILE.ROOT)}
                 disabled={pending}
                 className="neumorphism-button-secondary flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
               >

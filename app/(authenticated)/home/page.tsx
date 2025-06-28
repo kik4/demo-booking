@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
+import { ROUTES } from "@/lib/routes";
 import { supabase } from "@/lib/supabaseClient";
 import { BusinessHours } from "./_components/BusinessHours";
 import { WelcomeMessage } from "./_components/WelcomeMessage";
@@ -34,7 +35,7 @@ export default function HomePage() {
         className: "neumorphism-toast-error",
       });
     } else {
-      router.push("/");
+      router.push(ROUTES.ROOT);
       toast.success("ログアウトしました", {
         className: "neumorphism-toast-success",
       });
@@ -72,7 +73,7 @@ export default function HomePage() {
               </p>
               <button
                 type="button"
-                onClick={() => router.push("/booking")}
+                onClick={() => router.push(ROUTES.USER.BOOKING.NEW)}
                 className="neumorphism-button-glass"
               >
                 予約する
@@ -86,7 +87,7 @@ export default function HomePage() {
               </p>
               <button
                 type="button"
-                onClick={() => router.push("/bookings")}
+                onClick={() => router.push(ROUTES.USER.BOOKING.LIST)}
                 className="neumorphism-button-glass"
               >
                 予約を見る
@@ -100,7 +101,7 @@ export default function HomePage() {
               </p>
               <button
                 type="button"
-                onClick={() => router.push("/profile")}
+                onClick={() => router.push(ROUTES.USER.PROFILE.ROOT)}
                 className="neumorphism-button-glass"
               >
                 確認・編集
@@ -115,7 +116,7 @@ export default function HomePage() {
           <div className="mt-8 flex justify-center">
             <button
               type="button"
-              onClick={() => router.push("/profile/delete")}
+              onClick={() => router.push(ROUTES.USER.PROFILE.DELETE)}
               className="neumorphism-button-danger px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
             >
               アカウント削除

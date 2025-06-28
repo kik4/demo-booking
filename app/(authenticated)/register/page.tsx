@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId } from "react";
+import { ROUTES } from "@/lib/routes";
 import { SEX_OPTIONS } from "@/lib/sexCode";
 import { type RegisterFormState, registerAction } from "./actions";
 
@@ -18,7 +19,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (state.success) {
-      router.push("/home");
+      router.push(ROUTES.USER.HOME);
     }
   }, [state.success, router]);
 

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { ROUTES } from "@/lib/routes";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -35,17 +36,19 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // ルート判定
-  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
+  const isAdminRoute = request.nextUrl.pathname.startsWith(ROUTES.ADMIN.ROOT);
   const isUserRoute =
-    request.nextUrl.pathname.startsWith("/home") ||
-    request.nextUrl.pathname.startsWith("/profile");
-  const isRegisterRoute = request.nextUrl.pathname.startsWith("/register");
+    request.nextUrl.pathname.startsWith(ROUTES.USER.HOME) ||
+    request.nextUrl.pathname.startsWith(ROUTES.USER.PROFILE.ROOT);
+  const isRegisterRoute = request.nextUrl.pathname.startsWith(
+    ROUTES.USER.REGISTER,
+  );
 
   // 認証が必要なルートの保護
   if (isUserRoute || isRegisterRoute || isAdminRoute) {
     if (!user) {
       const url = request.nextUrl.clone();
-      url.pathname = "/";
+      url.pathname = ROUTES.ROOT;
       return NextResponse.redirect(url);
     }
   }
@@ -61,7 +64,7 @@ export async function middleware(request: NextRequest) {
 
     if (!profile) {
       const url = request.nextUrl.clone();
-      url.pathname = "/register";
+      url.pathname = ROUTES.USER.REGISTER;
       return NextResponse.redirect(url);
     }
 
@@ -70,14 +73,14 @@ export async function middleware(request: NextRequest) {
     // 管理者ユーザーが一般ユーザー向けページにアクセス
     if (isAdmin && isUserRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = "/admin";
+      url.pathname = ROUTES.ADMIN.ROOT;
       return NextResponse.redirect(url);
     }
 
     // 一般ユーザーが管理者ページにアクセス
     if (!isAdmin && isAdminRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = "/home";
+      url.pathname = ROUTES.USER.HOME;
       return NextResponse.redirect(url);
     }
   }

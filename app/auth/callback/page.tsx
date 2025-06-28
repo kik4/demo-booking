@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import { ROUTES } from "@/lib/routes";
 import { supabase } from "../../../lib/supabaseClient";
 
 export default function AuthCallback() {
@@ -15,7 +16,7 @@ export default function AuthCallback() {
 
         if (error) {
           console.error("Auth error:", error);
-          router.push("/");
+          router.push(ROUTES.ROOT);
           return;
         }
 
@@ -27,16 +28,16 @@ export default function AuthCallback() {
             .single();
 
           if (profile?.role === "admin") {
-            router.push("/admin");
+            router.push(ROUTES.ADMIN.ROOT);
           } else {
-            router.push("/home");
+            router.push(ROUTES.USER.HOME);
           }
         } else {
-          router.push("/");
+          router.push(ROUTES.ROOT);
         }
       } catch (error) {
         console.error("Callback error:", error);
-        router.push("/");
+        router.push(ROUTES.ROOT);
       }
     };
 

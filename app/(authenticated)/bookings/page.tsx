@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { ROUTES } from "@/lib/routes";
 import { supabase } from "@/lib/supabaseClient";
 import { BookingDetail } from "./_components/BookingDetail";
 import { BookingList } from "./_components/BookingList";
@@ -25,7 +26,7 @@ export default function BookingsPage() {
         } = await supabase.auth.getUser();
 
         if (!user) {
-          router.push("/");
+          router.push(ROUTES.ROOT);
           return;
         }
 
@@ -188,14 +189,14 @@ export default function BookingsPage() {
           <div className="mt-8 flex justify-between">
             <button
               type="button"
-              onClick={() => router.push("/home")}
+              onClick={() => router.push(ROUTES.USER.HOME)}
               className="neumorphism-button-secondary px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
             >
               ホームに戻る
             </button>
             <button
               type="button"
-              onClick={() => router.push("/booking")}
+              onClick={() => router.push(ROUTES.USER.BOOKING.NEW)}
               className="neumorphism-button-primary px-6 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               新規予約をする

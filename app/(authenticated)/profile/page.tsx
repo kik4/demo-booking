@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ROUTES } from "@/lib/routes";
 import { SEX_LABELS, type SexCode } from "@/lib/sexCode";
 import { createClient } from "@/lib/supabaseClientServer";
 
@@ -12,7 +13,7 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    redirect("/");
+    redirect(ROUTES.ROOT);
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -22,7 +23,7 @@ export default async function ProfilePage() {
     .single();
 
   if (profileError || !profile) {
-    redirect("/register");
+    redirect(ROUTES.USER.REGISTER);
   }
 
   return (
@@ -83,14 +84,14 @@ export default async function ProfilePage() {
 
           <div className="flex flex-col items-center space-y-4">
             <Link
-              href="/profile/edit"
+              href={ROUTES.USER.PROFILE.EDIT}
               className="neumorphism-button-primary w-64 px-8 py-3 text-center"
             >
               プロフィールを編集
             </Link>
 
             <Link
-              href="/home"
+              href={ROUTES.USER.HOME}
               className="neumorphism-button-secondary w-64 px-8 py-3 text-center"
             >
               ホームに戻る

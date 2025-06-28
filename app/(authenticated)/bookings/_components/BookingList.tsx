@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Booking } from "@/app/(authenticated)/bookings/actions";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
+import { ROUTES } from "@/lib/routes";
 
 interface BookingListProps {
   bookings: Booking[];
@@ -104,7 +105,7 @@ export function BookingList({ bookings, onBookingSelect }: BookingListProps) {
         <button
           type="button"
           onClick={() => {
-            window.location.href = "/booking";
+            window.location.href = ROUTES.USER.BOOKING.NEW;
           }}
           className="neumorphism-button-primary px-6 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >

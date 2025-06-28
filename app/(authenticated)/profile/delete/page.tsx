@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { ROUTES } from "@/lib/routes";
 import { deleteAccount } from "./actions";
 
 export default function DeleteAccountPage() {
@@ -43,7 +44,7 @@ export default function DeleteAccountPage() {
               </button>
 
               <a
-                href="/home"
+                href={ROUTES.USER.HOME}
                 className="neumorphism-button-secondary block w-full px-4 py-2 text-center"
               >
                 キャンセル
