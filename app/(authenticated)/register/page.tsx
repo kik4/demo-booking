@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId } from "react";
+import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
-import { SEX_OPTIONS } from "@/lib/sexCode";
 import { type RegisterFormState, registerAction } from "./actions";
 
 export default function RegisterPage() {

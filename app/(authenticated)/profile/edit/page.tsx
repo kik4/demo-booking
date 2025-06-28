@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId, useState } from "react";
 import toast from "react-hot-toast";
+import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
-import { SEX_OPTIONS } from "@/lib/sexCode";
 import { supabase } from "@/lib/supabaseClient";
 import { type EditProfileFormState, editProfileAction } from "./actions";
 

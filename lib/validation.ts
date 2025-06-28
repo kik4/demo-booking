@@ -1,5 +1,5 @@
 import * as v from "valibot";
-import { SEX_CODES } from "@/lib/sexCode";
+import { SEX_CODES } from "@/constants/sexCode";
 
 export const profileValidationSchema = v.object({
   name: v.pipe(

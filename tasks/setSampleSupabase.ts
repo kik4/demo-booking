@@ -1,6 +1,6 @@
 import "./utils/envConfig";
 import { createClient } from "@supabase/supabase-js";
-import { SEX_CODES } from "@/lib/sexCode";
+import { SEX_CODES } from "@/constants/sexCode";
 
 const supabaseClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

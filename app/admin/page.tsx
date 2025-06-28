@@ -6,8 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SEX_LABELS } from "@/constants/sexCode";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
-import { SEX_LABELS } from "@/lib/sexCode";
 import { getAllBookings, getUsers } from "./actions";
 
 export default async function AdminPage() {
