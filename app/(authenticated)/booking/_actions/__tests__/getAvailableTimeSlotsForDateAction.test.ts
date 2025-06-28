@@ -31,19 +31,6 @@ describe("getAvailableTimeSlotsForDateAction", () => {
   let mockOrder: ReturnType<typeof vi.fn>;
   let mockGetUser: ReturnType<typeof vi.fn>;
 
-  // Helper function to safely extract available slots
-  const getAvailableSlots = (
-    result: Awaited<ReturnType<typeof getAvailableTimeSlotsForDateAction>>,
-  ) => {
-    expect(result.success).toBe(true);
-    expect(result.availableSlots).toBeDefined();
-
-    if (!result.availableSlots) {
-      throw new Error("availableSlots should be defined");
-    }
-    return result.availableSlots;
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -95,12 +82,9 @@ describe("getAvailableTimeSlotsForDateAction", () => {
         error: null,
       });
 
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-
-      expect(result).toEqual({
-        success: false,
-        error: "認証エラーが発生しました",
-      });
+      expect(() =>
+        getAvailableTimeSlotsForDateAction("2024-01-15"),
+      ).rejects.toThrowError(new Error("認証エラー"));
     });
 
     it("認証エラーが発生した場合はエラーを返す", async () => {
@@ -109,12 +93,9 @@ describe("getAvailableTimeSlotsForDateAction", () => {
         error: { message: "Auth error" },
       });
 
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-
-      expect(result).toEqual({
-        success: false,
-        error: "認証エラーが発生しました",
-      });
+      expect(() =>
+        getAvailableTimeSlotsForDateAction("2024-01-15"),
+      ).rejects.toThrowError(new Error("認証エラー"));
     });
   });
 
@@ -124,7 +105,6 @@ describe("getAvailableTimeSlotsForDateAction", () => {
       const result = await getAvailableTimeSlotsForDateAction("2024-01-14");
 
       expect(result).toEqual({
-        success: true,
         availableSlots: [],
       });
     });
@@ -134,7 +114,6 @@ describe("getAvailableTimeSlotsForDateAction", () => {
       const result = await getAvailableTimeSlotsForDateAction("2024-01-17");
 
       expect(result).toEqual({
-        success: true,
         availableSlots: [],
       });
     });
@@ -143,7 +122,6 @@ describe("getAvailableTimeSlotsForDateAction", () => {
       const result = await getAvailableTimeSlotsForDateAction("2024-07-21"); // 海の日
 
       expect(result).toEqual({
-        success: true,
         availableSlots: [],
       });
     });
@@ -154,7 +132,6 @@ describe("getAvailableTimeSlotsForDateAction", () => {
       // 2024-01-15 is Monday
       const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
       expect(result).toEqual({
-        success: true,
         availableSlots: [
           { start_time: "09:00", end_time: "13:00" },
           { start_time: "15:00", end_time: "19:00" },
@@ -166,7 +143,6 @@ describe("getAvailableTimeSlotsForDateAction", () => {
       // 2024-01-13 is Saturday
       const result = await getAvailableTimeSlotsForDateAction("2024-01-13");
       expect(result).toEqual({
-        success: true,
         availableSlots: [{ start_time: "09:00", end_time: "13:00" }],
       });
     });
@@ -201,7 +177,6 @@ describe("getAvailableTimeSlotsForDateAction", () => {
             end_time: "19:00",
           },
         ],
-        success: true,
       });
     });
 
@@ -233,7 +208,6 @@ describe("getAvailableTimeSlotsForDateAction", () => {
             end_time: "13:00",
           },
         ],
-        success: true,
       });
     });
 
@@ -244,18 +218,18 @@ describe("getAvailableTimeSlotsForDateAction", () => {
       });
 
       const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-      const slots = getAvailableSlots(result);
-
-      // 午前と午後の2つの連続した時間帯が返される
-      expect(slots.length).toBe(2);
-
-      // 午前の時間帯 (9:00-13:00)
-      expect(slots[0].start_time).toBe("09:00");
-      expect(slots[0].end_time).toBe("13:00");
-
-      // 午後の時間帯 (15:00-19:00)
-      expect(slots[1].start_time).toBe("15:00");
-      expect(slots[1].end_time).toBe("19:00");
+      expect(result).toStrictEqual({
+        availableSlots: [
+          {
+            end_time: "13:00",
+            start_time: "09:00",
+          },
+          {
+            end_time: "19:00",
+            start_time: "15:00",
+          },
+        ],
+      });
     });
   });
 
@@ -274,35 +248,12 @@ describe("getAvailableTimeSlotsForDateAction", () => {
     it("予約データ取得エラー時はエラーを返す", async () => {
       mockOrder.mockResolvedValue({
         data: null,
-        error: { message: "Database error" },
+        error: new Error("Database error"),
       });
 
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-
-      expect(result).toEqual({
-        success: false,
-        error: "予約情報の取得に失敗しました",
-      });
-      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("Bookings fetch error:", {
-        message: "Database error",
-      });
-    });
-
-    it("予期しないエラーが発生した場合のハンドリング", async () => {
-      mockGetUser.mockRejectedValue(new Error("Unexpected error"));
-
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-
-      expect(result).toEqual({
-        success: false,
-        error: "予期しないエラーが発生しました",
-      });
-      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Unexpected error:",
-        new Error("Unexpected error"),
-      );
+      expect(() =>
+        getAvailableTimeSlotsForDateAction("2024-01-15"),
+      ).rejects.toThrowError(new Error("Database error"));
     });
   });
 
@@ -329,21 +280,18 @@ describe("getAvailableTimeSlotsForDateAction", () => {
     it("月末の日付でも正常に動作する", async () => {
       const result = await getAvailableTimeSlotsForDateAction("2024-01-31");
 
-      expect(result.success).toBe(true);
       expect(result.availableSlots).toBeDefined();
     });
 
     it("うるう年の日付でも正常に動作する", async () => {
       const result = await getAvailableTimeSlotsForDateAction("2024-02-29");
 
-      expect(result.success).toBe(true);
       expect(result.availableSlots).toBeDefined();
     });
 
     it("年またぎの日付でも正常に動作する", async () => {
       const result = await getAvailableTimeSlotsForDateAction("2024-12-31");
 
-      expect(result.success).toBe(true);
       expect(result.availableSlots).toBeDefined();
     });
   });
