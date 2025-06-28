@@ -17,7 +17,7 @@ export async function deleteAccount() {
 
   // サービスロールクライアントを使用してソフトデリート
   // （RLSの複雑さを回避し、認証チェックで安全性を担保）
-  const serviceSupabase = createServiceClient();
+  const serviceSupabase = await createServiceClient();
   const { error: updateError } = await serviceSupabase
     .from("profiles")
     .update({

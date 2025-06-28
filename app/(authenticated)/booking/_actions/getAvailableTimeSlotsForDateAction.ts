@@ -2,7 +2,7 @@
 
 import { isHoliday } from "japanese-holidays";
 import { splitRange } from "@/lib/splitRange";
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
 
 export interface AvailableTimeSlot {
   start_time: string;
@@ -54,13 +54,15 @@ export async function getAvailableTimeSlotsForDateAction(
     const startOfDayUTC = new Date(`${date}T00:00:00+09:00`);
     const endOfDayUTC = new Date(`${date}T23:59:59.999+09:00`);
 
-    const { data: existingBookings, error: bookingsError } = await supabase
-      .from("bookings")
-      .select("start_time, end_time")
-      .is("deleted_at", null)
-      .gte("start_time", startOfDayUTC.toISOString())
-      .lte("start_time", endOfDayUTC.toISOString())
-      .order("start_time", { ascending: true });
+    const serviceSupabase = await createServiceClient();
+    const { data: existingBookings, error: bookingsError } =
+      await serviceSupabase
+        .from("bookings")
+        .select("start_time, end_time")
+        .is("deleted_at", null)
+        .gte("start_time", startOfDayUTC.toISOString())
+        .lte("start_time", endOfDayUTC.toISOString())
+        .order("start_time", { ascending: true });
 
     if (bookingsError) {
       console.error("Bookings fetch error:", bookingsError);
