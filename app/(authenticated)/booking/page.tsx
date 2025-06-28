@@ -132,6 +132,16 @@ export default function BookingPage() {
     });
   };
 
+  useEffect(() => {
+    if (state.errors?._form) {
+      state.errors._form.forEach((error) => {
+        toast.error(error, {
+          className: "neumorphism-toast-error",
+        });
+      });
+    }
+  }, [state.errors]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
