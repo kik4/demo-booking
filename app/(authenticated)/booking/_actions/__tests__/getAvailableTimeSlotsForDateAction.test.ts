@@ -11,12 +11,16 @@ import {
 // Mock Supabase client
 vi.mock("@/lib/supabaseClientServer", () => ({
   createClient: vi.fn(),
+  createServiceClient: vi.fn(),
 }));
 
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
 import { getAvailableTimeSlotsForDateAction } from "../getAvailableTimeSlotsForDateAction";
 
 const mockedCreateClient = createClient as MockedFunction<typeof createClient>;
+const mockedCreateServiceClient = createServiceClient as MockedFunction<
+  typeof createServiceClient
+>;
 
 describe("getAvailableTimeSlotsForDateAction", () => {
   let mockSelect: ReturnType<typeof vi.fn>;
@@ -70,6 +74,11 @@ describe("getAvailableTimeSlotsForDateAction", () => {
 
     mockedCreateClient.mockResolvedValue(
       mockSupabase as unknown as Awaited<ReturnType<typeof createClient>>,
+    );
+    mockedCreateServiceClient.mockResolvedValue(
+      mockSupabase as unknown as Awaited<
+        ReturnType<typeof createServiceClient>
+      >,
     );
 
     // Default user authentication success
