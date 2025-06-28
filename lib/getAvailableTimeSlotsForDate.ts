@@ -1,5 +1,3 @@
-"use server";
-
 import { isHoliday } from "japanese-holidays";
 import { decimalHoursToTimeString } from "@/lib/decimalHoursToTimeString";
 import { splitRange } from "@/lib/splitRange";
