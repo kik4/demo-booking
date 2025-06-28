@@ -106,7 +106,7 @@ export default function BookingsPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
+        <div className="flex flex-col items-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
           <p className="mt-2 text-gray-600">読み込み中...</p>
         </div>
@@ -133,10 +133,10 @@ export default function BookingsPage() {
                 type="button"
                 onClick={handleRefresh}
                 disabled={loading}
-                className="neumorphism-button-secondary px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:opacity-50"
+                className="neumorphism-button-secondary inline-flex flex-col items-center px-4 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:opacity-50"
               >
                 <svg
-                  className="mr-2 h-4 w-4"
+                  className="h-4 w-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -150,7 +150,7 @@ export default function BookingsPage() {
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                更新
+                <p className="text-sm">更新</p>
               </button>
             </div>
           </div>
