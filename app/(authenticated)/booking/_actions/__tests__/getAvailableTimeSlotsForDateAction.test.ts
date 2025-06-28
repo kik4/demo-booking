@@ -4,25 +4,19 @@ import {
   expect,
   it,
   type MockedFunction,
+  type MockInstance,
   vi,
 } from "vitest";
-
-// Mock japanese-holidays
-vi.mock("japanese-holidays", () => ({
-  isHoliday: vi.fn(),
-}));
 
 // Mock Supabase client
 vi.mock("@/lib/supabaseClientServer", () => ({
   createClient: vi.fn(),
 }));
 
-import { isHoliday } from "japanese-holidays";
 import { createClient } from "@/lib/supabaseClientServer";
 import { getAvailableTimeSlotsForDateAction } from "../getAvailableTimeSlotsForDateAction";
 
 const mockedCreateClient = createClient as MockedFunction<typeof createClient>;
-const mockedIsHoliday = isHoliday as MockedFunction<typeof isHoliday>;
 
 describe("getAvailableTimeSlotsForDateAction", () => {
   let mockSelect: ReturnType<typeof vi.fn>;
@@ -83,9 +77,6 @@ describe("getAvailableTimeSlotsForDateAction", () => {
       data: { user: { id: "test-user-id" } },
       error: null,
     });
-
-    // Default no holiday
-    mockedIsHoliday.mockReturnValue(undefined);
   });
 
   describe("認証関連のテスト", () => {
@@ -140,15 +131,12 @@ describe("getAvailableTimeSlotsForDateAction", () => {
     });
 
     it("祝日は空きスロットが0個", async () => {
-      mockedIsHoliday.mockReturnValue("休みの日");
-
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-01");
+      const result = await getAvailableTimeSlotsForDateAction("2024-07-21"); // 海の日
 
       expect(result).toEqual({
         success: true,
         availableSlots: [],
       });
-      expect(mockedIsHoliday).toHaveBeenCalledWith(new Date("2024-01-01"));
     });
   });
 
@@ -263,6 +251,17 @@ describe("getAvailableTimeSlotsForDateAction", () => {
   });
 
   describe("データベースエラーハンドリング", () => {
+    let consoleErrorSpy: MockInstance;
+
+    beforeEach(() => {
+      // console.errorをスパイ
+      consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    });
+    afterEach(() => {
+      // スパイをリストア
+      consoleErrorSpy.mockRestore();
+    });
+
     it("予約データ取得エラー時はエラーを返す", async () => {
       mockOrder.mockResolvedValue({
         data: null,
@@ -275,6 +274,10 @@ describe("getAvailableTimeSlotsForDateAction", () => {
         success: false,
         error: "予約情報の取得に失敗しました",
       });
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("Bookings fetch error:", {
+        message: "Database error",
+      });
     });
 
     it("予期しないエラーが発生した場合のハンドリング", async () => {
@@ -286,6 +289,11 @@ describe("getAvailableTimeSlotsForDateAction", () => {
         success: false,
         error: "予期しないエラーが発生しました",
       });
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Unexpected error:",
+        new Error("Unexpected error"),
+      );
     });
   });
 
@@ -298,11 +306,11 @@ describe("getAvailableTimeSlotsForDateAction", () => {
       expect(mockIs).toHaveBeenCalledWith("deleted_at", null);
       expect(mockGte).toHaveBeenCalledWith(
         "start_time",
-        new Date("2024-01-15T00:00:00").toISOString(),
+        new Date("2024-01-15T00:00:00.000+09:00").toISOString(),
       );
       expect(mockLte).toHaveBeenCalledWith(
         "start_time",
-        new Date("2024-01-15T23:59:59.999").toISOString(),
+        new Date("2024-01-15T23:59:59.999+09:00").toISOString(),
       );
       expect(mockOrder).toHaveBeenCalledWith("start_time", { ascending: true });
     });

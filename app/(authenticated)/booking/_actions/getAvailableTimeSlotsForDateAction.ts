@@ -1,9 +1,6 @@
 "use server";
 
-import { toZonedTime } from "date-fns-tz";
 import { isHoliday } from "japanese-holidays";
-import { TIME_ZONE } from "@/lib/constants";
-import { normalizeDateTime } from "@/lib/normalizeDateTime";
 import { splitRange } from "@/lib/splitRange";
 import { createClient } from "@/lib/supabaseClientServer";
 
@@ -36,7 +33,7 @@ export async function getAvailableTimeSlotsForDateAction(
     }
 
     // Check if the date is a business day
-    const bookingDate = new Date(`${date}T00:00:00Z`);
+    const bookingDate = new Date(`${date}T09:00:00+09:00`);
     const dayOfWeek = bookingDate.getDay(); // 0 = Sunday, 3 = Wednesday
 
     if (dayOfWeek === 0 || dayOfWeek === 3) {
@@ -98,18 +95,12 @@ export async function getAvailableTimeSlotsForDateAction(
     // Convert existing bookings to time periods
     const bookingPeriods =
       existingBookings?.map((booking) => {
-        const startTime = toZonedTime(
-          normalizeDateTime(booking.start_time),
-          TIME_ZONE,
-        );
-        const endTime = toZonedTime(
-          normalizeDateTime(booking.end_time),
-          TIME_ZONE,
-        );
+        const startTime = new Date(booking.start_time);
+        const endTime = new Date(booking.end_time);
 
         return {
-          start: startTime.getHours() + startTime.getMinutes() / 60,
-          end: endTime.getHours() + endTime.getMinutes() / 60,
+          start: startTime.getHours() + 9 + startTime.getMinutes() / 60,
+          end: endTime.getHours() + 9 + endTime.getMinutes() / 60,
         };
       }) || [];
 
