@@ -4,6 +4,8 @@ import { isHoliday } from "japanese-holidays";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import * as v from "valibot";
+import { getAvailableTimeSlotsForDate } from "@/lib/getAvailableTimeSlotsForDate";
+import { getIsAvailableTimeSlot } from "@/lib/getIsAvailableTimeSlot";
 import { createClient } from "@/lib/supabaseClientServer";
 
 export interface ExistingBooking {
@@ -172,38 +174,17 @@ export async function createBookingAction(
     }
 
     // Check for overlapping bookings (system-wide, not just current user)
-    const startDateTime = new Date(`${date}T${startTime}:00+09:00`);
-    const endDateTime = new Date(`${date}T${endTime}:00+09:00`);
-
-    const { data: existingBookings, error: checkError } = await supabase
-      .from("bookings")
-      .select("id, start_time, end_time")
-      .is("deleted_at", null)
-      .gte("end_time", startDateTime.toISOString())
-      .lte("start_time", endDateTime.toISOString());
-
-    if (checkError) {
-      console.error("Overlap check error:", checkError);
-      return {
-        errors: {
-          _form: ["予約確認中にエラーが発生しました"],
-        },
-        formData: {
-          serviceId,
-          serviceName,
-          date,
-          startTime,
-          endTime,
-          notes,
-        },
-      };
-    }
-
-    if (existingBookings && existingBookings.length > 0) {
+    const { availableSlots } = await getAvailableTimeSlotsForDate(date);
+    if (
+      getIsAvailableTimeSlot(
+        { start_time: startTime, end_time: endTime },
+        availableSlots,
+      )
+    ) {
       return {
         errors: {
           startTime: [
-            "選択した時間は既に予約されています。他の時間をお選びください。",
+            "選択した時間は利用できません。他の時間をお選びください。",
           ],
         },
         formData: {
@@ -218,6 +199,9 @@ export async function createBookingAction(
     }
 
     // Create booking
+    const startDateTime = new Date(`${date}T${startTime}:00+09:00`);
+    const endDateTime = new Date(`${date}T${endTime}:00+09:00`);
+
     const { error: bookingError } = await supabase.from("bookings").insert({
       profile_id: profile.id,
       service_name: serviceName,
