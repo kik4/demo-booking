@@ -57,7 +57,7 @@ export default async function AdminPage() {
                   <TableHead>開始時刻</TableHead>
                   <TableHead>終了時刻</TableHead>
                   <TableHead>備考</TableHead>
-                  <TableHead>作成日時</TableHead>
+                  <TableHead>登録日時</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
