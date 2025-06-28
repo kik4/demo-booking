@@ -1,5 +1,6 @@
 "use client";
 
+import { ROUTES } from "@/lib/routes";
 import { supabase } from "../../lib/supabaseClient";
 
 export function LoginButtonContainer() {
@@ -9,7 +10,7 @@ export function LoginButtonContainer() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}${ROUTES.AUTH.CALLBACK}`,
       },
     });
 
