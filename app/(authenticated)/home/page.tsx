@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
@@ -71,13 +72,12 @@ export default function HomePage() {
               <p className="mb-4 flex-grow text-green-100">
                 新しい予約を登録できます
               </p>
-              <button
-                type="button"
-                onClick={() => router.push(ROUTES.USER.BOOKING.NEW)}
+              <Link
+                href={ROUTES.USER.BOOKING.NEW}
                 className="neumorphism-button-glass"
               >
                 予約する
-              </button>
+              </Link>
             </div>
 
             <div className="neumorphism-card-blue flex flex-col p-6">
@@ -85,13 +85,12 @@ export default function HomePage() {
               <p className="mb-4 flex-grow text-blue-100">
                 予約の確認・変更・キャンセルができます
               </p>
-              <button
-                type="button"
-                onClick={() => router.push(ROUTES.USER.BOOKING.LIST)}
+              <Link
+                href={ROUTES.USER.BOOKING.LIST}
                 className="neumorphism-button-glass"
               >
                 予約を見る
-              </button>
+              </Link>
             </div>
 
             <div className="neumorphism-card-purple flex flex-col p-6">
@@ -99,13 +98,12 @@ export default function HomePage() {
               <p className="mb-4 flex-grow text-purple-100">
                 プロフィール情報の確認・編集ができます
               </p>
-              <button
-                type="button"
-                onClick={() => router.push(ROUTES.USER.PROFILE.ROOT)}
+              <Link
+                href={ROUTES.USER.PROFILE.ROOT}
                 className="neumorphism-button-glass"
               >
                 確認・編集
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -114,13 +112,12 @@ export default function HomePage() {
           </div>
 
           <div className="mt-8 flex justify-center">
-            <button
-              type="button"
-              onClick={() => router.push(ROUTES.USER.PROFILE.DELETE)}
+            <Link
+              href={ROUTES.USER.PROFILE.DELETE}
               className="neumorphism-button-danger px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
             >
               アカウント削除
-            </button>
+            </Link>
           </div>
         </div>
       </div>

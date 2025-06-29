@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId, useState } from "react";
 import toast from "react-hot-toast";
@@ -213,14 +214,12 @@ export default function EditProfilePage() {
               >
                 {pending ? "更新中..." : "更新"}
               </button>
-              <button
-                type="button"
-                onClick={() => router.push(ROUTES.USER.PROFILE.ROOT)}
-                disabled={pending}
-                className="neumorphism-button-secondary flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              <Link
+                href={ROUTES.USER.PROFILE.ROOT}
+                className={`neumorphism-button-secondary flex-1 px-4 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${pending ? "pointer-events-none opacity-50" : ""}`}
               >
                 キャンセル
-              </button>
+              </Link>
             </div>
           </form>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -265,14 +266,12 @@ export default function BookingPage() {
           )}
 
           <div className="mt-8 flex justify-center">
-            <button
-              type="button"
-              onClick={() => router.push(ROUTES.USER.HOME)}
-              disabled={pending}
-              className="neumorphism-button-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:opacity-50"
+            <Link
+              href={ROUTES.USER.HOME}
+              className={`neumorphism-button-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 ${pending ? "pointer-events-none opacity-50" : ""}`}
             >
               ホームに戻る
-            </button>
+            </Link>
           </div>
         </div>
       </div>
