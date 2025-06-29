@@ -5,7 +5,6 @@ import type { Booking } from "@/app/(authenticated)/bookings/actions";
 import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
 import { formatTime } from "@/lib/formatTime";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
-import { ROUTES } from "@/lib/routes";
 
 interface BookingListProps {
   bookings: Booking[];
@@ -69,18 +68,6 @@ export function BookingList({ bookings, onBookingSelect }: BookingListProps) {
         <h3 className="mb-2 font-semibold text-gray-800 text-lg">
           予約がありません
         </h3>
-        <p className="mb-4 text-gray-600">
-          まだ予約が登録されていません。新しい予約を作成してみましょう。
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            window.location.href = ROUTES.USER.BOOKING.NEW;
-          }}
-          className="neumorphism-button-primary px-6 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          新規予約をする
-        </button>
       </div>
     );
   }
