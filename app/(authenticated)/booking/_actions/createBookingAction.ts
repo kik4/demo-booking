@@ -160,13 +160,46 @@ export async function createBookingAction(
       };
     }
 
+    // Get service information for snapshot
+    const serviceIdNum = Number.parseInt(serviceId, 10);
+    if (Number.isNaN(serviceIdNum)) {
+      return {
+        errors: {
+          _form: ["無効なサービスIDです。"],
+        },
+      };
+    }
+
+    const { data: service, error: serviceError } = await supabase
+      .from("services")
+      .select("*")
+      .eq("id", serviceIdNum)
+      .is("deleted_at", null)
+      .single();
+
+    if (serviceError || !service) {
+      console.error("Service lookup error:", serviceError);
+      return {
+        errors: {
+          _form: ["選択されたサービスが見つかりません。"],
+        },
+      };
+    }
+
     // Create booking
     const startDateTime = new Date(`${date}T${startTime}:00+09:00`);
     const endDateTime = new Date(`${date}T${endTime}:00+09:00`);
 
     const { error: bookingError } = await supabase.from("bookings").insert({
       profile_id: profile.id,
+      service_id: service.id,
       service_name: serviceName,
+      service_info: {
+        name: service.name,
+        duration: service.duration,
+        price: service.price,
+        created_at: service.created_at,
+      },
       start_time: startDateTime.toISOString(),
       end_time: endDateTime.toISOString(),
       notes: notes || "",

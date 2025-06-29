@@ -42,6 +42,8 @@ export type Database = {
           id: number;
           notes: string;
           profile_id: number;
+          service_id: number;
+          service_info: Json;
           service_name: string;
           start_time: string;
           updated_at: string;
@@ -53,6 +55,8 @@ export type Database = {
           id?: number;
           notes: string;
           profile_id: number;
+          service_id: number;
+          service_info: Json;
           service_name: string;
           start_time: string;
           updated_at?: string;
@@ -64,6 +68,8 @@ export type Database = {
           id?: number;
           notes?: string;
           profile_id?: number;
+          service_id?: number;
+          service_info?: Json;
           service_name?: string;
           start_time?: string;
           updated_at?: string;
@@ -74,6 +80,13 @@ export type Database = {
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookings_service_id_fkey";
+            columns: ["service_id"];
+            isOneToOne: false;
+            referencedRelation: "services";
             referencedColumns: ["id"];
           },
         ];

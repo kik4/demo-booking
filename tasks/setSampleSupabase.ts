@@ -67,20 +67,31 @@ for (const user of existingUsers.users) {
 console.log("Database reset completed. Inserting sample data...");
 
 // サンプルサービスデータを挿入
-const { error: insertServicesError } = await supabaseClient
-  .from("services")
-  .insert([
-    { name: "カット", duration: 60, price: 3000 },
-    { name: "カラー", duration: 120, price: 8000 },
-    { name: "パーマ", duration: 150, price: 12000 },
-    { name: "トリートメント", duration: 45, price: 2500 },
-    { name: "カット+カラー", duration: 180, price: 10000 },
-    { name: "カット+パーマ", duration: 210, price: 14000 },
-  ]);
-if (insertServicesError) {
+const { data: insertedServices, error: insertServicesError } =
+  await supabaseClient
+    .from("services")
+    .insert([
+      { name: "カット", duration: 60, price: 3000 },
+      { name: "カラー", duration: 120, price: 8000 },
+      { name: "パーマ", duration: 150, price: 12000 },
+      { name: "トリートメント", duration: 45, price: 2500 },
+      { name: "カット+カラー", duration: 180, price: 10000 },
+      { name: "カット+パーマ", duration: 210, price: 14000 },
+    ])
+    .select("id, name, duration, price");
+if (insertServicesError || !insertedServices) {
   console.error("Error inserting services:", insertServicesError);
   throw insertServicesError;
 }
+
+// サービスIDをマッピング
+const serviceMap = insertedServices.reduce(
+  (map, service) => {
+    map[service.name] = service;
+    return map;
+  },
+  {} as Record<string, (typeof insertedServices)[0]>,
+);
 
 // 管理者ユーザー
 {
@@ -155,14 +166,28 @@ if (insertServicesError) {
   const resBookings = await supabaseClient.from("bookings").insert([
     {
       profile_id: resProfile.data.id,
+      service_id: serviceMap.カット.id,
       service_name: "カット",
+      service_info: {
+        name: serviceMap.カット.name,
+        duration: serviceMap.カット.duration,
+        price: serviceMap.カット.price,
+        description: "ヘアカットサービス",
+      },
       notes: "初めてです",
       start_time: "2025-05-01T07:00:00Z",
       end_time: "2025-05-01T08:00:00Z",
     },
     {
       profile_id: resProfile.data.id,
+      service_id: serviceMap.パーマ.id,
       service_name: "パーマ",
+      service_info: {
+        name: serviceMap.パーマ.name,
+        duration: serviceMap.パーマ.duration,
+        price: serviceMap.パーマ.price,
+        description: "パーマスタイリングサービス",
+      },
       notes: "",
       start_time: `${day}T00:30:00Z`,
       end_time: `${day}T03:00:00Z`,
