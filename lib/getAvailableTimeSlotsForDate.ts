@@ -3,6 +3,7 @@ import { decimalHoursToTimeString } from "@/lib/decimalHoursToTimeString";
 import { splitRange } from "@/lib/splitRange";
 import { createServiceClient } from "@/lib/supabaseClientServer";
 import { timeToDecimalHoursInTokyo } from "@/lib/timeToDecimalHoursInTokyo";
+import { normalizeDateTime } from "./normalizeDateTime";
 
 export interface AvailableTimeSlot {
   start_time: string;
@@ -14,7 +15,7 @@ export async function getAvailableTimeSlotsForDate(date: string): Promise<{
 }> {
   // Check if the date is a business day
   const bookingDate = new Date(`${date}T09:00:00+09:00`);
-  const dayOfWeek = bookingDate.getDay(); // 0 = Sunday, 3 = Wednesday
+  const dayOfWeek = bookingDate.getUTCDay(); // 0 = Sunday, 3 = Wednesday
 
   if (dayOfWeek === 0 || dayOfWeek === 3) {
     return {
@@ -71,8 +72,8 @@ export async function getAvailableTimeSlotsForDate(date: string): Promise<{
   // Convert existing bookings to time periods
   const bookingPeriods =
     existingBookings?.map((booking) => {
-      const startTime = new Date(booking.start_time);
-      const endTime = new Date(booking.end_time);
+      const startTime = new Date(normalizeDateTime(booking.start_time));
+      const endTime = new Date(normalizeDateTime(booking.end_time));
 
       return {
         start: timeToDecimalHoursInTokyo(startTime),
