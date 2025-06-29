@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Booking } from "@/app/(authenticated)/bookings/actions";
 import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
+import { formatTime } from "@/lib/formatTime";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
 import { ROUTES } from "@/lib/routes";
 
@@ -15,19 +16,6 @@ export function BookingList({ bookings, onBookingSelect }: BookingListProps) {
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
     null,
   );
-
-  // Format time for display
-  const formatTime = (dateString: string) => {
-    const normalizedString = normalizeDateTime(dateString);
-    const date = new Date(normalizedString);
-
-    return date.toLocaleTimeString("ja-JP", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: "Asia/Tokyo",
-    });
-  };
 
   // Check if booking is upcoming
   const isUpcoming = (startTime: string) => {

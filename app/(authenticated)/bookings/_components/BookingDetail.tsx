@@ -2,6 +2,7 @@
 
 import type { Booking } from "@/app/(authenticated)/bookings/actions";
 import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
+import { formatTime } from "@/lib/formatTime";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
 
 interface BookingDetailProps {
@@ -15,19 +16,6 @@ export function BookingDetail({
   onClose,
   customerName,
 }: BookingDetailProps) {
-  // Format time for display
-  const formatTime = (dateString: string) => {
-    const normalizedString = normalizeDateTime(dateString);
-    const date = new Date(normalizedString);
-
-    return date.toLocaleTimeString("ja-JP", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: "Asia/Tokyo",
-    });
-  };
-
   // Calculate duration
   const calculateDuration = (startTime: string, endTime: string) => {
     const normalizedStartTime = normalizeDateTime(startTime);
