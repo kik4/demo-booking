@@ -26,6 +26,7 @@ export const ROUTES = {
     ROOT: "/admin",
     USERS: "/admin/users",
     BOOKINGS: "/admin/bookings",
+    SERVICES: "/admin/services",
   },
 } as const;
 

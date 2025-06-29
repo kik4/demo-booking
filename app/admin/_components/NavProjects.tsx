@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Home, Users } from "lucide-react";
+import { Calendar, Home, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import {
   SidebarGroup,
@@ -27,6 +27,11 @@ const data = {
       name: "予約一覧",
       url: ROUTES.ADMIN.BOOKINGS,
       icon: Calendar,
+    },
+    {
+      name: "サービス一覧",
+      url: ROUTES.ADMIN.SERVICES,
+      icon: Settings,
     },
   ],
 };
