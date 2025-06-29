@@ -5,4 +5,4 @@ import "@testing-library/jest-dom";
 loadEnvConfig(process.cwd());
 
 // TZ の変更
-process.env.TZ = "UTC";
+process.env.TZ = "UTC"; // JST (UTC+0900), EST (UTC-0500)
