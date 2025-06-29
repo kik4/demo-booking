@@ -37,7 +37,7 @@ export function NavProjects() {
       <SidebarMenu>
         {data.projects.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton asChild tooltip={item.name}>
               <a href={item.url}>
                 <item.icon />
                 <span>{item.name}</span>
