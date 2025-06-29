@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
+
 interface BookingData {
   serviceId: string;
   serviceName: string;
@@ -27,17 +29,6 @@ export function BookingConfirmation({
   disabled = false,
   isSubmitting = false,
 }: BookingConfirmationProps) {
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const dayOfWeek = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
-
-    return `${year}年${month}月${day}日（${dayOfWeek}）`;
-  };
-
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -92,7 +83,7 @@ export function BookingConfirmation({
             <div>
               <span className="text-gray-600">予約日</span>
               <p className="font-medium text-gray-800">
-                {formatDate(bookingData.date)}
+                {formatDateStringYMDW(bookingData.date)}
               </p>
             </div>
             <div>

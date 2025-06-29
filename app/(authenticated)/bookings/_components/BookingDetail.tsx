@@ -1,6 +1,7 @@
 "use client";
 
 import type { Booking } from "@/app/(authenticated)/bookings/actions";
+import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
 
 interface BookingDetailProps {
@@ -14,25 +15,6 @@ export function BookingDetail({
   onClose,
   customerName,
 }: BookingDetailProps) {
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const normalizedString = normalizeDateTime(dateString);
-    const date = new Date(normalizedString);
-
-    // Convert to JST for display
-    const jstDate = new Date(
-      date.toLocaleString("en-US", { timeZone: "Asia/Tokyo" }),
-    );
-    const year = jstDate.getFullYear();
-    const month = jstDate.getMonth() + 1;
-    const day = jstDate.getDate();
-    const dayOfWeek = ["日", "月", "火", "水", "木", "金", "土"][
-      jstDate.getDay()
-    ];
-
-    return `${year}年${month}月${day}日（${dayOfWeek}）`;
-  };
-
   // Format time for display
   const formatTime = (dateString: string) => {
     const normalizedString = normalizeDateTime(dateString);
@@ -166,7 +148,7 @@ export function BookingDetail({
               <div>
                 <span className="text-gray-600">予約日</span>
                 <p className="font-medium text-gray-800">
-                  {formatDate(booking.start_time)}
+                  {formatDateStringYMDW(booking.start_time)}
                 </p>
               </div>
               <div>

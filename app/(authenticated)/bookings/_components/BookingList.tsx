@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Booking } from "@/app/(authenticated)/bookings/actions";
+import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
 import { ROUTES } from "@/lib/routes";
 
@@ -14,25 +15,6 @@ export function BookingList({ bookings, onBookingSelect }: BookingListProps) {
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
     null,
   );
-
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const normalizedString = normalizeDateTime(dateString);
-    const date = new Date(normalizedString);
-
-    // Convert to JST for display
-    const jstDate = new Date(
-      date.toLocaleString("en-US", { timeZone: "Asia/Tokyo" }),
-    );
-    const year = jstDate.getFullYear();
-    const month = jstDate.getMonth() + 1;
-    const day = jstDate.getDate();
-    const dayOfWeek = ["日", "月", "火", "水", "木", "金", "土"][
-      jstDate.getDay()
-    ];
-
-    return `${year}年${month}月${day}日（${dayOfWeek}）`;
-  };
 
   // Format time for display
   const formatTime = (dateString: string) => {
@@ -148,7 +130,7 @@ export function BookingList({ bookings, onBookingSelect }: BookingListProps) {
                           {booking.service_name}
                         </h3>
                         <p className="text-gray-600 text-sm">
-                          {formatDate(booking.start_time)}
+                          {formatDateStringYMDW(booking.start_time)}
                         </p>
                         <p className="text-gray-600 text-sm">
                           {formatTime(booking.start_time)} -{" "}
@@ -217,7 +199,7 @@ export function BookingList({ bookings, onBookingSelect }: BookingListProps) {
                           {booking.service_name}
                         </h3>
                         <p className="text-gray-500 text-sm">
-                          {formatDate(booking.start_time)}
+                          {formatDateStringYMDW(booking.start_time)}
                         </p>
                         <p className="text-gray-500 text-sm">
                           {formatTime(booking.start_time)} -{" "}
