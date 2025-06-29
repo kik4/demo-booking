@@ -1,148 +1,138 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { SEX_LABELS } from "@/constants/sexCode";
-import { normalizeDateTime } from "@/lib/normalizeDateTime";
+import { Calendar, Clock, UserCheck, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAllBookings, getUsers } from "./actions";
 
 export default async function AdminPage() {
   const users = await getUsers();
   const bookings = await getAllBookings();
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ja-JP");
-  };
-
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(normalizeDateTime(dateString));
-    return date.toLocaleString("ja-JP", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Tokyo",
-    });
-  };
-
-  const getRoleLabel = (role: string) => {
-    return role === "admin" ? "管理者" : "一般ユーザー";
-  };
+  const adminUsers = users.filter((user) => user.role === "admin");
+  const regularUsers = users.filter((user) => user.role === "user");
+  const todayBookings = bookings.filter((booking) => {
+    const bookingDate = new Date(booking.start_time);
+    const today = new Date();
+    return bookingDate.toDateString() === today.toDateString();
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="bg-gray-50 py-8">
       <div className="mx-auto max-w-6xl px-4">
         <h1 className="mb-8 font-bold text-3xl text-gray-900">
           管理者ダッシュボード
         </h1>
 
-        <div className="space-y-8">
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-6 font-semibold text-xl">予約一覧</h2>
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">
+                総ユーザー数
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">{users.length}</div>
+              <p className="text-muted-foreground text-xs">
+                管理者: {adminUsers.length} | 一般: {regularUsers.length}
+              </p>
+            </CardContent>
+          </Card>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>予約者</TableHead>
-                  <TableHead>サービス名</TableHead>
-                  <TableHead>開始時刻</TableHead>
-                  <TableHead>終了時刻</TableHead>
-                  <TableHead>備考</TableHead>
-                  <TableHead>登録日時</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bookings.map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.id}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">
-                          {booking.profile.name}
-                        </div>
-                        <div className="text-gray-500 text-sm">
-                          {booking.profile.name_hiragana}
-                        </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">総予約数</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">{bookings.length}</div>
+              <p className="text-muted-foreground text-xs">全期間の予約合計</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">本日の予約</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">{todayBookings.length}</div>
+              <p className="text-muted-foreground text-xs">今日の予約件数</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="font-medium text-sm">管理者数</CardTitle>
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-bold text-2xl">{adminUsers.length}</div>
+              <p className="text-muted-foreground text-xs">管理権限ユーザー</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>最近の予約</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {bookings.slice(0, 5).map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="flex items-center justify-between rounded-lg bg-gray-50 p-2"
+                  >
+                    <div>
+                      <div className="font-medium">{booking.profile.name}</div>
+                      <div className="text-gray-500 text-sm">
+                        {booking.service_name}
                       </div>
-                    </TableCell>
-                    <TableCell>{booking.service_name}</TableCell>
-                    <TableCell>{formatDateTime(booking.start_time)}</TableCell>
-                    <TableCell>{formatDateTime(booking.end_time)}</TableCell>
-                    <TableCell className="max-w-xs">
-                      <div className="truncate" title={booking.notes}>
-                        {booking.notes || "-"}
+                    </div>
+                    <div className="text-gray-500 text-sm">
+                      {new Date(booking.start_time).toLocaleDateString("ja-JP")}
+                    </div>
+                  </div>
+                ))}
+                {bookings.length === 0 && (
+                  <div className="py-4 text-center text-gray-500">
+                    予約がありません
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>最近登録されたユーザー</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {users.slice(0, 5).map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between rounded-lg bg-gray-50 p-2"
+                  >
+                    <div>
+                      <div className="font-medium">{user.name}</div>
+                      <div className="text-gray-500 text-sm">
+                        {user.name_hiragana}
                       </div>
-                    </TableCell>
-                    <TableCell>{formatDateTime(booking.created_at)}</TableCell>
-                  </TableRow>
+                    </div>
+                    <div className="text-gray-500 text-sm">
+                      {new Date(user.created_at).toLocaleDateString("ja-JP")}
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
-
-            {bookings.length === 0 && (
-              <div className="py-8 text-center text-gray-500">
-                予約が登録されていません
+                {users.length === 0 && (
+                  <div className="py-4 text-center text-gray-500">
+                    ユーザーがいません
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-6 font-semibold text-xl">ユーザー一覧</h2>
-
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>名前</TableHead>
-                  <TableHead>ふりがな</TableHead>
-                  <TableHead>生年月日</TableHead>
-                  <TableHead>性別</TableHead>
-                  <TableHead>権限</TableHead>
-                  <TableHead>登録日</TableHead>
-                  <TableHead>更新日</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.id}</TableCell>
-                    <TableCell>{user.name}</TableCell>
-                    <TableCell>{user.name_hiragana}</TableCell>
-                    <TableCell>{formatDate(user.date_of_birth)}</TableCell>
-                    <TableCell>
-                      {SEX_LABELS[user.sex as keyof typeof SEX_LABELS]}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${
-                          user.role === "admin"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                        {getRoleLabel(user.role)}
-                      </span>
-                    </TableCell>
-                    <TableCell>{formatDate(user.created_at)}</TableCell>
-                    <TableCell>{formatDate(user.updated_at)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-
-            {users.length === 0 && (
-              <div className="py-8 text-center text-gray-500">
-                ユーザーが登録されていません
-              </div>
-            )}
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

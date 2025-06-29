@@ -24,6 +24,8 @@ export const ROUTES = {
   // Admin routes
   ADMIN: {
     ROOT: "/admin",
+    USERS: "/admin/users",
+    BOOKINGS: "/admin/bookings",
   },
 } as const;
 
