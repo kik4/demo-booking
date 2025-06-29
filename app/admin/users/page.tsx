@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ROLE_CODES, ROLE_LABELS } from "@/constants/roleCode";
 import { SEX_LABELS } from "@/constants/sexCode";
 import { getUsers } from "../actions";
 
@@ -18,7 +19,7 @@ export default async function UsersPage() {
   };
 
   const getRoleLabel = (role: string) => {
-    return role === "admin" ? "管理者" : "一般ユーザー";
+    return ROLE_LABELS[role as keyof typeof ROLE_LABELS];
   };
 
   return (
@@ -53,7 +54,7 @@ export default async function UsersPage() {
                   <TableCell>
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-medium text-xs ${
-                        user.role === "admin"
+                        user.role === ROLE_CODES.ADMIN
                           ? "bg-red-100 text-red-800"
                           : "bg-blue-100 text-blue-800"
                       }`}

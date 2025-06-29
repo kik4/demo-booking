@@ -1,13 +1,14 @@
 import { Calendar, Clock, UserCheck, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ROLE_CODES } from "@/constants/roleCode";
 import { getAllBookings, getUsers } from "./actions";
 
 export default async function AdminPage() {
   const users = await getUsers();
   const bookings = await getAllBookings();
 
-  const adminUsers = users.filter((user) => user.role === "admin");
-  const regularUsers = users.filter((user) => user.role === "user");
+  const adminUsers = users.filter((user) => user.role === ROLE_CODES.ADMIN);
+  const regularUsers = users.filter((user) => user.role === ROLE_CODES.USER);
   const todayBookings = bookings.filter((booking) => {
     const bookingDate = new Date(booking.start_time);
     const today = new Date();

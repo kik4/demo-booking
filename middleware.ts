@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { ROLE_CODES } from "@/constants/roleCode";
 import { ROUTES, UserRouteValues } from "@/lib/routes";
 
 export async function middleware(request: NextRequest) {
@@ -66,7 +67,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const isAdmin = profile.role === "admin";
+    const isAdmin = profile.role === ROLE_CODES.ADMIN;
 
     // 管理者ユーザーが一般ユーザー向けページにアクセス
     if (isAdmin && isUserRoute) {
