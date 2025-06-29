@@ -4,7 +4,15 @@ import { AppSidebar } from "./_components/AppSidebar";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      defaultOpen={true}
+      style={
+        {
+          "--sidebar-width": "16rem",
+          "--sidebar-width-mobile": "16rem",
+        } as React.CSSProperties
+      }
+    >
       <AppSidebar />
       <main className="flex w-full flex-col [&>*:nth-child(2)]:flex-1">
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
