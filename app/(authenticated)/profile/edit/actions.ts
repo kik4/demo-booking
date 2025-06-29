@@ -68,7 +68,6 @@ export async function editProfileAction(
         name_hiragana: validation.data.nameHiragana,
         sex: validation.data.sex,
         date_of_birth: validation.data.dateOfBirth,
-        updated_at: new Date().toISOString(),
       })
       .eq("user_id", user.id)
       .is("deleted_at", null);
