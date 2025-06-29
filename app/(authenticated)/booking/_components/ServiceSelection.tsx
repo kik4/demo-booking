@@ -1,28 +1,24 @@
 "use client";
 
 import { useId } from "react";
+import type { Database } from "@/types/database.types";
+
+type Service = Database["public"]["Tables"]["services"]["Row"];
 
 interface ServiceSelectionProps {
   selectedService: string;
   notes: string;
+  services: Service[];
   onServiceChange: (service: string) => void;
   onNotesChange: (notes: string) => void;
   onNext: () => void;
   disabled?: boolean;
 }
 
-const SERVICES = [
-  { id: "haircut", name: "カット", duration: 60, price: 3000 },
-  { id: "coloring", name: "カラー", duration: 120, price: 8000 },
-  { id: "perm", name: "パーマ", duration: 150, price: 12000 },
-  { id: "treatment", name: "トリートメント", duration: 45, price: 2500 },
-  { id: "haircut_color", name: "カット+カラー", duration: 180, price: 10000 },
-  { id: "haircut_perm", name: "カット+パーマ", duration: 210, price: 14000 },
-];
-
 export function ServiceSelection({
   selectedService,
   notes,
+  services,
   onServiceChange,
   onNotesChange,
   onNext,
@@ -31,7 +27,9 @@ export function ServiceSelection({
   const serviceSelectId = useId();
   const notesInputId = useId();
 
-  const selectedServiceData = SERVICES.find((s) => s.id === selectedService);
+  const selectedServiceData = services.find(
+    (s) => s.id.toString() === selectedService,
+  );
 
   return (
     <div className="space-y-6">
@@ -55,8 +53,8 @@ export function ServiceSelection({
           disabled={disabled}
         >
           <option value="">サービスを選択してください</option>
-          {SERVICES.map((service) => (
-            <option key={service.id} value={service.id}>
+          {services.map((service) => (
+            <option key={service.id} value={service.id.toString()}>
               {service.name} - {service.duration}分 - ¥
               {service.price.toLocaleString()}
             </option>

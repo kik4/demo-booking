@@ -5,6 +5,7 @@ import { startTransition, useActionState, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
 import { supabase } from "@/lib/supabaseClient";
+import type { Database } from "@/types/database.types";
 import {
   type CreateBookingFormState,
   createBookingAction,
@@ -14,15 +15,7 @@ import { DateTimeSelection } from "./_components/DateTimeSelection";
 import { ServiceSelection } from "./_components/ServiceSelection";
 
 type Step = 1 | 2 | 3;
-
-const SERVICES = [
-  { id: "haircut", name: "カット", duration: 60, price: 3000 },
-  { id: "coloring", name: "カラー", duration: 120, price: 8000 },
-  { id: "perm", name: "パーマ", duration: 150, price: 12000 },
-  { id: "treatment", name: "トリートメント", duration: 45, price: 2500 },
-  { id: "haircut_color", name: "カット+カラー", duration: 180, price: 10000 },
-  { id: "haircut_perm", name: "カット+パーマ", duration: 210, price: 14000 },
-];
+type Service = Database["public"]["Tables"]["services"]["Row"];
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -31,6 +24,7 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -40,7 +34,7 @@ export default function BookingPage() {
   >(createBookingAction, {});
 
   useEffect(() => {
-    async function fetchCustomerName() {
+    async function fetchData() {
       try {
         const {
           data: { user },
@@ -51,27 +45,44 @@ export default function BookingPage() {
           return;
         }
 
-        const { data } = await supabase
+        // Fetch customer profile
+        const { data: profileData } = await supabase
           .from("profiles")
           .select("name")
           .eq("user_id", user.id)
           .is("deleted_at", null)
           .single();
 
-        if (data) {
-          setCustomerName(data.name);
+        if (profileData) {
+          setCustomerName(profileData.name);
+        }
+
+        // Fetch services
+        const { data: servicesData, error: servicesError } = await supabase
+          .from("services")
+          .select("*")
+          .is("deleted_at", null)
+          .order("id");
+
+        if (servicesError) {
+          console.error("サービス取得エラー:", servicesError);
+          toast.error("サービス情報の取得に失敗しました");
+        } else {
+          setServices(servicesData || []);
         }
       } catch (error) {
-        console.error("プロフィール取得エラー:", error);
+        console.error("データ取得エラー:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchCustomerName();
+    fetchData();
   }, [router]);
 
-  const selectedServiceData = SERVICES.find((s) => s.id === selectedService);
+  const selectedServiceData = services.find(
+    (s) => s.id.toString() === selectedService,
+  );
 
   // Calculate end time based on start time and duration
   const calculateEndTime = (startTime: string, duration: number): string => {
@@ -212,6 +223,7 @@ export default function BookingPage() {
             <ServiceSelection
               selectedService={selectedService}
               notes={notes}
+              services={services}
               onServiceChange={setSelectedService}
               onNotesChange={setNotes}
               onNext={handleServiceNext}

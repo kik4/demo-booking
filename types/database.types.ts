@@ -117,6 +117,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      services: {
+        Row: {
+          created_at: string;
+          deleted_at: string | null;
+          duration: number;
+          id: number;
+          name: string;
+          price: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          deleted_at?: string | null;
+          duration: number;
+          id?: number;
+          name: string;
+          price: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          deleted_at?: string | null;
+          duration?: number;
+          id?: number;
+          name?: string;
+          price?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

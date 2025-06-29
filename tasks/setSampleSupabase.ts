@@ -30,6 +30,16 @@ if (profilesError) {
   throw profilesError;
 }
 
+// 既存のサービスデータを削除
+const { error: servicesError } = await supabaseClient
+  .from("services")
+  .delete()
+  .gt("id", 0);
+if (servicesError) {
+  console.error("Error deleting services:", servicesError);
+  throw servicesError;
+}
+
 // 既存のテストユーザーを削除
 const { data: existingUsers, error: listError } =
   await supabaseClient.auth.admin.listUsers();
@@ -55,6 +65,22 @@ for (const user of existingUsers.users) {
 }
 
 console.log("Database reset completed. Inserting sample data...");
+
+// サンプルサービスデータを挿入
+const { error: insertServicesError } = await supabaseClient
+  .from("services")
+  .insert([
+    { name: "カット", duration: 60, price: 3000 },
+    { name: "カラー", duration: 120, price: 8000 },
+    { name: "パーマ", duration: 150, price: 12000 },
+    { name: "トリートメント", duration: 45, price: 2500 },
+    { name: "カット+カラー", duration: 180, price: 10000 },
+    { name: "カット+パーマ", duration: 210, price: 14000 },
+  ]);
+if (insertServicesError) {
+  console.error("Error inserting services:", insertServicesError);
+  throw insertServicesError;
+}
 
 // 管理者ユーザー
 {
@@ -110,7 +136,6 @@ console.log("Database reset completed. Inserting sample data...");
   const resProfile = await supabaseClient
     .from("profiles")
     .insert({
-      id: 1,
       name: "テスト太郎",
       name_hiragana: "てすとたろう",
       sex: SEX_CODES.MALE,
