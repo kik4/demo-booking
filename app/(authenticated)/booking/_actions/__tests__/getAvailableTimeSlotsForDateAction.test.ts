@@ -82,7 +82,7 @@ describe("getAvailableTimeSlotsForDateAction", () => {
         error: null,
       });
 
-      expect(() =>
+      await expect(() =>
         getAvailableTimeSlotsForDateAction("2024-01-15"),
       ).rejects.toThrowError(new Error("認証エラー"));
     });
@@ -93,7 +93,7 @@ describe("getAvailableTimeSlotsForDateAction", () => {
         error: { message: "Auth error" },
       });
 
-      expect(() =>
+      await expect(() =>
         getAvailableTimeSlotsForDateAction("2024-01-15"),
       ).rejects.toThrowError(new Error("認証エラー"));
     });
@@ -251,7 +251,7 @@ describe("getAvailableTimeSlotsForDateAction", () => {
         error: new Error("Database error"),
       });
 
-      expect(() =>
+      await expect(() =>
         getAvailableTimeSlotsForDateAction("2024-01-15"),
       ).rejects.toThrowError(new Error("Database error"));
     });
