@@ -1,6 +1,7 @@
 import { Calendar, Clock, UserCheck, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROLE_CODES } from "@/constants/roleCode";
+import { formatDateStringYMD } from "@/lib/formatDateStringYMD";
 import { getAllBookings } from "./_actions/getAllBookings";
 import { getUsers } from "./_actions/getUsers";
 
@@ -92,7 +93,7 @@ export default async function AdminPage() {
                       </div>
                     </div>
                     <div className="text-gray-500 text-sm">
-                      {new Date(booking.start_time).toLocaleDateString("ja-JP")}
+                      {formatDateStringYMD(booking.start_time)}
                     </div>
                   </div>
                 ))}
@@ -123,7 +124,7 @@ export default async function AdminPage() {
                       </div>
                     </div>
                     <div className="text-gray-500 text-sm">
-                      {new Date(user.created_at).toLocaleDateString("ja-JP")}
+                      {formatDateStringYMD(user.created_at)}
                     </div>
                   </div>
                 ))}

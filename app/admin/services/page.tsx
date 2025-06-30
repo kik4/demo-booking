@@ -6,15 +6,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDateStringYMD } from "@/lib/formatDateStringYMD";
 import { getServices } from "../_actions/getServices";
 
 export default async function ServicesPage() {
   const services = await getServices();
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ja-JP");
-  };
 
   const formatPrice = (price: number) => {
     return `¥${price.toLocaleString("ja-JP")}`;
@@ -50,8 +46,12 @@ export default async function ServicesPage() {
                   <TableCell className="font-medium text-green-600">
                     {formatPrice(service.price)}
                   </TableCell>
-                  <TableCell>{formatDate(service.created_at)}</TableCell>
-                  <TableCell>{formatDate(service.updated_at)}</TableCell>
+                  <TableCell>
+                    {formatDateStringYMD(service.created_at)}
+                  </TableCell>
+                  <TableCell>
+                    {formatDateStringYMD(service.updated_at)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

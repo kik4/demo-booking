@@ -8,15 +8,11 @@ import {
 } from "@/components/ui/table";
 import { ROLE_CODES, ROLE_LABELS } from "@/constants/roleCode";
 import { SEX_LABELS } from "@/constants/sexCode";
+import { formatDateStringYMD } from "@/lib/formatDateStringYMD";
 import { getUsers } from "../_actions/getUsers";
 
 export default async function UsersPage() {
   const users = await getUsers();
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ja-JP");
-  };
 
   const getRoleLabel = (role: string) => {
     return ROLE_LABELS[role as keyof typeof ROLE_LABELS];
@@ -47,7 +43,9 @@ export default async function UsersPage() {
                   <TableCell className="font-medium">{user.id}</TableCell>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.name_hiragana}</TableCell>
-                  <TableCell>{formatDate(user.date_of_birth)}</TableCell>
+                  <TableCell>
+                    {formatDateStringYMD(user.date_of_birth)}
+                  </TableCell>
                   <TableCell>
                     {SEX_LABELS[user.sex as keyof typeof SEX_LABELS]}
                   </TableCell>
@@ -62,8 +60,8 @@ export default async function UsersPage() {
                       {getRoleLabel(user.role)}
                     </span>
                   </TableCell>
-                  <TableCell>{formatDate(user.created_at)}</TableCell>
-                  <TableCell>{formatDate(user.updated_at)}</TableCell>
+                  <TableCell>{formatDateStringYMD(user.created_at)}</TableCell>
+                  <TableCell>{formatDateStringYMD(user.updated_at)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
