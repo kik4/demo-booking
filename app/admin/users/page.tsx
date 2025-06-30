@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { ROLE_CODES, ROLE_LABELS } from "@/constants/roleCode";
 import { SEX_LABELS } from "@/constants/sexCode";
-import { getUsers } from "../actions";
+import { getUsers } from "../_actions/getUsers";
 
 export default async function UsersPage() {
   const users = await getUsers();

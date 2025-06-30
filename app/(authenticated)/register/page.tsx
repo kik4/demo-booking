@@ -4,7 +4,10 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useId } from "react";
 import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
-import { type RegisterFormState, registerAction } from "./actions";
+import {
+  type RegisterFormState,
+  registerAction,
+} from "./_actions/registerAction";
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState<

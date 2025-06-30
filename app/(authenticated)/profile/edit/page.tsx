@@ -7,7 +7,10 @@ import toast from "react-hot-toast";
 import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
 import { supabase } from "@/lib/supabaseClient";
-import { type EditProfileFormState, editProfileAction } from "./actions";
+import {
+  type EditProfileFormState,
+  editProfileAction,
+} from "./_actions/editProfileAction";
 
 export default function EditProfilePage() {
   const [currentName, setCurrentName] = useState("");

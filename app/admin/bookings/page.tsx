@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
-import { getAllBookings } from "../actions";
+import { getAllBookings } from "../_actions/getAllBookings";
 
 export default async function BookingsPage() {
   const bookings = await getAllBookings();

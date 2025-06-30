@@ -1,6 +1,6 @@
 "use client";
 
-import type { Booking } from "@/app/(authenticated)/bookings/actions";
+import type { Booking } from "@/app/(authenticated)/bookings/_actions/getBookingsAction";
 import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
 import { formatTime } from "@/lib/formatTime";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";

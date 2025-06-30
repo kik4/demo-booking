@@ -1,7 +1,8 @@
 import { Calendar, Clock, UserCheck, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROLE_CODES } from "@/constants/roleCode";
-import { getAllBookings, getUsers } from "./actions";
+import { getAllBookings } from "./_actions/getAllBookings";
+import { getUsers } from "./_actions/getUsers";
 
 export default async function AdminPage() {
   const users = await getUsers();

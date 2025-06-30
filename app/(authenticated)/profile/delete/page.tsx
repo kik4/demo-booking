@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { ROUTES } from "@/lib/routes";
-import { deleteAccount } from "./actions";
+import { deleteAccount } from "./_actions/deleteAccount";
 
 export default function DeleteAccountPage() {
   const [isPending, startTransition] = useTransition();

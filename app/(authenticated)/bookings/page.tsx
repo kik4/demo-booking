@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
 import { supabase } from "@/lib/supabaseClient";
+import { type Booking, getBookingsAction } from "./_actions/getBookingsAction";
 import { BookingDetail } from "./_components/BookingDetail";
 import { BookingList } from "./_components/BookingList";
-import { type Booking, getBookingsAction } from "./actions";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);

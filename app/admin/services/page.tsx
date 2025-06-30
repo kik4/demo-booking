@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getServices } from "../actions";
+import { getServices } from "../_actions/getServices";
 
 export default async function ServicesPage() {
   const services = await getServices();
