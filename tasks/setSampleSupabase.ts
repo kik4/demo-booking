@@ -1,6 +1,7 @@
 import "./utils/envConfig";
 import { createClient } from "@supabase/supabase-js";
 import { SEX_CODES } from "@/constants/sexCode";
+import { createServices } from "@/lib/db/services";
 
 const supabaseClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -67,21 +68,27 @@ for (const user of existingUsers.users) {
 console.log("Database reset completed. Inserting sample data...");
 
 // サンプルサービスデータを挿入
-const { data: insertedServices, error: insertServicesError } =
-  await supabaseClient
-    .from("services")
-    .insert([
-      { name: "カット", duration: 60, price: 3000 },
-      { name: "カラー", duration: 120, price: 8000 },
-      { name: "パーマ", duration: 150, price: 12000 },
-      { name: "トリートメント", duration: 45, price: 2500 },
-      { name: "カット+カラー", duration: 180, price: 10000 },
-      { name: "カット+パーマ", duration: 210, price: 14000 },
-    ])
-    .select("id, name, duration, price");
-if (insertServicesError || !insertedServices) {
-  console.error("Error inserting services:", insertServicesError);
-  throw insertServicesError;
+const sampleServicesData = [
+  { name: "カット", duration: 60, price: 3000 },
+  { name: "カラー", duration: 120, price: 8000 },
+  { name: "パーマ", duration: 150, price: 12000 },
+  { name: "トリートメント", duration: 45, price: 2500 },
+  { name: "カット+カラー", duration: 180, price: 10000 },
+  { name: "カット+パーマ", duration: 210, price: 14000 },
+];
+
+let insertedServices: {
+  id: number;
+  name: string;
+  duration: number;
+  price: number;
+}[];
+try {
+  insertedServices = await createServices(sampleServicesData, supabaseClient);
+  console.log(`Successfully inserted ${insertedServices.length} services`);
+} catch (error) {
+  console.error("Error inserting services:", error);
+  throw error;
 }
 
 // サービスIDをマッピング
