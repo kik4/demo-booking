@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { ROLE_CODES } from "@/constants/roleCode";
 import { SEX_CODES } from "@/constants/sexCode";
-import { createProfile, updateProfile } from "../purofiles";
+import { createProfile, updateProfile } from "../profiles";
 
 // Mock Supabase client helper for insert operations
 const createMockSupabaseClient = (data: any = null, error: any = null) => ({

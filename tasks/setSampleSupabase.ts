@@ -2,7 +2,7 @@ import "./utils/envConfig";
 import { createClient } from "@supabase/supabase-js";
 import { ROLE_CODES } from "@/constants/roleCode";
 import { SEX_CODES } from "@/constants/sexCode";
-import { createProfile } from "@/lib/db/purofiles";
+import { createProfile } from "@/lib/db/profiles";
 import { createServices } from "@/lib/db/services";
 
 const supabaseClient = createClient(
