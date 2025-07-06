@@ -319,7 +319,7 @@ describe("createProfile", () => {
         expect.fail("エラーが投げられるべき");
       } catch (error: any) {
         expect(error.constructor.name).toBe("ValiError");
-        expect(error.message).toBe("性別は有効な値を選択してください");
+        expect(error.message).toBe("性別は有効な値を入力してください");
       }
     });
 
@@ -345,7 +345,7 @@ describe("createProfile", () => {
         expect.fail("エラーが投げられるべき");
       } catch (error: any) {
         expect(error.constructor.name).toBe("ValiError");
-        expect(error.message).toBe("性別は有効な値を選択してください");
+        expect(error.message).toBe("性別は有効な値を入力してください");
       }
     });
   });
@@ -435,7 +435,7 @@ describe("createProfile", () => {
         expect.fail("エラーが投げられるべき");
       } catch (error: any) {
         expect(error.constructor.name).toBe("ValiError");
-        expect(error.message).toBe("有効な値を選択してください");
+        expect(error.message).toBe("ロールは有効な値を入力してください");
       }
     });
   });
@@ -904,7 +904,7 @@ describe("updateProfile", () => {
         expect.fail("エラーが投げられるべき");
       } catch (error: any) {
         expect(error.constructor.name).toBe("ValiError");
-        expect(error.message).toBe("性別は有効な値を選択してください");
+        expect(error.message).toBe("性別は有効な値を入力してください");
       }
     });
 
@@ -930,7 +930,7 @@ describe("updateProfile", () => {
         expect.fail("エラーが投げられるべき");
       } catch (error: any) {
         expect(error.constructor.name).toBe("ValiError");
-        expect(error.message).toBe("性別は有効な値を選択してください");
+        expect(error.message).toBe("性別は有効な値を入力してください");
       }
     });
   });
@@ -1021,7 +1021,7 @@ describe("updateProfile", () => {
         expect.fail("エラーが投げられるべき");
       } catch (error: any) {
         expect(error.constructor.name).toBe("ValiError");
-        expect(error.message).toBe("有効な値を選択してください");
+        expect(error.message).toBe("ロールは有効な値を入力してください");
       }
     });
   });

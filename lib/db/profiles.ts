@@ -6,24 +6,24 @@ import type { Database } from "@/types/database.types";
 
 const profileValidationSchema = v.object({
   name: v.pipe(
-    v.string("有効な値を入力してください"),
+    v.string("名前は有効な値を入力してください"),
     v.trim(),
     v.minLength(2, "名前は2文字以上で入力してください"),
     v.maxLength(100, "名前は100文字以内で入力してください"),
   ),
   name_hiragana: v.pipe(
-    v.string(),
+    v.string("ひらがな名前は有効な値を入力してください"),
     v.trim(),
     v.minLength(2, "ひらがな名前は2文字以上で入力してください"),
     v.maxLength(100, "ひらがな名前は100文字以内で入力してください"),
     v.regex(/^[ひらがな\u3040-\u309F\u30FC\s]+$/, "ひらがなで入力してください"),
   ),
   sex: v.pipe(
-    v.number("性別は有効な値を選択してください"),
+    v.number("性別は有効な値を入力してください"),
     v.picklist(Object.values(SEX_CODES), "性別は有効な値を選択してください"),
   ),
   date_of_birth: v.pipe(
-    v.string("有効な値を入力してください"),
+    v.string("生年月日は有効な値を入力してください"),
     v.trim(),
     v.isoDate("生年月日は正しい日付形式で入力してください"),
     v.maxValue(
@@ -32,7 +32,7 @@ const profileValidationSchema = v.object({
     ),
   ),
   role: v.pipe(
-    v.string("有効な値を選択してください"),
+    v.string("ロールは有効な値を入力してください"),
     v.trim(),
     v.picklist(Object.values(ROLE_CODES), "ロールは有効な値を選択してください"),
   ),
