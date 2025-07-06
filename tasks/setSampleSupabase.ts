@@ -115,7 +115,7 @@ const serviceMap = insertedServices.reduce(
   }
 
   const resProfile = await createProfile(
-    { user_id: user.data.user.id },
+    user.data.user,
     {
       name: "管理者",
       name_hiragana: "かんりしゃ",
@@ -157,7 +157,7 @@ const serviceMap = insertedServices.reduce(
   }
 
   const resProfile = await createProfile(
-    { user_id: user.data.user.id },
+    user.data.user,
     {
       name: "テスト太郎",
       name_hiragana: "てすとたろう",

@@ -34,7 +34,7 @@ const createMockSupabaseClientForUpdate = (
 });
 
 describe("createProfile", () => {
-  const validUser = { user_id: "test-user-id" };
+  const validUser = { id: "test-user-id" };
   const validParams = {
     name: "田中太郎",
     name_hiragana: "たなかたろう",
@@ -562,7 +562,7 @@ describe("createProfile", () => {
 });
 
 describe("updateProfile", () => {
-  const validUser = { user_id: "test-user-id" };
+  const validUser = { id: "test-user-id" };
   const validUpdateParams = {
     name: "田中次郎",
     name_hiragana: "たなかじろう",

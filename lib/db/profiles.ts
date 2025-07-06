@@ -41,7 +41,7 @@ const profileValidationSchema = v.object({
 const updateProfileValidationSchema = v.partial(profileValidationSchema);
 
 export const createProfile = async (
-  user: { user_id: string },
+  user: { id: string },
   params: {
     name: string;
     name_hiragana: string;
@@ -55,12 +55,12 @@ export const createProfile = async (
 
   return supabase
     .from("profiles")
-    .insert({ user_id: user.user_id, ...parsed })
+    .insert({ user_id: user.id, ...parsed })
     .select();
 };
 
 export const updateProfile = async (
-  user: { user_id: string },
+  user: { id: string },
   params: {
     name?: string;
     name_hiragana?: string;
@@ -80,6 +80,6 @@ export const updateProfile = async (
   return supabase
     .from("profiles")
     .update(updateData)
-    .eq("user_id", user.user_id)
+    .eq("user_id", user.id)
     .select();
 };
