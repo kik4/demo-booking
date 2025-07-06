@@ -1,7 +1,10 @@
 "use server";
 
+import { camelCase } from "lodash-es";
+import { ValiError } from "valibot";
+import type { SexCode } from "@/constants/sexCode";
+import { updateProfile } from "@/lib/db/profiles";
 import { createClient } from "@/lib/supabaseClientServer";
-import { validateProfile } from "@/lib/validation";
 
 export interface EditProfileFormState {
   errors?: {
@@ -29,20 +32,6 @@ export async function editProfileAction(
   const sex = formData.get("sex") as string;
   const dateOfBirth = formData.get("dateOfBirth") as string;
 
-  const validation = validateProfile({
-    name,
-    nameHiragana,
-    sex: sex ? Number.parseInt(sex, 10) : undefined,
-    dateOfBirth,
-  });
-
-  if (!validation.success) {
-    return {
-      errors: validation.errors,
-      formData: { name, nameHiragana, sex, dateOfBirth },
-    };
-  }
-
   try {
     const supabase = await createClient();
     // 現在のユーザーを取得
@@ -61,26 +50,44 @@ export async function editProfileAction(
     }
 
     // プロフィールを更新
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({
-        name: validation.data.name,
-        name_hiragana: validation.data.nameHiragana,
-        sex: validation.data.sex,
-        date_of_birth: validation.data.dateOfBirth,
-      })
-      .eq("user_id", user.id)
-      .is("deleted_at", null);
-
-    if (updateError) {
-      return {
-        errors: {
-          _form: ["更新に失敗しました。もう一度お試しください。"],
+    try {
+      const { data, error } = await updateProfile(
+        user,
+        {
+          name,
+          name_hiragana: nameHiragana,
+          sex: (sex ? +sex : undefined) as SexCode,
+          date_of_birth: dateOfBirth,
         },
-        formData: { name, nameHiragana, sex, dateOfBirth },
-      };
+        supabase,
+      );
+      if (error || !data) {
+        return {
+          errors: {
+            _form: ["登録に失敗しました。もう一度お試しください。"],
+          },
+          formData: { name, nameHiragana, sex, dateOfBirth },
+        };
+      }
+    } catch (e) {
+      if (e instanceof ValiError) {
+        const errors: Record<string, string[]> = {};
+        for (const issue of e.issues) {
+          const path = issue.path
+            ? issue.path.map((p: { key: string }) => camelCase(p.key)).join(".")
+            : "root";
+          if (!errors[path]) {
+            errors[path] = [];
+          }
+          errors[path].push(issue.message);
+        }
+        return {
+          errors,
+          formData: { name, nameHiragana, sex, dateOfBirth },
+        };
+      }
+      throw e;
     }
-
     return { success: true };
   } catch {
     return {
