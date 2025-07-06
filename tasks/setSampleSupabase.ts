@@ -1,6 +1,8 @@
 import "./utils/envConfig";
 import { createClient } from "@supabase/supabase-js";
+import { ROLE_CODES } from "@/constants/roleCode";
 import { SEX_CODES } from "@/constants/sexCode";
+import { createProfile } from "@/lib/db/purofiles";
 import { createServices } from "@/lib/db/services";
 
 const supabaseClient = createClient(
@@ -112,14 +114,17 @@ const serviceMap = insertedServices.reduce(
     throw user.error;
   }
 
-  const resProfile = await supabaseClient.from("profiles").insert({
-    name: "管理者",
-    name_hiragana: "かんりしゃ",
-    sex: SEX_CODES.NOT_KNOWN,
-    date_of_birth: "1991-12-31",
-    user_id: user.data.user.id,
-    role: "admin",
-  });
+  const resProfile = await createProfile(
+    { user_id: user.data.user.id },
+    {
+      name: "管理者",
+      name_hiragana: "かんりしゃ",
+      sex: SEX_CODES.NOT_KNOWN,
+      date_of_birth: "1991-12-31",
+      role: ROLE_CODES.ADMIN,
+    },
+    supabaseClient,
+  );
   if (resProfile.error) {
     console.error(resProfile);
     throw resProfile.error;
@@ -151,20 +156,25 @@ const serviceMap = insertedServices.reduce(
     throw user.error;
   }
 
-  const resProfile = await supabaseClient
-    .from("profiles")
-    .insert({
+  const resProfile = await createProfile(
+    { user_id: user.data.user.id },
+    {
       name: "テスト太郎",
       name_hiragana: "てすとたろう",
       sex: SEX_CODES.MALE,
       date_of_birth: "1990-01-01",
-      user_id: user.data.user.id,
-    })
-    .select()
-    .single();
+      role: ROLE_CODES.USER,
+    },
+    supabaseClient,
+  );
   if (resProfile.error) {
     console.error(resProfile);
     throw resProfile.error;
+  }
+
+  const profileData = resProfile.data?.[0];
+  if (!profileData) {
+    throw new Error("Failed to retrieve created profile");
   }
 
   const day = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
@@ -172,7 +182,7 @@ const serviceMap = insertedServices.reduce(
     .slice(0, 10);
   const resBookings = await supabaseClient.from("bookings").insert([
     {
-      profile_id: resProfile.data.id,
+      profile_id: profileData.id,
       service_id: serviceMap.カット.id,
       service_name: "カット",
       service_info: {
@@ -186,7 +196,7 @@ const serviceMap = insertedServices.reduce(
       end_time: "2025-05-01T08:00:00Z",
     },
     {
-      profile_id: resProfile.data.id,
+      profile_id: profileData.id,
       service_id: serviceMap.パーマ.id,
       service_name: "パーマ",
       service_info: {
