@@ -31,18 +31,14 @@ const profileValidationSchema = v.object({
       "生年月日は今日以前の日付を入力してください",
     ),
   ),
-  role: v.optional(
-    v.pipe(
-      v.string("ロールは有効な値を選択してください"),
-      v.trim(),
-      v.picklist(
-        Object.values(ROLE_CODES),
-        "ロールは有効な値を選択してください",
-      ),
-    ),
-    ROLE_CODES.USER,
+  role: v.pipe(
+    v.string("有効な値を選択してください"),
+    v.trim(),
+    v.picklist(Object.values(ROLE_CODES), "ロールは有効な値を選択してください"),
   ),
 });
+
+const updateProfileValidationSchema = v.partial(profileValidationSchema);
 
 export const createProfile = async (
   user: { user_id: string },
@@ -60,5 +56,30 @@ export const createProfile = async (
   return supabase
     .from("profiles")
     .insert({ user_id: user.user_id, ...parsed })
+    .select();
+};
+
+export const updateProfile = async (
+  user: { user_id: string },
+  params: {
+    name?: string;
+    name_hiragana?: string;
+    sex?: SexCode;
+    date_of_birth?: string;
+    role?: RoleCode;
+  },
+  supabase: SupabaseClient<Database>,
+) => {
+  const parsed = v.parse(updateProfileValidationSchema, params);
+
+  // Remove undefined values to avoid updating with null
+  const updateData = Object.fromEntries(
+    Object.entries(parsed).filter(([_, value]) => value !== undefined),
+  );
+
+  return supabase
+    .from("profiles")
+    .update(updateData)
+    .eq("user_id", user.user_id)
     .select();
 };
