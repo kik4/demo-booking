@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
+import { formatDateStringYMD } from "@/lib/formatDateStringYMD";
 
 interface BookingData {
   serviceId: string;
@@ -83,7 +83,7 @@ export function BookingConfirmation({
             <div>
               <span className="text-gray-600">予約日</span>
               <p className="font-medium text-gray-800">
-                {formatDateStringYMDW(bookingData.date)}
+                {formatDateStringYMD(bookingData.date)}
               </p>
             </div>
             <div>
