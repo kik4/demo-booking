@@ -114,7 +114,7 @@ const serviceMap = insertedServices.reduce(
     throw user.error;
   }
 
-  const resProfile = await createProfile(
+  await createProfile(
     user.data.user,
     {
       name: "管理者",
@@ -125,10 +125,6 @@ const serviceMap = insertedServices.reduce(
     },
     supabaseClient,
   );
-  if (resProfile.error) {
-    console.error(resProfile);
-    throw resProfile.error;
-  }
 }
 
 // user 登録だけのユーザー
@@ -167,22 +163,13 @@ const serviceMap = insertedServices.reduce(
     },
     supabaseClient,
   );
-  if (resProfile.error) {
-    console.error(resProfile);
-    throw resProfile.error;
-  }
-
-  const profileData = resProfile.data?.[0];
-  if (!profileData) {
-    throw new Error("Failed to retrieve created profile");
-  }
 
   const day = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 10);
   const resBookings = await supabaseClient.from("bookings").insert([
     {
-      profile_id: profileData.id,
+      profile_id: resProfile.id,
       service_id: serviceMap.カット.id,
       service_name: "カット",
       service_info: {
@@ -196,7 +183,7 @@ const serviceMap = insertedServices.reduce(
       end_time: "2025-05-01T08:00:00Z",
     },
     {
-      profile_id: profileData.id,
+      profile_id: resProfile.id,
       service_id: serviceMap.パーマ.id,
       service_name: "パーマ",
       service_info: {

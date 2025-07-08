@@ -53,10 +53,15 @@ export const createProfile = async (
 ) => {
   const parsed = v.parse(profileValidationSchema, params);
 
-  return supabase
+  const { data, error } = await supabase
     .from("profiles")
     .insert({ user_id: user.id, ...parsed })
-    .select();
+    .select()
+    .single();
+  if (error || !data) {
+    throw error;
+  }
+  return data;
 };
 
 export const updateProfile = async (
@@ -77,9 +82,14 @@ export const updateProfile = async (
     Object.entries(parsed).filter(([_, value]) => value !== undefined),
   );
 
-  return supabase
+  const { data, error } = await supabase
     .from("profiles")
     .update(updateData)
     .eq("user_id", user.id)
-    .select();
+    .select()
+    .single();
+  if (error || !data) {
+    throw error;
+  }
+  return data;
 };

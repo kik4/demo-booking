@@ -52,7 +52,7 @@ export async function registerAction(
 
     // プロフィールを作成
     try {
-      const { data, error } = await createProfile(
+      await createProfile(
         user,
         {
           name,
@@ -63,14 +63,6 @@ export async function registerAction(
         },
         supabase,
       );
-      if (error || !data) {
-        return {
-          errors: {
-            _form: ["登録に失敗しました。もう一度お試しください。"],
-          },
-          formData: { name, nameHiragana, sex, dateOfBirth },
-        };
-      }
     } catch (e) {
       if (e instanceof ValiError) {
         const errors: Record<string, string[]> = {};

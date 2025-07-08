@@ -9,8 +9,12 @@ const createMockSupabaseClient = (data: any = null, error: any = null) => ({
   from: vi.fn(() => ({
     insert: vi.fn(() => ({
       select: vi.fn(() => ({
-        data,
-        error,
+        single: vi.fn(async () => {
+          if (error) {
+            return { data: null, error };
+          }
+          return { data, error: null };
+        }),
       })),
     })),
   })),
@@ -25,8 +29,12 @@ const createMockSupabaseClientForUpdate = (
     update: vi.fn(() => ({
       eq: vi.fn(() => ({
         select: vi.fn(() => ({
-          data,
-          error,
+          single: vi.fn(async () => {
+            if (error) {
+              return { data: null, error };
+            }
+            return { data, error: null };
+          }),
         })),
       })),
     })),
@@ -45,13 +53,11 @@ describe("createProfile", () => {
 
   describe("正常なケース", () => {
     it("有効なプロフィールデータで正常に作成される", async () => {
-      const expectedData = [
-        {
-          id: 1,
-          user_id: "test-user-id",
-          ...validParams,
-        },
-      ];
+      const expectedData = {
+        id: 1,
+        user_id: "test-user-id",
+        ...validParams,
+      };
       const mockClient = createMockSupabaseClient(expectedData);
 
       const result = await createProfile(
@@ -60,8 +66,7 @@ describe("createProfile", () => {
         mockClient as any,
       );
 
-      expect(result.data).toEqual(expectedData);
-      expect(result.error).toBeNull();
+      expect(result).toEqual(expectedData);
       expect(mockClient.from).toHaveBeenCalledWith("profiles");
     });
 
@@ -81,8 +86,10 @@ describe("createProfile", () => {
             expect(data.name_hiragana).toBe("たなかたろう");
             return {
               select: vi.fn(() => ({
-                data: [{ id: 1, ...data }],
-                error: null,
+                single: vi.fn(async () => ({
+                  data: { id: 1, ...data },
+                  error: null,
+                })),
               })),
             };
           }),
@@ -102,7 +109,7 @@ describe("createProfile", () => {
 
       for (const sex of sexCodes) {
         const params = { ...validParams, sex };
-        const mockClient = createMockSupabaseClient([{ id: 1, ...params }]);
+        const mockClient = createMockSupabaseClient({ id: 1, ...params });
 
         const result = await createProfile(
           validUser,
@@ -110,7 +117,7 @@ describe("createProfile", () => {
           mockClient as any,
         );
 
-        expect(result.data?.[0]).toMatchObject({ sex });
+        expect(result).toMatchObject({ sex });
       }
     });
 
@@ -119,7 +126,7 @@ describe("createProfile", () => {
 
       for (const role of roleCodes) {
         const params = { ...validParams, role };
-        const mockClient = createMockSupabaseClient([{ id: 1, ...params }]);
+        const mockClient = createMockSupabaseClient({ id: 1, ...params });
 
         const result = await createProfile(
           validUser,
@@ -127,7 +134,7 @@ describe("createProfile", () => {
           mockClient as any,
         );
 
-        expect(result.data?.[0]).toMatchObject({ role });
+        expect(result).toMatchObject({ role });
       }
     });
   });
@@ -188,21 +195,21 @@ describe("createProfile", () => {
 
     it("名前が2文字ちょうどで正常に作成される", async () => {
       const params = { ...validParams, name: "田中" };
-      const mockClient = createMockSupabaseClient([{ id: 1, ...params }]);
+      const mockClient = createMockSupabaseClient({ id: 1, ...params });
 
       const result = await createProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({ name: "田中" });
+      expect(result).toMatchObject({ name: "田中" });
     });
 
     it("名前が100文字ちょうどで正常に作成される", async () => {
       const maxName = "田".repeat(100);
       const params = { ...validParams, name: maxName };
-      const mockClient = createMockSupabaseClient([{ id: 1, ...params }]);
+      const mockClient = createMockSupabaseClient({ id: 1, ...params });
 
       const result = await createProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({ name: maxName });
+      expect(result).toMatchObject({ name: maxName });
     });
   });
 
@@ -290,22 +297,22 @@ describe("createProfile", () => {
 
     it("ひらがな名前にスペースが含まれていても正常に作成される", async () => {
       const params = { ...validParams, name_hiragana: "たなか たろう" };
-      const mockClient = createMockSupabaseClient([{ id: 1, ...params }]);
+      const mockClient = createMockSupabaseClient({ id: 1, ...params });
 
       const result = await createProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({
+      expect(result).toMatchObject({
         name_hiragana: "たなか たろう",
       });
     });
 
     it("ひらがな名前に長音符が含まれていても正常に作成される", async () => {
       const params = { ...validParams, name_hiragana: "たなかー" };
-      const mockClient = createMockSupabaseClient([{ id: 1, ...params }]);
+      const mockClient = createMockSupabaseClient({ id: 1, ...params });
 
       const result = await createProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({ name_hiragana: "たなかー" });
+      expect(result).toMatchObject({ name_hiragana: "たなかー" });
     });
   });
 
@@ -404,11 +411,11 @@ describe("createProfile", () => {
     it("生年月日が今日の日付で正常に作成される", async () => {
       const today = new Date().toISOString().split("T")[0];
       const params = { ...validParams, date_of_birth: today };
-      const mockClient = createMockSupabaseClient([{ id: 1, ...params }]);
+      const mockClient = createMockSupabaseClient({ id: 1, ...params });
 
       const result = await createProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({ date_of_birth: today });
+      expect(result).toMatchObject({ date_of_birth: today });
     });
   });
 
@@ -514,17 +521,15 @@ describe("createProfile", () => {
       };
       const mockClient = createMockSupabaseClient(null, mockError);
 
-      const result = await createProfile(
-        validUser,
-        validParams,
-        mockClient as any,
-      );
-
-      expect(result.error).toEqual(mockError);
-      expect(result.data).toBeNull();
+      try {
+        await createProfile(validUser, validParams, mockClient as any);
+        expect.fail("エラーが投げられるべき");
+      } catch (error: any) {
+        expect(error).toEqual(mockError);
+      }
     });
 
-    it("制約違反エラーの場合適切なエラーを返す", async () => {
+    it("制約違反エラーの場合適切なエラーを投げる", async () => {
       const mockError = {
         message: "duplicate key value violates unique constraint",
         code: "23505",
@@ -532,31 +537,27 @@ describe("createProfile", () => {
       };
       const mockClient = createMockSupabaseClient(null, mockError);
 
-      const result = await createProfile(
-        validUser,
-        validParams,
-        mockClient as any,
-      );
-
-      expect(result.error).toEqual(mockError);
-      expect(result.data).toBeNull();
+      try {
+        await createProfile(validUser, validParams, mockClient as any);
+        expect.fail("エラーが投げられるべき");
+      } catch (error: any) {
+        expect(error).toEqual(mockError);
+      }
     });
 
-    it("権限エラーの場合適切なエラーを返す", async () => {
+    it("権限エラーの場合適切なエラーを投げる", async () => {
       const mockError = {
         message: "permission denied for table profiles",
         code: "42501",
       };
       const mockClient = createMockSupabaseClient(null, mockError);
 
-      const result = await createProfile(
-        validUser,
-        validParams,
-        mockClient as any,
-      );
-
-      expect(result.error).toEqual(mockError);
-      expect(result.data).toBeNull();
+      try {
+        await createProfile(validUser, validParams, mockClient as any);
+        expect.fail("エラーが投げられるべき");
+      } catch (error: any) {
+        expect(error).toEqual(mockError);
+      }
     });
   });
 });
@@ -573,13 +574,11 @@ describe("updateProfile", () => {
 
   describe("正常なケース", () => {
     it("全てのフィールドを更新できる", async () => {
-      const expectedData = [
-        {
-          id: 1,
-          user_id: "test-user-id",
-          ...validUpdateParams,
-        },
-      ];
+      const expectedData = {
+        id: 1,
+        user_id: "test-user-id",
+        ...validUpdateParams,
+      };
       const mockClient = createMockSupabaseClientForUpdate(expectedData);
 
       const result = await updateProfile(
@@ -588,24 +587,21 @@ describe("updateProfile", () => {
         mockClient as any,
       );
 
-      expect(result.data).toEqual(expectedData);
-      expect(result.error).toBeNull();
+      expect(result).toEqual(expectedData);
       expect(mockClient.from).toHaveBeenCalledWith("profiles");
     });
 
     it("一部のフィールドのみ更新できる", async () => {
       const partialParams = { name: "田中花子" };
-      const expectedData = [
-        {
-          id: 1,
-          user_id: "test-user-id",
-          name: "田中花子",
-          name_hiragana: "たなかたろう",
-          sex: SEX_CODES.MALE,
-          date_of_birth: "1990-01-01",
-          role: ROLE_CODES.USER,
-        },
-      ];
+      const expectedData = {
+        id: 1,
+        user_id: "test-user-id",
+        name: "田中花子",
+        name_hiragana: "たなかたろう",
+        sex: SEX_CODES.MALE,
+        date_of_birth: "1990-01-01",
+        role: ROLE_CODES.USER,
+      };
       const mockClient = createMockSupabaseClientForUpdate(expectedData);
 
       const result = await updateProfile(
@@ -614,23 +610,20 @@ describe("updateProfile", () => {
         mockClient as any,
       );
 
-      expect(result.data).toEqual(expectedData);
-      expect(result.error).toBeNull();
+      expect(result).toEqual(expectedData);
     });
 
     it("空のオブジェクトでも正常に処理される", async () => {
       const emptyParams = {};
-      const expectedData = [
-        {
-          id: 1,
-          user_id: "test-user-id",
-          name: "田中太郎",
-          name_hiragana: "たなかたろう",
-          sex: SEX_CODES.MALE,
-          date_of_birth: "1990-01-01",
-          role: ROLE_CODES.USER,
-        },
-      ];
+      const expectedData = {
+        id: 1,
+        user_id: "test-user-id",
+        name: "田中太郎",
+        name_hiragana: "たなかたろう",
+        sex: SEX_CODES.MALE,
+        date_of_birth: "1990-01-01",
+        role: ROLE_CODES.USER,
+      };
       const mockClient = createMockSupabaseClientForUpdate(expectedData);
 
       const result = await updateProfile(
@@ -639,8 +632,7 @@ describe("updateProfile", () => {
         mockClient as any,
       );
 
-      expect(result.data).toEqual(expectedData);
-      expect(result.error).toBeNull();
+      expect(result).toEqual(expectedData);
     });
 
     it("文字列の前後の空白が削除される", async () => {
@@ -657,8 +649,10 @@ describe("updateProfile", () => {
             return {
               eq: vi.fn(() => ({
                 select: vi.fn(() => ({
-                  data: [{ id: 1, ...data }],
-                  error: null,
+                  single: vi.fn(async () => ({
+                    data: { id: 1, ...data },
+                    error: null,
+                  })),
                 })),
               })),
             };
@@ -679,7 +673,7 @@ describe("updateProfile", () => {
 
       for (const sex of sexCodes) {
         const params = { sex };
-        const mockClient = createMockSupabaseClientForUpdate([{ id: 1, sex }]);
+        const mockClient = createMockSupabaseClientForUpdate({ id: 1, sex });
 
         const result = await updateProfile(
           validUser,
@@ -687,7 +681,7 @@ describe("updateProfile", () => {
           mockClient as any,
         );
 
-        expect(result.data?.[0]).toMatchObject({ sex });
+        expect(result).toMatchObject({ sex });
       }
     });
 
@@ -696,7 +690,7 @@ describe("updateProfile", () => {
 
       for (const role of roleCodes) {
         const params = { role };
-        const mockClient = createMockSupabaseClientForUpdate([{ id: 1, role }]);
+        const mockClient = createMockSupabaseClientForUpdate({ id: 1, role });
 
         const result = await updateProfile(
           validUser,
@@ -704,7 +698,7 @@ describe("updateProfile", () => {
           mockClient as any,
         );
 
-        expect(result.data?.[0]).toMatchObject({ role });
+        expect(result).toMatchObject({ role });
       }
     });
   });
@@ -765,25 +759,27 @@ describe("updateProfile", () => {
 
     it("名前が2文字ちょうどで正常に更新される", async () => {
       const params = { name: "田中" };
-      const mockClient = createMockSupabaseClientForUpdate([
-        { id: 1, name: "田中" },
-      ]);
+      const mockClient = createMockSupabaseClientForUpdate({
+        id: 1,
+        name: "田中",
+      });
 
       const result = await updateProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({ name: "田中" });
+      expect(result).toMatchObject({ name: "田中" });
     });
 
     it("名前が100文字ちょうどで正常に更新される", async () => {
       const maxName = "田".repeat(100);
       const params = { name: maxName };
-      const mockClient = createMockSupabaseClientForUpdate([
-        { id: 1, name: maxName },
-      ]);
+      const mockClient = createMockSupabaseClientForUpdate({
+        id: 1,
+        name: maxName,
+      });
 
       const result = await updateProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({ name: maxName });
+      expect(result).toMatchObject({ name: maxName });
     });
   });
 
@@ -871,26 +867,28 @@ describe("updateProfile", () => {
 
     it("ひらがな名前にスペースが含まれていても正常に更新される", async () => {
       const params = { name_hiragana: "たなか たろう" };
-      const mockClient = createMockSupabaseClientForUpdate([
-        { id: 1, name_hiragana: "たなか たろう" },
-      ]);
+      const mockClient = createMockSupabaseClientForUpdate({
+        id: 1,
+        name_hiragana: "たなか たろう",
+      });
 
       const result = await updateProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({
+      expect(result).toMatchObject({
         name_hiragana: "たなか たろう",
       });
     });
 
     it("ひらがな名前に長音符が含まれていても正常に更新される", async () => {
       const params = { name_hiragana: "たなかー" };
-      const mockClient = createMockSupabaseClientForUpdate([
-        { id: 1, name_hiragana: "たなかー" },
-      ]);
+      const mockClient = createMockSupabaseClientForUpdate({
+        id: 1,
+        name_hiragana: "たなかー",
+      });
 
       const result = await updateProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({ name_hiragana: "たなかー" });
+      expect(result).toMatchObject({ name_hiragana: "たなかー" });
     });
   });
 
@@ -988,13 +986,14 @@ describe("updateProfile", () => {
     it("生年月日が今日の日付で正常に更新される", async () => {
       const today = new Date().toISOString().split("T")[0];
       const params = { date_of_birth: today };
-      const mockClient = createMockSupabaseClientForUpdate([
-        { id: 1, date_of_birth: today },
-      ]);
+      const mockClient = createMockSupabaseClientForUpdate({
+        id: 1,
+        date_of_birth: today,
+      });
 
       const result = await updateProfile(validUser, params, mockClient as any);
 
-      expect(result.data?.[0]).toMatchObject({ date_of_birth: today });
+      expect(result).toMatchObject({ date_of_birth: today });
     });
   });
 
@@ -1027,24 +1026,22 @@ describe("updateProfile", () => {
   });
 
   describe("データベースエラー", () => {
-    it("データベースエラーが発生した場合エラーを返す", async () => {
+    it("データベースエラーが発生した場合エラーを投げる", async () => {
       const mockError = {
         message: "Database error",
         code: "42000",
       };
       const mockClient = createMockSupabaseClientForUpdate(null, mockError);
 
-      const result = await updateProfile(
-        validUser,
-        validUpdateParams,
-        mockClient as any,
-      );
-
-      expect(result.error).toEqual(mockError);
-      expect(result.data).toBeNull();
+      try {
+        await updateProfile(validUser, validUpdateParams, mockClient as any);
+        expect.fail("エラーが投げられるべき");
+      } catch (error: any) {
+        expect(error).toEqual(mockError);
+      }
     });
 
-    it("制約違反エラーの場合適切なエラーを返す", async () => {
+    it("制約違反エラーの場合適切なエラーを投げる", async () => {
       const mockError = {
         message: "constraint violation error",
         code: "23505",
@@ -1052,31 +1049,27 @@ describe("updateProfile", () => {
       };
       const mockClient = createMockSupabaseClientForUpdate(null, mockError);
 
-      const result = await updateProfile(
-        validUser,
-        validUpdateParams,
-        mockClient as any,
-      );
-
-      expect(result.error).toEqual(mockError);
-      expect(result.data).toBeNull();
+      try {
+        await updateProfile(validUser, validUpdateParams, mockClient as any);
+        expect.fail("エラーが投げられるべき");
+      } catch (error: any) {
+        expect(error).toEqual(mockError);
+      }
     });
 
-    it("権限エラーの場合適切なエラーを返す", async () => {
+    it("権限エラーの場合適切なエラーを投げる", async () => {
       const mockError = {
         message: "permission denied for table profiles",
         code: "42501",
       };
       const mockClient = createMockSupabaseClientForUpdate(null, mockError);
 
-      const result = await updateProfile(
-        validUser,
-        validUpdateParams,
-        mockClient as any,
-      );
-
-      expect(result.error).toEqual(mockError);
-      expect(result.data).toBeNull();
+      try {
+        await updateProfile(validUser, validUpdateParams, mockClient as any);
+        expect.fail("エラーが投げられるべき");
+      } catch (error: any) {
+        expect(error).toEqual(mockError);
+      }
     });
 
     it("レコードが見つからない場合空の配列を返す", async () => {
@@ -1088,8 +1081,7 @@ describe("updateProfile", () => {
         mockClient as any,
       );
 
-      expect(result.data).toEqual([]);
-      expect(result.error).toBeNull();
+      expect(result).toEqual([]);
     });
   });
 });

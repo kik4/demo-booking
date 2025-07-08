@@ -51,7 +51,7 @@ export async function editProfileAction(
 
     // プロフィールを更新
     try {
-      const { data, error } = await updateProfile(
+      await updateProfile(
         user,
         {
           name,
@@ -61,14 +61,6 @@ export async function editProfileAction(
         },
         supabase,
       );
-      if (error || !data) {
-        return {
-          errors: {
-            _form: ["登録に失敗しました。もう一度お試しください。"],
-          },
-          formData: { name, nameHiragana, sex, dateOfBirth },
-        };
-      }
     } catch (e) {
       if (e instanceof ValiError) {
         const errors: Record<string, string[]> = {};
