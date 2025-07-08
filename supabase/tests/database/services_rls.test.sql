@@ -38,7 +38,7 @@ INSERT INTO auth.users (
     '00000000-0000-0000-0000-000000000000',
     'authenticated',
     'authenticated',
-    'admin@example.com',
+    'admin_test@example.com',
     crypt('testpassword123', gen_salt('bf')),
     NOW(),
     NOW(),

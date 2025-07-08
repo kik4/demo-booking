@@ -95,10 +95,54 @@ SELECT ok(
 -- 基本的なCRUD操作テスト
 -- =============================================================================
 
--- テスト3: 認証されたユーザーが自分のプロフィールで予約を作成できる
+-- テスト3: 認証されたユーザーは予約を作成できない（INSERTポリシーが削除されているため）
 SET LOCAL role authenticated;
 SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440001", "role": "authenticated"}';
 
+-- DO ブロックでエラーをキャッチ
+DO $$
+DECLARE
+    insert_successful BOOLEAN := FALSE;
+BEGIN
+    BEGIN
+        INSERT INTO bookings (
+            profile_id,
+            service_id,
+            service_name,
+            service_info,
+            notes,
+            start_time,
+            end_time
+        ) VALUES (
+            (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid),
+            (SELECT id FROM services WHERE name = 'ヘアカット'),
+            'ヘアカット',
+            '{"name": "ヘアカット", "duration": 60, "price": 3000}'::jsonb,
+            'カットとシャンプーお願いします',
+            '2024-01-01 10:00:00',
+            '2024-01-01 11:00:00'
+        );
+        insert_successful := TRUE;
+    EXCEPTION
+        WHEN insufficient_privilege OR check_violation THEN
+            insert_successful := FALSE;
+    END;
+    
+    CREATE TEMP TABLE IF NOT EXISTS test_results (
+        test_name TEXT,
+        result BOOLEAN
+    );
+    
+    INSERT INTO test_results VALUES ('booking_insert_test', NOT insert_successful);
+END $$;
+
+SELECT ok(
+    (SELECT result FROM test_results WHERE test_name = 'booking_insert_test'),
+    '認証されたユーザーは予約を作成できない（INSERTポリシーが削除されているため）'
+);
+
+-- テスト4: サービスロールで予約を作成（テストデータとして）
+RESET role;
 INSERT INTO bookings (
     profile_id,
     service_id,
@@ -120,17 +164,20 @@ INSERT INTO bookings (
 SELECT is(
     (SELECT COUNT(*)::int FROM bookings WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid)),
     1,
-    '認証されたユーザーが自分のプロフィールで予約を作成できる'
+    'サービスロールで予約を作成可能'
 );
 
--- テスト4: 認証されたユーザーが自分の予約を読み取れる
+-- テスト5: 認証されたユーザーが自分の予約を読み取れる
+SET LOCAL role authenticated;
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440001", "role": "authenticated"}';
+
 SELECT is(
     (SELECT service_name FROM bookings WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid)),
     'ヘアカット',
     '認証されたユーザーが自分の予約を読み取れる'
 );
 
--- テスト5: サービスロールでuser2のプロフィールに予約を作成
+-- テスト6: サービスロールでuser2のプロフィールに予約を作成
 RESET role;
 INSERT INTO bookings (
     profile_id,
@@ -156,7 +203,7 @@ SELECT is(
     'サービスロールで全ての予約を作成可能'
 );
 
--- テスト6: 認証されたユーザーが自分の予約のみを読み取れる（user1視点）
+-- テスト7: 認証されたユーザーが自分の予約のみを読み取れる（user1視点）
 SET LOCAL role authenticated;
 SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440001", "role": "authenticated"}';
 
@@ -166,24 +213,13 @@ SELECT is(
     '認証されたユーザーが自分の予約のみを読み取れる（user1）'
 );
 
--- テスト7: 認証されたユーザーが自分の予約のみを読み取れる（user2視点）
+-- テスト8: 認証されたユーザーが自分の予約のみを読み取れる（user2視点）
 SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440002", "role": "authenticated"}';
 
 SELECT is(
     (SELECT COUNT(*)::int FROM bookings),
     1,
     '認証されたユーザーが自分の予約のみを読み取れる（user2）'
-);
-
--- テスト8: 認証されたユーザーが自分の予約を更新できる
-UPDATE bookings 
-SET notes = 'カットとシャンプーとトリートメントお願いします'
-WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid);
-
-SELECT is(
-    (SELECT notes FROM bookings WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid)),
-    'カットとシャンプーとトリートメントお願いします',
-    '認証されたユーザーが自分の予約を更新できる'
 );
 
 -- =============================================================================

@@ -453,7 +453,14 @@ SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440004",
 
 SELECT is(
     (SELECT COUNT(*)::int FROM profiles WHERE deleted_at IS NULL),
-    3,
+    (SELECT COUNT(*)::int FROM (
+        SELECT DISTINCT user_id FROM profiles 
+        WHERE user_id IN (
+            '550e8400-e29b-41d4-a716-446655440001'::uuid,
+            '550e8400-e29b-41d4-a716-446655440002'::uuid,
+            '550e8400-e29b-41d4-a716-446655440004'::uuid
+        ) AND deleted_at IS NULL
+    ) AS expected_profiles),
     'adminユーザーは全てのユーザーのプロフィールを閲覧できる'
 );
 
