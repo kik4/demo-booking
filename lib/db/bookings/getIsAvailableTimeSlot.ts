@@ -1,4 +1,4 @@
-import type { AvailableTimeSlot } from "./getAvailableTimeSlotsForDate";
+import type { AvailableTimeSlot } from "./types";
 
 export function getIsAvailableTimeSlot(
   timeSlot: AvailableTimeSlot,

@@ -1,7 +1,7 @@
 "use server";
 
-import { getAvailableTimeSlotsForDate } from "@/lib/getAvailableTimeSlotsForDate";
-import { createClient } from "@/lib/supabaseClientServer";
+import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
+import { createServiceClient } from "@/lib/supabaseClientServer";
 
 export interface AvailableTimeSlot {
   start_time: string;
@@ -13,7 +13,7 @@ export async function getAvailableTimeSlotsForDateAction(
 ): Promise<{
   availableSlots: AvailableTimeSlot[];
 }> {
-  const supabase = await createClient();
+  const supabase = await createServiceClient();
 
   // Get current user for authentication check
   const {
@@ -25,5 +25,5 @@ export async function getAvailableTimeSlotsForDateAction(
     throw new Error("認証エラー");
   }
 
-  return getAvailableTimeSlotsForDate(date);
+  return getAvailableTimeSlotsForDate(date, supabase);
 }

@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import * as v from "valibot";
-import { getAvailableTimeSlotsForDate } from "@/lib/getAvailableTimeSlotsForDate";
-import { getIsAvailableTimeSlot } from "@/lib/getIsAvailableTimeSlot";
+import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
+import { getIsAvailableTimeSlot } from "@/lib/db/bookings/getIsAvailableTimeSlot";
 import { ROUTES } from "@/lib/routes";
 import { createClient } from "@/lib/supabaseClientServer";
 
@@ -138,7 +138,10 @@ export async function createBookingAction(
     }
 
     // Check for overlapping bookings (system-wide, not just current user)
-    const { availableSlots } = await getAvailableTimeSlotsForDate(date);
+    const { availableSlots } = await getAvailableTimeSlotsForDate(
+      date,
+      supabase,
+    );
     if (
       !getIsAvailableTimeSlot(
         { start_time: startTime, end_time: endTime },

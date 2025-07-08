@@ -1,16 +1,16 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { isHoliday } from "japanese-holidays";
 import { decimalHoursToTimeString } from "@/lib/decimalHoursToTimeString";
 import { splitRange } from "@/lib/splitRange";
-import { createServiceClient } from "@/lib/supabaseClientServer";
 import { timeToDecimalHoursInTokyo } from "@/lib/timeToDecimalHoursInTokyo";
-import { normalizeDateTime } from "./normalizeDateTime";
+import type { Database } from "@/types/database.types";
+import { normalizeDateTime } from "../../normalizeDateTime";
+import type { AvailableTimeSlot } from "./types";
 
-export interface AvailableTimeSlot {
-  start_time: string;
-  end_time: string;
-}
-
-export async function getAvailableTimeSlotsForDate(date: string): Promise<{
+export async function getAvailableTimeSlotsForDate(
+  date: string,
+  supabase: SupabaseClient<Database>,
+): Promise<{
   availableSlots: AvailableTimeSlot[];
 }> {
   // Check if the date is a business day
@@ -33,8 +33,7 @@ export async function getAvailableTimeSlotsForDate(date: string): Promise<{
   const startOfDayUTC = new Date(`${date}T00:00:00+09:00`);
   const endOfDayUTC = new Date(`${date}T23:59:59.999+09:00`);
 
-  const serviceSupabase = await createServiceClient();
-  const { data: existingBookings, error: bookingsError } = await serviceSupabase
+  const { data: existingBookings, error: bookingsError } = await supabase
     .from("bookings")
     .select("start_time, end_time")
     .is("deleted_at", null)
