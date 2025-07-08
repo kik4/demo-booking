@@ -3,8 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import * as v from "valibot";
-import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
-import { getIsAvailableTimeSlot } from "@/lib/db/bookings/getIsAvailableTimeSlot";
+import { createBooking } from "@/lib/db/bookings/createBooking";
 import { ROUTES } from "@/lib/routes";
 import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
 
@@ -137,33 +136,7 @@ export async function createBookingAction(
       };
     }
 
-    // Check for overlapping bookings (system-wide, not just current user)
-    const { availableSlots } = await getAvailableTimeSlotsForDate(
-      date,
-      supabase,
-    );
-    if (
-      !getIsAvailableTimeSlot(
-        { start_time: startTime, end_time: endTime },
-        availableSlots,
-      )
-    ) {
-      return {
-        errors: {
-          _form: ["選択した時間は利用できません。他の時間をお選びください。"],
-        },
-        formData: {
-          serviceId,
-          serviceName,
-          date,
-          startTime,
-          endTime,
-          notes,
-        },
-      };
-    }
-
-    // Get service information for snapshot
+    // Convert serviceId to number
     const serviceIdNum = Number.parseInt(serviceId, 10);
     if (Number.isNaN(serviceIdNum)) {
       return {
@@ -173,50 +146,29 @@ export async function createBookingAction(
       };
     }
 
-    const { data: service, error: serviceError } = await supabase
-      .from("services")
-      .select("*")
-      .eq("id", serviceIdNum)
-      .is("deleted_at", null)
-      .single();
-
-    if (serviceError || !service) {
-      console.error("Service lookup error:", serviceError);
-      return {
-        errors: {
-          _form: ["選択されたサービスが見つかりません。"],
-        },
-      };
-    }
-
-    // Create booking
-    const startDateTime = new Date(`${date}T${startTime}:00+09:00`);
-    const endDateTime = new Date(`${date}T${endTime}:00+09:00`);
-
-    // Use service client for inserting booking to bypass RLS
+    // Use service client for creating booking to bypass RLS
     const serviceClient = await createServiceClient();
-    const { error: bookingError } = await serviceClient
-      .from("bookings")
-      .insert({
-        profile_id: profile.id,
-        service_id: service.id,
-        service_name: serviceName,
-        service_info: {
-          name: service.name,
-          duration: service.duration,
-          price: service.price,
-          created_at: service.created_at,
-        },
-        start_time: startDateTime.toISOString(),
-        end_time: endDateTime.toISOString(),
-        notes: notes || "",
-      });
 
-    if (bookingError) {
-      console.error("Booking creation error:", bookingError);
+    try {
+      await createBooking(
+        profile,
+        {
+          serviceId: serviceIdNum,
+          notes: notes || "",
+          date,
+          startTime,
+        },
+        serviceClient,
+      );
+    } catch (error) {
+      console.error("Booking creation error:", error);
       return {
         errors: {
-          _form: ["予約の作成に失敗しました。時間をおいて再度お試しください。"],
+          _form: [
+            error instanceof Error
+              ? error.message
+              : "予約の作成に失敗しました。時間をおいて再度お試しください。",
+          ],
         },
         formData: {
           serviceId,
