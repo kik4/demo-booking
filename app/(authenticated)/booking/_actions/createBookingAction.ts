@@ -6,7 +6,7 @@ import * as v from "valibot";
 import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
 import { getIsAvailableTimeSlot } from "@/lib/db/bookings/getIsAvailableTimeSlot";
 import { ROUTES } from "@/lib/routes";
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
 
 export interface ExistingBooking {
   id: number;
@@ -193,20 +193,24 @@ export async function createBookingAction(
     const startDateTime = new Date(`${date}T${startTime}:00+09:00`);
     const endDateTime = new Date(`${date}T${endTime}:00+09:00`);
 
-    const { error: bookingError } = await supabase.from("bookings").insert({
-      profile_id: profile.id,
-      service_id: service.id,
-      service_name: serviceName,
-      service_info: {
-        name: service.name,
-        duration: service.duration,
-        price: service.price,
-        created_at: service.created_at,
-      },
-      start_time: startDateTime.toISOString(),
-      end_time: endDateTime.toISOString(),
-      notes: notes || "",
-    });
+    // Use service client for inserting booking to bypass RLS
+    const serviceClient = await createServiceClient();
+    const { error: bookingError } = await serviceClient
+      .from("bookings")
+      .insert({
+        profile_id: profile.id,
+        service_id: service.id,
+        service_name: serviceName,
+        service_info: {
+          name: service.name,
+          duration: service.duration,
+          price: service.price,
+          created_at: service.created_at,
+        },
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
+        notes: notes || "",
+      });
 
     if (bookingError) {
       console.error("Booking creation error:", bookingError);
