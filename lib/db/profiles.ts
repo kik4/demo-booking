@@ -59,7 +59,7 @@ export const createProfile = async (
     .select()
     .single();
   if (error || !data) {
-    throw error || new Error("作成データが取得できませんでした");
+    throw error || new Error("データが取得できませんでした");
   }
   return data;
 };
@@ -89,7 +89,8 @@ export const updateProfile = async (
     .select()
     .single();
   if (error || !data) {
-    throw error || new Error("更新データが取得できませんでした");
+    console.error(error);
+    throw error || new Error("データが取得できませんでした");
   }
   return data;
 };

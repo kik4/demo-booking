@@ -90,7 +90,8 @@ export const createBooking = async (
     .select()
     .single();
   if (error || !data) {
-    throw error || new Error("作成データが取得できませんでした");
+    console.error(error);
+    throw error || new Error("データが取得できませんでした");
   }
   return data;
 };

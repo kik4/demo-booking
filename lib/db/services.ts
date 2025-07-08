@@ -16,12 +16,13 @@ export const createServices = async (
 ) => {
   const parsed = v.parse(serviceValidationSchema, params);
 
-  const { data: insertedServices, error: insertServicesError } = await supabase
+  const { data, error } = await supabase
     .from("services")
     .insert(parsed)
     .select("id, name, duration, price");
-  if (insertServicesError || !insertedServices) {
-    throw insertServicesError || new Error("作成データが取得できませんでした");
+  if (error || !data) {
+    console.error(error);
+    throw error || new Error("データが取得できませんでした");
   }
-  return insertedServices;
+  return data;
 };

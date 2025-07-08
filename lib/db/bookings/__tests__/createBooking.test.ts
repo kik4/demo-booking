@@ -765,7 +765,7 @@ describe("createBooking", () => {
           mockParams,
           mockSupabase as SupabaseClient<Database>,
         ),
-      ).rejects.toThrow("作成データが取得できませんでした");
+      ).rejects.toThrow("データが取得できませんでした");
     });
 
     it("重複する予約で制約エラーが発生する", async () => {

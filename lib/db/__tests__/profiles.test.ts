@@ -567,7 +567,7 @@ describe("createProfile", () => {
         await createProfile(validUser, validParams, mockClient as any);
         expect.fail("エラーが投げられるべき");
       } catch (error: any) {
-        expect(error.message).toBe("作成データが取得できませんでした");
+        expect(error.message).toBe("データが取得できませんでした");
       }
     });
   });
@@ -1090,7 +1090,7 @@ describe("updateProfile", () => {
         await updateProfile(validUser, validUpdateParams, mockClient as any);
         expect.fail("エラーが投げられるべき");
       } catch (error: any) {
-        expect(error.message).toBe("更新データが取得できませんでした");
+        expect(error.message).toBe("データが取得できませんでした");
       }
     });
   });

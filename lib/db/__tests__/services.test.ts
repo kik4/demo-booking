@@ -292,7 +292,7 @@ describe("createServices", () => {
       const mockClient = createMockSupabaseClient(null, null);
 
       await expect(createServices(params, mockClient as any)).rejects.toThrow(
-        "作成データが取得できませんでした",
+        "データが取得できませんでした",
       );
     });
 
