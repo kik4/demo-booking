@@ -1,6 +1,6 @@
 "use client";
 
-import { isHoliday } from "japanese-holidays";
+import japaneseHolidays from "japanese-holidays";
 import { useCallback, useEffect, useId, useState } from "react";
 import {
   type AvailableTimeSlot,
@@ -45,7 +45,7 @@ export function DateTimeSelection({
     }
 
     // Check for Japanese holidays
-    if (isHoliday(date)) {
+    if (japaneseHolidays.isHoliday(date)) {
       return false;
     }
 
@@ -119,7 +119,7 @@ export function DateTimeSelection({
     if (!dateString) return false;
 
     const date = new Date(dateString);
-    return isHoliday(date);
+    return japaneseHolidays.isHoliday(date);
   };
 
   // Get minimum date (tomorrow)

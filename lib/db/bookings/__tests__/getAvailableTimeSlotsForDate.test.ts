@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isHoliday } from "japanese-holidays";
+import japaneseHolidays from "japanese-holidays";
 import {
   beforeEach,
   describe,
@@ -14,10 +14,14 @@ import { getAvailableTimeSlotsForDate } from "../getAvailableTimeSlotsForDate";
 
 // Mock japanese-holidays
 vi.mock("japanese-holidays", () => ({
-  isHoliday: vi.fn(),
+  default: {
+    isHoliday: vi.fn(),
+  },
 }));
 
-const mockedIsHoliday = isHoliday as MockedFunction<typeof isHoliday>;
+const mockedIsHoliday = japaneseHolidays.isHoliday as MockedFunction<
+  typeof japaneseHolidays.isHoliday
+>;
 
 describe("getAvailableTimeSlotsForDate", () => {
   let mockSupabase: Partial<SupabaseClient<Database>>;

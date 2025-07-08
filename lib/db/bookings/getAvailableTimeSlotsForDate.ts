@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isHoliday } from "japanese-holidays";
+import japaneseHolidays from "japanese-holidays";
 import { decimalHoursToTimeString } from "@/lib/decimalHoursToTimeString";
 import { splitRange } from "@/lib/splitRange";
 import { timeToDecimalHoursInTokyo } from "@/lib/timeToDecimalHoursInTokyo";
@@ -23,7 +23,7 @@ export async function getAvailableTimeSlotsForDate(
     };
   }
 
-  if (isHoliday(bookingDate)) {
+  if (japaneseHolidays.isHoliday(bookingDate)) {
     return {
       availableSlots: [], // No slots available on holidays
     };

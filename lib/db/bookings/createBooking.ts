@@ -6,10 +6,8 @@ import { getIsAvailableTimeSlot } from "./getIsAvailableTimeSlot";
 
 const bookingValidationSchema = v.object({
   serviceId: v.pipe(
-    v.string("有効な値を入力してください"),
-    v.trim(),
-    v.digits("サービスIDは有効な値を入力してください"),
-    v.transform(Number),
+    v.number("有効な値を入力してください"),
+    v.minValue(0, "サービスIDは有効な値を入力してください"),
   ),
   notes: v.pipe(v.string("有効な値を入力してください"), v.trim()),
   date: v.pipe(
@@ -25,7 +23,7 @@ const bookingValidationSchema = v.object({
 export const createBooking = async (
   profile: { id: number },
   params: {
-    serviceId: string;
+    serviceId: number;
     notes: string;
     date: string;
     startTime: string;
@@ -67,6 +65,12 @@ export const createBooking = async (
       availableSlots,
     )
   ) {
+    console.error({
+      date: params.date,
+      start_time: params.startTime,
+      end_time: endTime,
+      availableSlots,
+    });
     throw new Error("指定された時間帯は利用できません");
   }
 

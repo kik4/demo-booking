@@ -36,7 +36,7 @@ describe("createBooking", () => {
 
   const mockProfile = { id: 123 };
   const mockParams = {
-    serviceId: "1",
+    serviceId: 1,
     notes: "Test booking notes",
     date: "2024-01-15",
     startTime: "10:00",
@@ -171,7 +171,7 @@ describe("createBooking", () => {
     it("無効なサービスIDでエラーが発生する", async () => {
       const invalidParams = {
         ...mockParams,
-        serviceId: "invalid",
+        serviceId: -100,
       };
 
       await expect(
@@ -216,7 +216,7 @@ describe("createBooking", () => {
     it("空のサービスIDでエラーが発生する", async () => {
       const invalidParams = {
         ...mockParams,
-        serviceId: "",
+        serviceId: null as never,
       };
 
       await expect(

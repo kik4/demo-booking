@@ -2,6 +2,7 @@ import "./utils/envConfig";
 import { createClient } from "@supabase/supabase-js";
 import { ROLE_CODES } from "@/constants/roleCode";
 import { SEX_CODES } from "@/constants/sexCode";
+import { createBooking } from "@/lib/db/bookings/createBooking";
 import { createProfile } from "@/lib/db/profiles";
 import { createServices } from "@/lib/db/services";
 
@@ -79,19 +80,11 @@ const sampleServicesData = [
   { name: "カット+パーマ", duration: 210, price: 14000 },
 ];
 
-let insertedServices: {
-  id: number;
-  name: string;
-  duration: number;
-  price: number;
-}[];
-try {
-  insertedServices = await createServices(sampleServicesData, supabaseClient);
-  console.log(`Successfully inserted ${insertedServices.length} services`);
-} catch (error) {
-  console.error("Error inserting services:", error);
-  throw error;
-}
+const insertedServices = await createServices(
+  sampleServicesData,
+  supabaseClient,
+);
+console.log(`Successfully inserted ${insertedServices.length} services`);
 
 // サービスIDをマッピング
 const serviceMap = insertedServices.reduce(
@@ -164,43 +157,37 @@ const serviceMap = insertedServices.reduce(
     supabaseClient,
   );
 
-  const day = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+  // 予約データを作成
+  const tomorrow = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 10);
-  const resBookings = await supabaseClient.from("bookings").insert([
+  const dayAfterTomorrow = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+
+  // 1つ目の予約: カット
+  await createBooking(
+    resProfile,
     {
-      profile_id: resProfile.id,
-      service_id: serviceMap.カット.id,
-      service_name: "カット",
-      service_info: {
-        name: serviceMap.カット.name,
-        duration: serviceMap.カット.duration,
-        price: serviceMap.カット.price,
-        description: "ヘアカットサービス",
-      },
+      serviceId: serviceMap.カット.id,
       notes: "初めてです",
-      start_time: "2025-05-01T07:00:00Z",
-      end_time: "2025-05-01T08:00:00Z",
+      date: tomorrow,
+      startTime: "10:00",
     },
+    supabaseClient,
+  );
+
+  // 2つ目の予約: パーマ
+  await createBooking(
+    resProfile,
     {
-      profile_id: resProfile.id,
-      service_id: serviceMap.パーマ.id,
-      service_name: "パーマ",
-      service_info: {
-        name: serviceMap.パーマ.name,
-        duration: serviceMap.パーマ.duration,
-        price: serviceMap.パーマ.price,
-        description: "パーマスタイリングサービス",
-      },
+      serviceId: serviceMap.パーマ.id,
       notes: "",
-      start_time: `${day}T00:30:00Z`,
-      end_time: `${day}T03:00:00Z`,
+      date: dayAfterTomorrow,
+      startTime: "16:00",
     },
-  ]);
-  if (resBookings.error) {
-    console.error(resBookings);
-    throw resBookings.error;
-  }
+    supabaseClient,
+  );
 }
 
 console.log("Sample data insertion completed successfully!");
