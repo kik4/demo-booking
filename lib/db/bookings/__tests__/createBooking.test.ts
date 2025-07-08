@@ -75,9 +75,11 @@ describe("createBooking", () => {
       if (table === "bookings") {
         return {
           insert: vi.fn().mockReturnValue({
-            select: vi
-              .fn()
-              .mockResolvedValue({ data: [{ id: 1 }], error: null }),
+            select: vi.fn().mockReturnValue({
+              single: vi
+                .fn()
+                .mockResolvedValue({ data: { id: 1 }, error: null }),
+            }),
           }),
         };
       }
@@ -340,9 +342,11 @@ describe("createBooking", () => {
         if (table === "bookings") {
           return {
             insert: vi.fn().mockReturnValue({
-              select: vi
-                .fn()
-                .mockResolvedValue({ data: [{ id: 1 }], error: null }),
+              select: vi.fn().mockReturnValue({
+                single: vi
+                  .fn()
+                  .mockResolvedValue({ data: { id: 1 }, error: null }),
+              }),
             }),
           };
         }
@@ -418,9 +422,11 @@ describe("createBooking", () => {
         if (table === "bookings") {
           return {
             insert: vi.fn().mockReturnValue({
-              select: vi
-                .fn()
-                .mockResolvedValue({ data: [{ id: 1 }], error: null }),
+              select: vi.fn().mockReturnValue({
+                single: vi
+                  .fn()
+                  .mockResolvedValue({ data: { id: 1 }, error: null }),
+              }),
             }),
           };
         }
@@ -512,9 +518,11 @@ describe("createBooking", () => {
         if (table === "bookings") {
           return {
             insert: vi.fn().mockReturnValue({
-              select: vi
-                .fn()
-                .mockResolvedValue({ data: [{ id: 1 }], error: null }),
+              select: vi.fn().mockReturnValue({
+                single: vi
+                  .fn()
+                  .mockResolvedValue({ data: { id: 1 }, error: null }),
+              }),
             }),
           };
         }
@@ -554,9 +562,11 @@ describe("createBooking", () => {
         if (table === "bookings") {
           return {
             insert: vi.fn().mockReturnValue({
-              select: vi
-                .fn()
-                .mockResolvedValue({ data: [{ id: 1 }], error: null }),
+              select: vi.fn().mockReturnValue({
+                single: vi
+                  .fn()
+                  .mockResolvedValue({ data: { id: 1 }, error: null }),
+              }),
             }),
           };
         }
@@ -596,9 +606,11 @@ describe("createBooking", () => {
         if (table === "bookings") {
           return {
             insert: vi.fn().mockReturnValue({
-              select: vi
-                .fn()
-                .mockResolvedValue({ data: [{ id: 1 }], error: null }),
+              select: vi.fn().mockReturnValue({
+                single: vi
+                  .fn()
+                  .mockResolvedValue({ data: { id: 1 }, error: null }),
+              }),
             }),
           };
         }
@@ -699,9 +711,11 @@ describe("createBooking", () => {
         if (table === "bookings") {
           return {
             insert: vi.fn().mockReturnValue({
-              select: vi
-                .fn()
-                .mockResolvedValue({ data: null, error: insertError }),
+              select: vi.fn().mockReturnValue({
+                single: vi
+                  .fn()
+                  .mockResolvedValue({ data: null, error: insertError }),
+              }),
             }),
           };
         }
@@ -715,6 +729,43 @@ describe("createBooking", () => {
           mockSupabase as SupabaseClient<Database>,
         ),
       ).rejects.toThrow(insertError);
+    });
+
+    it("予約データが返されない場合にエラーが発生する", async () => {
+      // Mock insert to return null data with no error
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "services") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                is: vi.fn().mockReturnValue({
+                  single: vi
+                    .fn()
+                    .mockResolvedValue({ data: mockService, error: null }),
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === "bookings") {
+          return {
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({ data: null, error: null }),
+              }),
+            }),
+          };
+        }
+        return {};
+      });
+
+      await expect(
+        createBooking(
+          mockProfile,
+          mockParams,
+          mockSupabase as SupabaseClient<Database>,
+        ),
+      ).rejects.toThrow("予約の作成に失敗しました");
     });
 
     it("重複する予約で制約エラーが発生する", async () => {
@@ -738,9 +789,11 @@ describe("createBooking", () => {
         if (table === "bookings") {
           return {
             insert: vi.fn().mockReturnValue({
-              select: vi
-                .fn()
-                .mockResolvedValue({ data: null, error: constraintError }),
+              select: vi.fn().mockReturnValue({
+                single: vi
+                  .fn()
+                  .mockResolvedValue({ data: null, error: constraintError }),
+              }),
             }),
           };
         }

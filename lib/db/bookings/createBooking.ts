@@ -91,9 +91,10 @@ export const createBooking = async (
       end_time: endDateTime.toISOString(),
       notes: params.notes,
     })
-    .select();
-  if (error) {
-    throw error;
+    .select()
+    .single();
+  if (error || !data) {
+    throw error || new Error("予約の作成に失敗しました");
   }
   return data;
 };
