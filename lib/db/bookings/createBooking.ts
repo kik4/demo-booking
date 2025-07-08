@@ -48,7 +48,12 @@ export const createBooking = async (
   // 時間計算
   const startDateTime = new Date(`${parsed.date}T${parsed.startTime}:00+09:00`);
   const endDateTime = new Date(startDateTime);
-  endDateTime.setMinutes(endDateTime.getMinutes() + service.duration + 9 * 60);
+  endDateTime.setMinutes(
+    endDateTime.getMinutes() +
+      service.duration +
+      new Date().getTimezoneOffset() +
+      9 * 60,
+  );
   const endTime = `${endDateTime.getHours().toString().padStart(2, "0")}:${endDateTime.getMinutes().toString().padStart(2, "0")}`;
 
   // 可用性チェック
