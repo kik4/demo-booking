@@ -94,7 +94,7 @@ export const createBooking = async (
     .select()
     .single();
   if (error || !data) {
-    throw error || new Error("予約の作成に失敗しました");
+    throw error || new Error("作成データが取得できませんでした");
   }
   return data;
 };

@@ -21,7 +21,7 @@ export const createServices = async (
     .insert(parsed)
     .select("id, name, duration, price");
   if (insertServicesError || !insertedServices) {
-    throw insertServicesError;
+    throw insertServicesError || new Error("作成データが取得できませんでした");
   }
   return insertedServices;
 };

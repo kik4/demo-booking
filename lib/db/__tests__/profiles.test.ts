@@ -559,6 +559,17 @@ describe("createProfile", () => {
         expect(error).toEqual(mockError);
       }
     });
+
+    it("データが返されない場合エラーを投げる", async () => {
+      const mockClient = createMockSupabaseClient(null, null);
+
+      try {
+        await createProfile(validUser, validParams, mockClient as any);
+        expect.fail("エラーが投げられるべき");
+      } catch (error: any) {
+        expect(error.message).toBe("作成データが取得できませんでした");
+      }
+    });
   });
 });
 
@@ -1072,16 +1083,15 @@ describe("updateProfile", () => {
       }
     });
 
-    it("レコードが見つからない場合空の配列を返す", async () => {
-      const mockClient = createMockSupabaseClientForUpdate([]);
+    it("データが返されない場合エラーを投げる", async () => {
+      const mockClient = createMockSupabaseClientForUpdate(null, null);
 
-      const result = await updateProfile(
-        validUser,
-        validUpdateParams,
-        mockClient as any,
-      );
-
-      expect(result).toEqual([]);
+      try {
+        await updateProfile(validUser, validUpdateParams, mockClient as any);
+        expect.fail("エラーが投げられるべき");
+      } catch (error: any) {
+        expect(error.message).toBe("更新データが取得できませんでした");
+      }
     });
   });
 });
