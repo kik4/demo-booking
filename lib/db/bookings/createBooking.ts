@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as v from "valibot";
+import { formatTime } from "@/lib/formatTime";
 import type { Database } from "@/types/database.types";
 import { getAvailableTimeSlotsForDate } from "./getAvailableTimeSlotsForDate";
 import { getIsAvailableTimeSlot } from "./getIsAvailableTimeSlot";
@@ -46,13 +47,8 @@ export const createBooking = async (
   // 時間計算
   const startDateTime = new Date(`${parsed.date}T${parsed.startTime}:00+09:00`);
   const endDateTime = new Date(startDateTime);
-  endDateTime.setMinutes(
-    endDateTime.getMinutes() +
-      service.duration +
-      new Date().getTimezoneOffset() +
-      9 * 60,
-  );
-  const endTime = `${endDateTime.getHours().toString().padStart(2, "0")}:${endDateTime.getMinutes().toString().padStart(2, "0")}`;
+  endDateTime.setMinutes(endDateTime.getMinutes() + service.duration);
+  const endTime = formatTime(endDateTime.toISOString());
 
   // 可用性チェック
   const { availableSlots } = await getAvailableTimeSlotsForDate(
