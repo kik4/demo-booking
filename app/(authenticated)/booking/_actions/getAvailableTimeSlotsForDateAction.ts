@@ -2,15 +2,12 @@
 
 import { requireAuth } from "@/lib/auth";
 import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
-import type { AvailableTimeSlot } from "@/lib/db/bookings/types";
 import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
 
-export async function getAvailableTimeSlotsForDateAction(date: string): Promise<
-  | {
-      availableSlots: AvailableTimeSlot[];
-      message?: string;
-    }
-  | { error: string }
+export async function getAvailableTimeSlotsForDateAction(
+  date: string,
+): Promise<
+  Awaited<ReturnType<typeof getAvailableTimeSlotsForDate>> | { error: string }
 > {
   const supabase = await createClient();
 
