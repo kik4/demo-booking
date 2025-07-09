@@ -6,8 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDateStringYMD } from "@/lib/formatDateStringYMD";
 import { formatDateStringYMDHM } from "@/lib/formatDateStringYMDHM";
+import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
 import { formatTime } from "@/lib/formatTime";
 import { getAllBookings } from "../_actions/getAllBookings";
 
@@ -47,7 +47,7 @@ export default async function BookingsPage() {
                   </TableCell>
                   <TableCell>{booking.service_name}</TableCell>
                   <TableCell>
-                    {formatDateStringYMD(booking.start_time)}
+                    {formatDateStringYMDW(booking.start_time)}
                   </TableCell>
                   <TableCell>{formatTime(booking.start_time)}</TableCell>
                   <TableCell>{formatTime(booking.end_time)}</TableCell>
