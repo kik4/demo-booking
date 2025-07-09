@@ -8,23 +8,8 @@
  * @param dateString - フォーマットする日付文字列
  *   - ISO 8601形式（例: "2024-12-31"、"2024-12-31T10:30:00"）
  * @returns 日本語ロケールでフォーマットされた日付文字列
- *   - 形式: "YYYY/MM/DD" または "YYYY/M/D"（先頭ゼロは除去）
- *   - 例: "2024/12/31"、"2024/1/1"
- *
- * @example
- * ```typescript
- * // 基本的な使用例
- * formatDateStringYMD("2024-12-31") // "2024/12/31"
- * formatDateStringYMD("2024-01-01") // "2024/1/1"
- *
- * // 時刻情報は無視される
- * formatDateStringYMD("2024-12-31T23:59:59") // "2024/12/31"
- * formatDateStringYMD("2024-12-31T23:59:59Z") // "2024/12/31"
- *
- * // タイムゾーンに関係なく日付部分のみが使用される
- * formatDateStringYMD("2024-06-29T19:30:00+09:00") // "2024/6/29"
- * formatDateStringYMD("2024-06-29T19:30:00Z") // "2024/6/29"
- * ```
+ *   - 形式: "YYYY/MM/DD"
+ *   - 例: "2024/12/31"、"2024/01/01"
  *
  * @note
  * - 入力文字列の最初の10文字（YYYY-MM-DD部分）のみを使用
@@ -32,8 +17,5 @@
  * - 時刻やタイムゾーン情報による日付の変更を防ぐ
  */
 export const formatDateStringYMD = (dateString: string) => {
-  const date = new Date(dateString.slice(0, 10));
-  return new Date(
-    date.getTime() + date.getTimezoneOffset() * 60 * 1000,
-  ).toLocaleDateString("ja-JP");
+  return dateString.slice(0, 10).replaceAll("-", "/");
 };
