@@ -121,14 +121,18 @@ async function checkUserAuth(
  */
 export async function requireAuth<T>(
   supabase: SupabaseClient<Database>,
-  callback: (authResult: AuthResult) => Promise<T>,
+  callback: (
+    authResult: AuthResult & { user: NonNullable<AuthResult["user"]> },
+  ) => Promise<T>,
 ): Promise<T | { error: string }> {
   const authResult = await checkAuth(supabase);
   if (!authResult.success) {
     return { error: authResult.error || "認証が必要です" };
   }
 
-  return callback(authResult);
+  return callback(
+    authResult as AuthResult & { user: NonNullable<AuthResult["user"]> },
+  );
 }
 
 /**
@@ -136,14 +140,24 @@ export async function requireAuth<T>(
  */
 export async function requireAdminAuth<T>(
   supabase: SupabaseClient<Database>,
-  callback: (authResult: AuthResult) => Promise<T>,
+  callback: (
+    authResult: AuthResult & {
+      user: NonNullable<AuthResult["user"]>;
+      profile: NonNullable<AuthResult["profile"]>;
+    },
+  ) => Promise<T>,
 ): Promise<T | { error: string }> {
   const authResult = await checkAdminAuth(supabase);
   if (!authResult.success) {
     return { error: authResult.error || "管理者権限が必要です" };
   }
 
-  return callback(authResult);
+  return callback(
+    authResult as AuthResult & {
+      user: NonNullable<AuthResult["user"]>;
+      profile: NonNullable<AuthResult["profile"]>;
+    },
+  );
 }
 
 /**
@@ -151,12 +165,22 @@ export async function requireAdminAuth<T>(
  */
 export async function requireUserAuth<T>(
   supabase: SupabaseClient<Database>,
-  callback: (authResult: AuthResult) => Promise<T>,
+  callback: (
+    authResult: AuthResult & {
+      user: NonNullable<AuthResult["user"]>;
+      profile: NonNullable<AuthResult["profile"]>;
+    },
+  ) => Promise<T>,
 ): Promise<T | { error: string }> {
   const authResult = await checkUserAuth(supabase);
   if (!authResult.success) {
     return { error: authResult.error || "一般ユーザー権限が必要です" };
   }
 
-  return callback(authResult);
+  return callback(
+    authResult as AuthResult & {
+      user: NonNullable<AuthResult["user"]>;
+      profile: NonNullable<AuthResult["profile"]>;
+    },
+  );
 }

@@ -3,6 +3,7 @@
 import { camelCase } from "lodash-es";
 import { ValiError } from "valibot";
 import type { SexCode } from "@/constants/sexCode";
+import { requireUserAuth } from "@/lib/auth";
 import { updateProfile } from "@/lib/db/profiles";
 import { createClient } from "@/lib/supabaseClientServer";
 
@@ -34,53 +35,54 @@ export async function editProfileAction(
 
   try {
     const supabase = await createClient();
-    // 現在のユーザーを取得
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const result = await requireUserAuth(supabase, async (authResult) => {
+      // プロフィールを更新
+      try {
+        await updateProfile(
+          authResult.user,
+          {
+            name,
+            name_hiragana: nameHiragana,
+            sex: (sex ? +sex : undefined) as SexCode,
+            date_of_birth: dateOfBirth,
+          },
+          supabase,
+        );
+        return { success: true };
+      } catch (e) {
+        if (e instanceof ValiError) {
+          const errors: Record<string, string[]> = {};
+          for (const issue of e.issues) {
+            const path = issue.path
+              ? issue.path
+                  .map((p: { key: string }) => camelCase(p.key))
+                  .join(".")
+              : "root";
+            if (!errors[path]) {
+              errors[path] = [];
+            }
+            errors[path].push(issue.message);
+          }
+          return {
+            errors,
+            formData: { name, nameHiragana, sex, dateOfBirth },
+          };
+        }
+        throw e;
+      }
+    });
+
+    if ("error" in result) {
       return {
         errors: {
-          _form: ["認証が必要です"],
+          _form: [result.error],
         },
         formData: { name, nameHiragana, sex, dateOfBirth },
       };
     }
 
-    // プロフィールを更新
-    try {
-      await updateProfile(
-        user,
-        {
-          name,
-          name_hiragana: nameHiragana,
-          sex: (sex ? +sex : undefined) as SexCode,
-          date_of_birth: dateOfBirth,
-        },
-        supabase,
-      );
-    } catch (e) {
-      if (e instanceof ValiError) {
-        const errors: Record<string, string[]> = {};
-        for (const issue of e.issues) {
-          const path = issue.path
-            ? issue.path.map((p: { key: string }) => camelCase(p.key)).join(".")
-            : "root";
-          if (!errors[path]) {
-            errors[path] = [];
-          }
-          errors[path].push(issue.message);
-        }
-        return {
-          errors,
-          formData: { name, nameHiragana, sex, dateOfBirth },
-        };
-      }
-      throw e;
-    }
-    return { success: true };
+    return result;
   } catch {
     return {
       errors: {

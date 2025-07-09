@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAuth } from "@/lib/auth";
 import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
 import { createServiceClient } from "@/lib/supabaseClientServer";
 
@@ -8,22 +9,15 @@ export interface AvailableTimeSlot {
   end_time: string;
 }
 
-export async function getAvailableTimeSlotsForDateAction(
-  date: string,
-): Promise<{
-  availableSlots: AvailableTimeSlot[];
-}> {
+export async function getAvailableTimeSlotsForDateAction(date: string): Promise<
+  | {
+      availableSlots: AvailableTimeSlot[];
+    }
+  | { error: string }
+> {
   const supabase = await createServiceClient();
 
-  // Get current user for authentication check
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    throw new Error("認証エラー");
-  }
-
-  return getAvailableTimeSlotsForDate(date, supabase);
+  return requireAuth(supabase, async () => {
+    return getAvailableTimeSlotsForDate(date, supabase);
+  });
 }

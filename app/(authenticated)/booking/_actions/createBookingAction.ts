@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import * as v from "valibot";
+import { requireUserAuth } from "@/lib/auth";
 import { createBooking } from "@/lib/db/bookings/createBooking";
 import { ROUTES } from "@/lib/routes";
 import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
@@ -89,17 +90,62 @@ export async function createBookingAction(
   }
 
   try {
-    // Get current user
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
 
-    if (userError || !user) {
+    const result = await requireUserAuth(supabase, async (authResult) => {
+      // Convert serviceId to number
+      const serviceIdNum = Number.parseInt(serviceId, 10);
+      if (Number.isNaN(serviceIdNum)) {
+        return {
+          errors: {
+            _form: ["無効なサービスIDです。"],
+          },
+        };
+      }
+
+      // Use service client for creating booking to bypass RLS
+      const serviceClient = await createServiceClient();
+
+      try {
+        await createBooking(
+          authResult.profile,
+          {
+            serviceId: serviceIdNum,
+            notes: notes || "",
+            date,
+            startTime,
+          },
+          serviceClient,
+        );
+      } catch (error) {
+        console.error("Booking creation error:", error);
+        return {
+          errors: {
+            _form: [
+              error instanceof Error
+                ? error.message
+                : "予約の作成に失敗しました。時間をおいて再度お試しください。",
+            ],
+          },
+          formData: {
+            serviceId,
+            serviceName,
+            date,
+            startTime,
+            endTime,
+            notes,
+          },
+        };
+      }
+
+      revalidatePath(ROUTES.USER.HOME);
+      return { success: true };
+    });
+
+    if ("error" in result) {
       return {
         errors: {
-          _form: ["認証エラーが発生しました"],
+          _form: [result.error],
         },
         formData: {
           serviceId,
@@ -112,76 +158,9 @@ export async function createBookingAction(
       };
     }
 
-    // Get user profile
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("user_id", user.id)
-      .is("deleted_at", null)
-      .single();
-
-    if (profileError || !profile) {
-      return {
-        errors: {
-          _form: ["プロフィール情報が見つかりません"],
-        },
-        formData: {
-          serviceId,
-          serviceName,
-          date,
-          startTime,
-          endTime,
-          notes,
-        },
-      };
+    if (!result.success) {
+      return result;
     }
-
-    // Convert serviceId to number
-    const serviceIdNum = Number.parseInt(serviceId, 10);
-    if (Number.isNaN(serviceIdNum)) {
-      return {
-        errors: {
-          _form: ["無効なサービスIDです。"],
-        },
-      };
-    }
-
-    // Use service client for creating booking to bypass RLS
-    const serviceClient = await createServiceClient();
-
-    try {
-      await createBooking(
-        profile,
-        {
-          serviceId: serviceIdNum,
-          notes: notes || "",
-          date,
-          startTime,
-        },
-        serviceClient,
-      );
-    } catch (error) {
-      console.error("Booking creation error:", error);
-      return {
-        errors: {
-          _form: [
-            error instanceof Error
-              ? error.message
-              : "予約の作成に失敗しました。時間をおいて再度お試しください。",
-          ],
-        },
-        formData: {
-          serviceId,
-          serviceName,
-          date,
-          startTime,
-          endTime,
-          notes,
-        },
-      };
-    }
-
-    revalidatePath(ROUTES.USER.HOME);
   } catch (error) {
     console.error("Unexpected error:", error);
     return {

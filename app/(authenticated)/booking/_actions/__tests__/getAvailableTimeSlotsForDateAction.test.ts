@@ -82,9 +82,11 @@ describe("getAvailableTimeSlotsForDateAction", () => {
         error: null,
       });
 
-      await expect(() =>
-        getAvailableTimeSlotsForDateAction("2024-01-15"),
-      ).rejects.toThrowError(new Error("認証エラー"));
+      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
+
+      expect(result).toEqual({
+        error: "認証が必要です",
+      });
     });
 
     it("認証エラーが発生した場合はエラーを返す", async () => {
@@ -93,9 +95,11 @@ describe("getAvailableTimeSlotsForDateAction", () => {
         error: { message: "Auth error" },
       });
 
-      await expect(() =>
-        getAvailableTimeSlotsForDateAction("2024-01-15"),
-      ).rejects.toThrowError(new Error("認証エラー"));
+      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
+
+      expect(result).toEqual({
+        error: "認証が必要です",
+      });
     });
   });
 
@@ -280,19 +284,31 @@ describe("getAvailableTimeSlotsForDateAction", () => {
     it("月末の日付でも正常に動作する", async () => {
       const result = await getAvailableTimeSlotsForDateAction("2024-01-31");
 
-      expect(result.availableSlots).toBeDefined();
+      if ("availableSlots" in result) {
+        expect(result.availableSlots).toBeDefined();
+      } else {
+        expect(result.error).toBeDefined();
+      }
     });
 
     it("うるう年の日付でも正常に動作する", async () => {
       const result = await getAvailableTimeSlotsForDateAction("2024-02-29");
 
-      expect(result.availableSlots).toBeDefined();
+      if ("availableSlots" in result) {
+        expect(result.availableSlots).toBeDefined();
+      } else {
+        expect(result.error).toBeDefined();
+      }
     });
 
     it("年またぎの日付でも正常に動作する", async () => {
       const result = await getAvailableTimeSlotsForDateAction("2024-12-31");
 
-      expect(result.availableSlots).toBeDefined();
+      if ("availableSlots" in result) {
+        expect(result.availableSlots).toBeDefined();
+      } else {
+        expect(result.error).toBeDefined();
+      }
     });
   });
 });

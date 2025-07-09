@@ -61,7 +61,11 @@ export function DateTimeSelection({
 
     getAvailableTimeSlotsForDateAction(selectedDate)
       .then((result) => {
-        setAvailableSlots(result.availableSlots);
+        if ("availableSlots" in result) {
+          setAvailableSlots(result.availableSlots);
+        } else {
+          setAvailableSlots([]);
+        }
       })
       .catch(() => {
         setAvailableSlots([]);
