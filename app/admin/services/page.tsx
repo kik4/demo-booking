@@ -1,8 +1,11 @@
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   getServices,
   type SortDirection,
   type SortKey,
 } from "../_actions/getServices";
+import { ServiceForm } from "./_components/ServiceForm";
 import { ServicesTable } from "./_components/ServicesTable";
 
 interface SearchParams {
@@ -26,7 +29,17 @@ export default async function ServicesPage({
   return (
     <div className="bg-gray-50 py-8">
       <div className="mx-auto max-w-6xl px-4">
-        <h1 className="mb-8 font-bold text-3xl text-gray-900">サービス一覧</h1>
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="font-bold text-3xl text-gray-900">サービス一覧</h1>
+          <ServiceForm
+            trigger={
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                新しいサービス
+              </Button>
+            }
+          />
+        </div>
 
         <div className="rounded-lg bg-white p-6 shadow">
           <ServicesTable

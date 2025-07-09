@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import type {
   SortDirection,
   SortKey,
 } from "../../_actions/getServices";
+import { ServiceDeleteDialog } from "./ServiceDeleteDialog";
+import { ServiceForm } from "./ServiceForm";
 
 interface ServicesTableProps {
   services: AdminService[];
@@ -98,6 +100,7 @@ export function ServicesTable({
             <SortableHeader sortKey="price">料金</SortableHeader>
             <SortableHeader sortKey="created_at">作成日時</SortableHeader>
             <SortableHeader sortKey="updated_at">更新日時</SortableHeader>
+            <TableHead>操作</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -111,6 +114,30 @@ export function ServicesTable({
               </TableCell>
               <TableCell>{formatDateStringYMDHM(service.created_at)}</TableCell>
               <TableCell>{formatDateStringYMDHM(service.updated_at)}</TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <ServiceForm
+                    service={service}
+                    trigger={
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    }
+                  />
+                  <ServiceDeleteDialog
+                    service={service}
+                    trigger={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    }
+                  />
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
