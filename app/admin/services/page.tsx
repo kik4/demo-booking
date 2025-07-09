@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDateStringYMD } from "@/lib/formatDateStringYMD";
+import { formatDateStringYMDHMS } from "@/lib/formatDateStringYMDHMS";
 import { getServices } from "../_actions/getServices";
 
 export default async function ServicesPage() {
@@ -33,8 +33,8 @@ export default async function ServicesPage() {
                 <TableHead>サービス名</TableHead>
                 <TableHead>所要時間</TableHead>
                 <TableHead>料金</TableHead>
-                <TableHead>登録日</TableHead>
-                <TableHead>更新日</TableHead>
+                <TableHead>作成日時</TableHead>
+                <TableHead>更新日時</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -47,10 +47,10 @@ export default async function ServicesPage() {
                     {formatPrice(service.price)}
                   </TableCell>
                   <TableCell>
-                    {formatDateStringYMD(service.created_at)}
+                    {formatDateStringYMDHMS(service.created_at)}
                   </TableCell>
                   <TableCell>
-                    {formatDateStringYMD(service.updated_at)}
+                    {formatDateStringYMDHMS(service.updated_at)}
                   </TableCell>
                 </TableRow>
               ))}
