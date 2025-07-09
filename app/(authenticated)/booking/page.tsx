@@ -143,7 +143,7 @@ export default function BookingPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
+        <div className="flex flex-col items-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
           <p className="mt-2 text-gray-600">読み込み中...</p>
         </div>
