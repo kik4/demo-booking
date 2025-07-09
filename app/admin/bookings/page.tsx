@@ -6,7 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDateStringYMD } from "@/lib/formatDateStringYMD";
 import { formatDateStringYMDHM } from "@/lib/formatDateStringYMDHM";
+import { formatTime } from "@/lib/formatTime";
 import { getAllBookings } from "../_actions/getAllBookings";
 
 export default async function BookingsPage() {
@@ -24,6 +26,7 @@ export default async function BookingsPage() {
                 <TableHead>ID</TableHead>
                 <TableHead>予約者</TableHead>
                 <TableHead>サービス名</TableHead>
+                <TableHead>サービス日</TableHead>
                 <TableHead>開始時刻</TableHead>
                 <TableHead>終了時刻</TableHead>
                 <TableHead>備考</TableHead>
@@ -44,11 +47,10 @@ export default async function BookingsPage() {
                   </TableCell>
                   <TableCell>{booking.service_name}</TableCell>
                   <TableCell>
-                    {formatDateStringYMDHM(booking.start_time)}
+                    {formatDateStringYMD(booking.start_time)}
                   </TableCell>
-                  <TableCell>
-                    {formatDateStringYMDHM(booking.end_time)}
-                  </TableCell>
+                  <TableCell>{formatTime(booking.start_time)}</TableCell>
+                  <TableCell>{formatTime(booking.end_time)}</TableCell>
                   <TableCell className="max-w-xs">
                     <div className="truncate" title={booking.notes}>
                       {booking.notes || "-"}
