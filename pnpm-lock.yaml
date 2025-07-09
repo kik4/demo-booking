@@ -77,9 +77,6 @@ importers:
       valibot:
         specifier: ^1.1.0
         version: 1.1.0(typescript@5.8.3)
-      zod:
-        specifier: ^3.25.76
-        version: 3.25.76
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.0.6
@@ -2355,9 +2352,6 @@ packages:
     engines: {node: '>= 14.6'}
     hasBin: true
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
 snapshots:
 
   '@adobe/css-tools@4.4.3': {}
@@ -4324,5 +4318,3 @@ snapshots:
   yallist@5.0.0: {}
 
   yaml@2.8.0: {}
-
-  zod@3.25.76: {}
