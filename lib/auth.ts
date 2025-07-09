@@ -80,6 +80,43 @@ async function checkAdminAuth(
 }
 
 /**
+ * 一般ユーザー権限チェック: ユーザーが一般ユーザーであるかを確認
+ */
+async function checkUserAuth(
+  supabase: SupabaseClient<Database>,
+): Promise<AuthResult> {
+  // まず認証チェック
+  const authResult = await checkAuth(supabase);
+  if (!authResult.success || !authResult.user) {
+    return authResult;
+  }
+
+  // 一般ユーザー権限チェック
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("user_id", authResult.user.id)
+    .is("deleted_at", null)
+    .single();
+
+  if (!profile || profile.role !== ROLE_CODES.USER) {
+    return {
+      success: false,
+      error: "一般ユーザー権限が必要です",
+    };
+  }
+
+  return {
+    success: true,
+    user: authResult.user,
+    profile: {
+      id: profile.id,
+      role: profile.role,
+    },
+  };
+}
+
+/**
  * 認証が必要なServer Actionのヘルパー関数
  */
 export async function requireAuth<T>(
@@ -104,6 +141,21 @@ export async function requireAdminAuth<T>(
   const authResult = await checkAdminAuth(supabase);
   if (!authResult.success) {
     return { error: authResult.error || "管理者権限が必要です" };
+  }
+
+  return callback(authResult);
+}
+
+/**
+ * 一般ユーザー権限が必要なServer Actionのヘルパー関数
+ */
+export async function requireUserAuth<T>(
+  supabase: SupabaseClient<Database>,
+  callback: (authResult: AuthResult) => Promise<T>,
+): Promise<T | { error: string }> {
+  const authResult = await checkUserAuth(supabase);
+  if (!authResult.success) {
+    return { error: authResult.error || "一般ユーザー権限が必要です" };
   }
 
   return callback(authResult);
