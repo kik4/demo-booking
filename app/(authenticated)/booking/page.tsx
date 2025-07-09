@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
-import { supabase } from "@/lib/supabaseClient";
 import type { Database } from "@/types/database.types";
 import {
   type CreateBookingFormState,
   createBookingAction,
 } from "./_actions/createBookingAction";
+import { getServicesAction } from "./_actions/getServicesAction";
+import { getUserProfileAction } from "./_actions/getUserProfileAction";
 import { BookingConfirmation } from "./_components/BookingConfirmation";
 import { DateTimeSelection } from "./_components/DateTimeSelection";
 import { ServiceSelection } from "./_components/ServiceSelection";
@@ -37,42 +38,27 @@ export default function BookingPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
+        // Fetch customer profile
+        const profileResult = await getUserProfileAction();
+        if ("error" in profileResult) {
+          console.error("プロフィール取得エラー:", profileResult.error);
+          toast.error(profileResult.error);
           router.push(ROUTES.ROOT);
           return;
         }
-
-        // Fetch customer profile
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("name")
-          .eq("user_id", user.id)
-          .is("deleted_at", null)
-          .single();
-
-        if (profileData) {
-          setCustomerName(profileData.name);
-        }
+        setCustomerName(profileResult.profile.name);
 
         // Fetch services
-        const { data: servicesData, error: servicesError } = await supabase
-          .from("services")
-          .select("*")
-          .is("deleted_at", null)
-          .order("id");
-
-        if (servicesError) {
-          console.error("サービス取得エラー:", servicesError);
-          toast.error("サービス情報の取得に失敗しました");
+        const servicesResult = await getServicesAction();
+        if ("error" in servicesResult) {
+          console.error("サービス取得エラー:", servicesResult.error);
+          toast.error(servicesResult.error);
         } else {
-          setServices(servicesData || []);
+          setServices(servicesResult.services);
         }
       } catch (error) {
         console.error("データ取得エラー:", error);
+        toast.error("データの取得に失敗しました");
       } finally {
         setLoading(false);
       }

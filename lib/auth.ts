@@ -11,6 +11,7 @@ export interface AuthResult {
   profile?: {
     id: number;
     role: string;
+    name?: string;
   };
   error?: string;
 }
@@ -94,7 +95,7 @@ async function checkUserAuth(
   // 一般ユーザー権限チェック
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, role")
+    .select("id, role, name")
     .eq("user_id", authResult.user.id)
     .is("deleted_at", null)
     .single();
@@ -112,6 +113,7 @@ async function checkUserAuth(
     profile: {
       id: profile.id,
       role: profile.role,
+      name: profile.name,
     },
   };
 }
@@ -168,7 +170,7 @@ export async function requireUserAuth<T>(
   callback: (
     authResult: AuthResult & {
       user: NonNullable<AuthResult["user"]>;
-      profile: NonNullable<AuthResult["profile"]>;
+      profile: NonNullable<AuthResult["profile"]> & { name: string };
     },
   ) => Promise<T>,
 ): Promise<T | { error: string }> {
@@ -180,7 +182,7 @@ export async function requireUserAuth<T>(
   return callback(
     authResult as AuthResult & {
       user: NonNullable<AuthResult["user"]>;
-      profile: NonNullable<AuthResult["profile"]>;
+      profile: NonNullable<AuthResult["profile"]> & { name: string };
     },
   );
 }
