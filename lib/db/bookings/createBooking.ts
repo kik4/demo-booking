@@ -1,12 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { differenceInMinutes } from "date-fns";
+import { isEqual } from "lodash-es";
 import * as v from "valibot";
 import type { Database } from "@/types/database.types";
 import { getAvailableTimeSlotsForDate } from "./getAvailableTimeSlotsForDate";
 import { getIsAvailableTimeSlot } from "./getIsAvailableTimeSlot";
 
 const bookingValidationSchema = v.object({
-  serviceId: v.pipe(v.number()),
+  serviceId: v.pipe(v.number(), v.minValue(0)),
   serviceName: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  servicePrice: v.pipe(v.number(), v.minValue(1)),
+  serviceDuration: v.pipe(v.number(), v.minValue(1)),
   date: v.pipe(v.string(), v.isoDate()),
   startTime: v.pipe(v.string(), v.isoTime()),
   endTime: v.pipe(v.string(), v.isoTime()),
@@ -23,12 +27,33 @@ export const createBooking = async (
   // サービス情報の取得
   const { data: service, error: serviceError } = await supabase
     .from("services")
-    .select("*")
+    .select("id, name, price, duration")
     .eq("id", parsed.serviceId)
     .is("deleted_at", null)
     .single();
   if (serviceError || !service) {
     throw serviceError || new Error("サービスが見つかりません");
+  }
+
+  // 入力データとサービス情報が一致しているかチェック
+  const inputService = {
+    id: parsed.serviceId,
+    name: parsed.serviceName,
+    price: parsed.servicePrice,
+    duration: parsed.serviceDuration,
+  };
+  if (!isEqual(service, inputService)) {
+    throw new Error("サービス情報が一致しません");
+  }
+
+  // サービス時間が一致しているかチェック
+  if (
+    differenceInMinutes(
+      new Date(`1970-01-01T${parsed.endTime}:00Z`),
+      new Date(`1970-01-01T${parsed.startTime}:00Z`),
+    ) !== parsed.serviceDuration
+  ) {
+    throw new Error("サービス時間が一致しません");
   }
 
   // 可用性チェック
@@ -65,10 +90,10 @@ export const createBooking = async (
         `${parsed.date}T${parsed.endTime}+09:00`,
       ).toISOString(),
       service_info: {
-        name: service.name,
-        duration: service.duration,
-        price: service.price,
-        created_at: service.created_at,
+        startTime: parsed.startTime,
+        endTime: parsed.endTime,
+        duration: parsed.serviceDuration,
+        price: parsed.servicePrice,
       },
       notes: params.notes,
     })

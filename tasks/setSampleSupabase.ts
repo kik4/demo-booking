@@ -162,6 +162,8 @@ const serviceMap = insertedServices.reduce(
     {
       serviceId: serviceMap.カット.id,
       serviceName: serviceMap.カット.name,
+      servicePrice: serviceMap.カット.price,
+      serviceDuration: serviceMap.カット.duration,
       date: day1,
       startTime: "10:00",
       endTime: "11:00",
@@ -176,6 +178,8 @@ const serviceMap = insertedServices.reduce(
     {
       serviceId: serviceMap.パーマ.id,
       serviceName: serviceMap.パーマ.name,
+      servicePrice: serviceMap.パーマ.price,
+      serviceDuration: serviceMap.パーマ.duration,
       date: day2,
       startTime: "16:00",
       endTime: "18:30",
@@ -218,6 +222,8 @@ const serviceMap = insertedServices.reduce(
     {
       serviceId: serviceMap.カット.id,
       serviceName: serviceMap.カット.name,
+      servicePrice: serviceMap.カット.price,
+      serviceDuration: serviceMap.カット.duration,
       date: day1,
       startTime: "11:00",
       endTime: "12:00",

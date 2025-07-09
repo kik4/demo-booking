@@ -39,6 +39,8 @@ describe("createBooking", () => {
   const mockParams = {
     serviceId: 1,
     serviceName: "Test Service",
+    servicePrice: 5000,
+    serviceDuration: 60,
     date: "2024-01-15",
     startTime: "10:00",
     endTime: "11:00",
@@ -50,8 +52,6 @@ describe("createBooking", () => {
     name: "Test Service",
     duration: 60,
     price: 5000,
-    created_at: "2024-01-01T00:00:00Z",
-    deleted_at: null,
   };
 
   beforeEach(() => {
@@ -168,10 +168,10 @@ describe("createBooking", () => {
       expect(mockInsert).toHaveBeenCalledWith(
         expect.objectContaining({
           service_info: {
-            name: mockService.name,
-            duration: mockService.duration,
-            price: mockService.price,
-            created_at: mockService.created_at,
+            startTime: mockParams.startTime,
+            endTime: mockParams.endTime,
+            duration: mockParams.serviceDuration,
+            price: mockParams.servicePrice,
           },
         }),
       );
@@ -487,9 +487,44 @@ describe("createBooking", () => {
     });
 
     it("削除されたサービスは取得できない", async () => {
-      const deletedService = {
-        ...mockService,
-        deleted_at: "2024-01-15T00:00:00Z",
+      const rlsError = new Error("RLS policy denied access");
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "services") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                is: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({
+                    data: null,
+                    error: rlsError,
+                  }),
+                }),
+              }),
+            }),
+          };
+        }
+        return {};
+      });
+
+      // RLSポリシーによって削除されたサービスは取得できない
+      await expect(
+        createBooking(
+          mockProfile,
+          mockParams,
+          mockSupabase as SupabaseClient<Database>,
+        ),
+      ).rejects.toThrow(rlsError);
+    });
+  });
+
+  describe("サービス情報の検証", () => {
+    it("入力データとサービス情報が一致しない場合エラーが発生する", async () => {
+      const incorrectService = {
+        id: mockParams.serviceId,
+        name: "Different Service Name", // 異なるサービス名
+        price: mockParams.servicePrice,
+        duration: mockParams.serviceDuration,
       };
 
       mockFrom.mockImplementation((table: string) => {
@@ -498,21 +533,11 @@ describe("createBooking", () => {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
                 is: vi.fn().mockReturnValue({
-                  single: vi
-                    .fn()
-                    .mockResolvedValue({ data: deletedService, error: null }),
+                  single: vi.fn().mockResolvedValue({
+                    data: incorrectService,
+                    error: null,
+                  }),
                 }),
-              }),
-            }),
-          };
-        }
-        if (table === "bookings") {
-          return {
-            insert: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi
-                  .fn()
-                  .mockResolvedValue({ data: { id: 1 }, error: null }),
               }),
             }),
           };
@@ -520,11 +545,78 @@ describe("createBooking", () => {
         return {};
       });
 
-      // RLSポリシーによって削除されたサービスは取得できないはずだが、
-      // テストでは削除されたサービスデータが返される場合の動作を確認
+      await expect(
+        createBooking(
+          mockProfile,
+          mockParams,
+          mockSupabase as SupabaseClient<Database>,
+        ),
+      ).rejects.toThrow("サービス情報が一致しません");
+    });
+
+    it("サービス価格が一致しない場合エラーが発生する", async () => {
+      const incorrectService = {
+        id: mockParams.serviceId,
+        name: mockParams.serviceName,
+        price: 9999, // 異なる価格
+        duration: mockParams.serviceDuration,
+      };
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "services") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                is: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({
+                    data: incorrectService,
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
+          };
+        }
+        return {};
+      });
+
+      await expect(
+        createBooking(
+          mockProfile,
+          mockParams,
+          mockSupabase as SupabaseClient<Database>,
+        ),
+      ).rejects.toThrow("サービス情報が一致しません");
+    });
+
+    it("サービス時間が一致しない場合エラーが発生する", async () => {
+      const incorrectParams = {
+        ...mockParams,
+        startTime: "10:00",
+        endTime: "11:30", // 90分間（serviceDurationは60分）
+      };
+
+      await expect(
+        createBooking(
+          mockProfile,
+          incorrectParams,
+          mockSupabase as SupabaseClient<Database>,
+        ),
+      ).rejects.toThrow("サービス時間が一致しません");
+    });
+
+    it("開始時間と終了時間の差分が正しく計算される", async () => {
+      const correctParams = {
+        ...mockParams,
+        startTime: "14:00",
+        endTime: "15:00", // 60分間（serviceDurationと一致）
+      };
+
+      mockedGetIsAvailableTimeSlot.mockReturnValue(true);
+
       const result = await createBooking(
         mockProfile,
-        mockParams,
+        correctParams,
         mockSupabase as SupabaseClient<Database>,
       );
 

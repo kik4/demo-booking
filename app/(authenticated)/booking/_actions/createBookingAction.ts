@@ -17,6 +17,8 @@ export interface ExistingBooking {
 const createBookingSchema = v.object({
   serviceId: v.pipe(v.string(), v.minLength(1, "サービスを選択してください")),
   serviceName: v.pipe(v.string(), v.minLength(1, "サービス名が必要です")),
+  servicePrice: v.pipe(v.string(), v.minLength(1, "サービス価格が必要です")),
+  serviceDuration: v.pipe(v.string(), v.minLength(1, "サービス時間が必要です")),
   date: v.pipe(v.string(), v.minLength(1, "予約日を選択してください")),
   startTime: v.pipe(v.string(), v.minLength(1, "予約時間を選択してください")),
   endTime: v.pipe(v.string(), v.minLength(1, "終了時間が必要です")),
@@ -31,6 +33,8 @@ export interface CreateBookingFormState {
   errors?: {
     serviceId?: string[];
     serviceName?: string[];
+    servicePrice?: string[];
+    serviceDuration?: string[];
     date?: string[];
     startTime?: string[];
     endTime?: string[];
@@ -40,6 +44,8 @@ export interface CreateBookingFormState {
   formData?: {
     serviceId?: string;
     serviceName?: string;
+    servicePrice?: string;
+    serviceDuration?: string;
     date?: string;
     startTime?: string;
     endTime?: string;
@@ -53,6 +59,8 @@ export async function createBookingAction(
 ): Promise<CreateBookingFormState> {
   const serviceId = formData.get("serviceId") as string;
   const serviceName = formData.get("serviceName") as string;
+  const servicePrice = formData.get("servicePrice") as string;
+  const serviceDuration = formData.get("serviceDuration") as string;
   const date = formData.get("date") as string;
   const startTime = formData.get("startTime") as string;
   const endTime = formData.get("endTime") as string;
@@ -61,6 +69,8 @@ export async function createBookingAction(
   const result = v.safeParse(createBookingSchema, {
     serviceId,
     serviceName,
+    servicePrice,
+    serviceDuration,
     date,
     startTime,
     endTime,
@@ -84,6 +94,8 @@ export async function createBookingAction(
       formData: {
         serviceId,
         serviceName,
+        servicePrice,
+        serviceDuration,
         date,
         startTime,
         endTime,
@@ -96,24 +108,16 @@ export async function createBookingAction(
     const supabase = await createClient();
 
     const result = await requireUserAuth(supabase, async (authResult) => {
-      // Convert serviceId to number
-      const serviceIdNum = Number.parseInt(serviceId, 10);
-      if (Number.isNaN(serviceIdNum)) {
-        return {
-          errors: {
-            _form: ["無効なサービスIDです。"],
-          },
-        };
-      }
-
       // Use service client for creating booking to bypass RLS
       const serviceClient = await createServiceClient();
 
       await createBooking(
         authResult.profile,
         {
-          serviceId: serviceIdNum,
+          serviceId: Number.parseInt(serviceId, 10),
           serviceName,
+          servicePrice: Number.parseInt(servicePrice, 10),
+          serviceDuration: Number.parseInt(serviceDuration, 10),
           date,
           startTime,
           endTime,
@@ -134,6 +138,8 @@ export async function createBookingAction(
         formData: {
           serviceId,
           serviceName,
+          servicePrice,
+          serviceDuration,
           date,
           startTime,
           endTime,
@@ -158,6 +164,8 @@ export async function createBookingAction(
       formData: {
         serviceId,
         serviceName,
+        servicePrice,
+        serviceDuration,
         date,
         startTime,
         endTime,

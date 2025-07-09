@@ -119,6 +119,8 @@ export default function BookingPage() {
     const formData = new FormData();
     formData.append("serviceId", selectedService);
     formData.append("serviceName", selectedServiceData.name);
+    formData.append("servicePrice", selectedServiceData.price.toString());
+    formData.append("serviceDuration", selectedServiceData.duration.toString());
     formData.append("date", selectedDate);
     formData.append("startTime", selectedTime);
     formData.append("endTime", endTime);
