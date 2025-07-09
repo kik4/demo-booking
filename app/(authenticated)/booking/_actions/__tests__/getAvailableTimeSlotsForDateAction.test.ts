@@ -1,314 +1,134 @@
-import {
-  beforeEach,
-  describe,
-  expect,
-  it,
-  type MockedFunction,
-  type MockInstance,
-  vi,
-} from "vitest";
-
-// Mock Supabase client
-vi.mock("@/lib/supabaseClientServer", () => ({
-  createClient: vi.fn(),
-  createServiceClient: vi.fn(),
-}));
-
+/** biome-ignore-all lint/suspicious/noExplicitAny: for utility */
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { requireAuth } from "@/lib/auth";
+import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
 import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
 import { getAvailableTimeSlotsForDateAction } from "../getAvailableTimeSlotsForDateAction";
 
-const mockedCreateClient = createClient as MockedFunction<typeof createClient>;
-const mockedCreateServiceClient = createServiceClient as MockedFunction<
-  typeof createServiceClient
->;
+vi.mock("@/lib/auth");
+vi.mock("@/lib/db/bookings/getAvailableTimeSlotsForDate");
+vi.mock("@/lib/supabaseClientServer");
 
 describe("getAvailableTimeSlotsForDateAction", () => {
-  let mockSelect: ReturnType<typeof vi.fn>;
-  let mockFrom: ReturnType<typeof vi.fn>;
-  let mockIs: ReturnType<typeof vi.fn>;
-  let mockGte: ReturnType<typeof vi.fn>;
-  let mockLte: ReturnType<typeof vi.fn>;
-  let mockOrder: ReturnType<typeof vi.fn>;
-  let mockGetUser: ReturnType<typeof vi.fn>;
+  const mockCreateClient = vi.mocked(createClient);
+  const mockCreateServiceClient = vi.mocked(createServiceClient);
+  const mockRequireAuth = vi.mocked(requireAuth);
+  const mockGetAvailableTimeSlotsForDate = vi.mocked(
+    getAvailableTimeSlotsForDate,
+  );
+
+  const mockSupabaseClient = {} as any;
+  const mockServiceClient = {} as any;
 
   beforeEach(() => {
+    mockCreateClient.mockResolvedValue(mockSupabaseClient);
+    mockCreateServiceClient.mockResolvedValue(mockServiceClient);
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
+  });
 
-    // Create fresh mocks for each test
-    mockSelect = vi.fn();
-    mockFrom = vi.fn();
-    mockIs = vi.fn();
-    mockGte = vi.fn();
-    mockLte = vi.fn();
-    mockOrder = vi.fn();
-    mockGetUser = vi.fn();
+  it("should create both regular and service clients", async () => {
+    mockRequireAuth.mockImplementation(async (_client, callback) => {
+      return callback({
+        success: true,
+        user: { id: "test-user", email: "test@example.com" },
+      });
+    });
+    mockGetAvailableTimeSlotsForDate.mockResolvedValue({
+      availableSlots: [],
+    });
 
-    // Setup default mock chain
-    mockFrom.mockReturnValue({ select: mockSelect });
-    mockSelect.mockReturnValue({ is: mockIs });
-    mockIs.mockReturnValue({ gte: mockGte });
-    mockGte.mockReturnValue({ lte: mockLte });
-    mockLte.mockReturnValue({ order: mockOrder });
-    mockOrder.mockResolvedValue({ data: [], error: null });
+    await getAvailableTimeSlotsForDateAction("2024-01-15");
 
-    // Mock the Supabase client
-    const mockSupabase = {
-      from: mockFrom,
-      auth: {
-        getUser: mockGetUser,
-      },
-    };
+    expect(mockCreateClient).toHaveBeenCalledOnce();
+    expect(mockCreateServiceClient).toHaveBeenCalledOnce();
+  });
 
-    mockedCreateClient.mockResolvedValue(
-      mockSupabase as unknown as Awaited<ReturnType<typeof createClient>>,
+  it("should call requireAuth with the regular client", async () => {
+    mockRequireAuth.mockImplementation(async (_client, callback) => {
+      return callback({
+        success: true,
+        user: { id: "test-user", email: "test@example.com" },
+      });
+    });
+    mockGetAvailableTimeSlotsForDate.mockResolvedValue({
+      availableSlots: [],
+    });
+
+    await getAvailableTimeSlotsForDateAction("2024-01-15");
+
+    expect(mockRequireAuth).toHaveBeenCalledWith(
+      mockSupabaseClient,
+      expect.any(Function),
     );
-    mockedCreateServiceClient.mockResolvedValue(
-      mockSupabase as unknown as Awaited<
-        ReturnType<typeof createServiceClient>
-      >,
+  });
+
+  it("should call getAvailableTimeSlotsForDate with date and service client", async () => {
+    mockRequireAuth.mockImplementation(async (_client, callback) => {
+      return callback({
+        success: true,
+        user: { id: "test-user", email: "test@example.com" },
+      });
+    });
+    mockGetAvailableTimeSlotsForDate.mockResolvedValue({
+      availableSlots: [],
+    });
+
+    await getAvailableTimeSlotsForDateAction("2024-01-15");
+
+    expect(mockGetAvailableTimeSlotsForDate).toHaveBeenCalledWith(
+      "2024-01-15",
+      mockServiceClient,
+    );
+  });
+
+  it("should return available slots when authentication succeeds", async () => {
+    const mockSlots = [
+      { start_time: "09:00", end_time: "13:00" },
+      { start_time: "15:00", end_time: "19:00" },
+    ];
+
+    mockRequireAuth.mockImplementation(async (_client, callback) => {
+      return callback({
+        success: true,
+        user: { id: "test-user", email: "test@example.com" },
+      });
+    });
+    mockGetAvailableTimeSlotsForDate.mockResolvedValue({
+      availableSlots: mockSlots,
+    });
+
+    const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
+
+    expect(result).toEqual({
+      availableSlots: mockSlots,
+    });
+  });
+
+  it("should return error when authentication fails", async () => {
+    const mockError = { error: "Authentication failed" };
+    mockRequireAuth.mockResolvedValue(mockError);
+
+    const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
+
+    expect(result).toEqual(mockError);
+  });
+
+  it("should propagate errors from getAvailableTimeSlotsForDate", async () => {
+    mockRequireAuth.mockImplementation(async (_client, callback) => {
+      return callback({
+        success: true,
+        user: { id: "test-user", email: "test@example.com" },
+      });
+    });
+    mockGetAvailableTimeSlotsForDate.mockRejectedValue(
+      new Error("Database error"),
     );
 
-    // Default user authentication success
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: "test-user-id" } },
-      error: null,
-    });
-  });
-
-  describe("認証関連のテスト", () => {
-    it("ユーザーが認証されていない場合はエラーを返す", async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: null },
-        error: null,
-      });
-
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-
-      expect(result).toEqual({
-        error: "認証が必要です",
-      });
-    });
-
-    it("認証エラーが発生した場合はエラーを返す", async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: null },
-        error: { message: "Auth error" },
-      });
-
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-
-      expect(result).toEqual({
-        error: "認証が必要です",
-      });
-    });
-  });
-
-  describe("営業日の判定テスト", () => {
-    it("日曜日は空きスロットが0個", async () => {
-      // 2024-01-14 is Sunday
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-14");
-
-      expect(result).toEqual({
-        availableSlots: [],
-      });
-    });
-
-    it("水曜日は空きスロットが0個", async () => {
-      // 2024-01-17 is Wednesday
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-17");
-
-      expect(result).toEqual({
-        availableSlots: [],
-      });
-    });
-
-    it("祝日は空きスロットが0個", async () => {
-      const result = await getAvailableTimeSlotsForDateAction("2024-07-21"); // 海の日
-
-      expect(result).toEqual({
-        availableSlots: [],
-      });
-    });
-  });
-
-  describe("営業時間内のスロット生成テスト", () => {
-    it("平日（月曜日）は午前と午後の両方のスロットを生成", async () => {
-      // 2024-01-15 is Monday
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-      expect(result).toEqual({
-        availableSlots: [
-          { start_time: "09:00", end_time: "13:00" },
-          { start_time: "15:00", end_time: "19:00" },
-        ],
-      });
-    });
-
-    it("土曜日は午前のスロットのみ生成（午後は休業）", async () => {
-      // 2024-01-13 is Saturday
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-13");
-      expect(result).toEqual({
-        availableSlots: [{ start_time: "09:00", end_time: "13:00" }],
-      });
-    });
-  });
-
-  describe("既存予約との競合検出テスト", () => {
-    it("既存予約がある場合、空き時間が分割される", async () => {
-      // Mock existing booking from 10:00 to 11:00
-      mockOrder.mockResolvedValue({
-        data: [
-          {
-            start_time: "2024-01-15T01:00:00",
-            end_time: "2024-01-15T02:00:00",
-          },
-        ],
-        error: null,
-      });
-
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-      expect(result).toEqual({
-        availableSlots: [
-          {
-            start_time: "09:00",
-            end_time: "10:00",
-          },
-          {
-            start_time: "11:00",
-            end_time: "13:00",
-          },
-          {
-            start_time: "15:00",
-            end_time: "19:00",
-          },
-        ],
-      });
-    });
-
-    it("複数の既存予約がある場合、さらに空き時間が分割される", async () => {
-      // Mock a single existing booking that should clearly conflict
-      mockOrder.mockResolvedValue({
-        data: [
-          {
-            start_time: "2024-01-15T01:00:00",
-            end_time: "2024-01-15T02:00:00",
-          },
-          {
-            start_time: "2024-01-15T06:00:00",
-            end_time: "2024-01-15T11:00:00",
-          },
-        ],
-        error: null,
-      });
-
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-      expect(result).toEqual({
-        availableSlots: [
-          {
-            start_time: "09:00",
-            end_time: "10:00",
-          },
-          {
-            start_time: "11:00",
-            end_time: "13:00",
-          },
-        ],
-      });
-    });
-
-    it("既存予約がない場合、営業時間全体が利用可能", async () => {
-      mockOrder.mockResolvedValue({
-        data: [],
-        error: null,
-      });
-
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-15");
-      expect(result).toStrictEqual({
-        availableSlots: [
-          {
-            end_time: "13:00",
-            start_time: "09:00",
-          },
-          {
-            end_time: "19:00",
-            start_time: "15:00",
-          },
-        ],
-      });
-    });
-  });
-
-  describe("データベースエラーハンドリング", () => {
-    let consoleErrorSpy: MockInstance;
-
-    beforeEach(() => {
-      // console.errorをスパイ
-      consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    });
-    afterEach(() => {
-      // スパイをリストア
-      consoleErrorSpy.mockRestore();
-    });
-
-    it("予約データ取得エラー時はエラーを返す", async () => {
-      mockOrder.mockResolvedValue({
-        data: null,
-        error: new Error("Database error"),
-      });
-
-      await expect(() =>
-        getAvailableTimeSlotsForDateAction("2024-01-15"),
-      ).rejects.toThrowError(new Error("Database error"));
-    });
-  });
-
-  describe("データベースクエリの検証", () => {
-    it("正しいデータベースクエリが実行される", async () => {
-      await getAvailableTimeSlotsForDateAction("2024-01-15");
-
-      expect(mockFrom).toHaveBeenCalledWith("bookings");
-      expect(mockSelect).toHaveBeenCalledWith("start_time, end_time");
-      expect(mockIs).toHaveBeenCalledWith("deleted_at", null);
-      expect(mockGte).toHaveBeenCalledWith(
-        "start_time",
-        new Date("2024-01-15T00:00:00.000+09:00").toISOString(),
-      );
-      expect(mockLte).toHaveBeenCalledWith(
-        "start_time",
-        new Date("2024-01-15T23:59:59.999+09:00").toISOString(),
-      );
-      expect(mockOrder).toHaveBeenCalledWith("start_time", { ascending: true });
-    });
-  });
-
-  describe("エッジケース", () => {
-    it("月末の日付でも正常に動作する", async () => {
-      const result = await getAvailableTimeSlotsForDateAction("2024-01-31");
-
-      if ("availableSlots" in result) {
-        expect(result.availableSlots).toBeDefined();
-      } else {
-        expect(result.error).toBeDefined();
-      }
-    });
-
-    it("うるう年の日付でも正常に動作する", async () => {
-      const result = await getAvailableTimeSlotsForDateAction("2024-02-29");
-
-      if ("availableSlots" in result) {
-        expect(result.availableSlots).toBeDefined();
-      } else {
-        expect(result.error).toBeDefined();
-      }
-    });
-
-    it("年またぎの日付でも正常に動作する", async () => {
-      const result = await getAvailableTimeSlotsForDateAction("2024-12-31");
-
-      if ("availableSlots" in result) {
-        expect(result.availableSlots).toBeDefined();
-      } else {
-        expect(result.error).toBeDefined();
-      }
-    });
+    await expect(
+      getAvailableTimeSlotsForDateAction("2024-01-15"),
+    ).rejects.toThrow("Database error");
   });
 });
