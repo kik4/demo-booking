@@ -20,7 +20,10 @@ const createBookingSchema = v.object({
   date: v.pipe(v.string(), v.minLength(1, "予約日を選択してください")),
   startTime: v.pipe(v.string(), v.minLength(1, "予約時間を選択してください")),
   endTime: v.pipe(v.string(), v.minLength(1, "終了時間が必要です")),
-  notes: v.string(),
+  notes: v.pipe(
+    v.string(),
+    v.maxLength(2000, "補足は2000文字以内で入力してください"),
+  ),
 });
 
 export interface CreateBookingFormState {
@@ -110,9 +113,11 @@ export async function createBookingAction(
         authResult.profile,
         {
           serviceId: serviceIdNum,
-          notes: notes || "",
+          serviceName,
           date,
           startTime,
+          endTime,
+          notes: notes || "",
         },
         serviceClient,
       );

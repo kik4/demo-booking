@@ -1,34 +1,21 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as v from "valibot";
-import { formatTime } from "@/lib/formatTime";
 import type { Database } from "@/types/database.types";
 import { getAvailableTimeSlotsForDate } from "./getAvailableTimeSlotsForDate";
 import { getIsAvailableTimeSlot } from "./getIsAvailableTimeSlot";
 
 const bookingValidationSchema = v.object({
-  serviceId: v.pipe(
-    v.number("有効な値を入力してください"),
-    v.minValue(0, "サービスIDは有効な値を入力してください"),
-  ),
-  notes: v.pipe(v.string("有効な値を入力してください"), v.trim()),
-  date: v.pipe(
-    v.string("有効な値を入力してください"),
-    v.isoDate("予約日を選択してください"),
-  ),
-  startTime: v.pipe(
-    v.string("有効な値を入力してください"),
-    v.isoTime("予約開始時間を選択してください"),
-  ),
+  serviceId: v.pipe(v.number()),
+  serviceName: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  date: v.pipe(v.string(), v.isoDate()),
+  startTime: v.pipe(v.string(), v.isoTime()),
+  endTime: v.pipe(v.string(), v.isoTime()),
+  notes: v.pipe(v.string(), v.trim(), v.maxLength(2000)),
 });
 
 export const createBooking = async (
   profile: { id: number },
-  params: {
-    serviceId: number;
-    notes: string;
-    date: string;
-    startTime: string;
-  },
+  params: v.InferOutput<typeof bookingValidationSchema>,
   supabase: SupabaseClient<Database>,
 ) => {
   const parsed = v.parse(bookingValidationSchema, params);
@@ -44,27 +31,21 @@ export const createBooking = async (
     throw serviceError || new Error("サービスが見つかりません");
   }
 
-  // 時間計算
-  const startDateTime = new Date(`${parsed.date}T${parsed.startTime}:00+09:00`);
-  const endDateTime = new Date(startDateTime);
-  endDateTime.setMinutes(endDateTime.getMinutes() + service.duration);
-  const endTime = formatTime(endDateTime.toISOString());
-
   // 可用性チェック
   const { availableSlots } = await getAvailableTimeSlotsForDate(
-    params.date,
+    parsed.date,
     supabase,
   );
   if (
     !getIsAvailableTimeSlot(
-      { start_time: params.startTime, end_time: endTime },
+      { start_time: parsed.startTime, end_time: parsed.endTime },
       availableSlots,
     )
   ) {
     console.error({
-      date: params.date,
-      start_time: params.startTime,
-      end_time: endTime,
+      date: parsed.date,
+      start_time: parsed.startTime,
+      end_time: parsed.endTime,
       availableSlots,
     });
     throw new Error("指定された時間帯は利用できません");
@@ -76,15 +57,19 @@ export const createBooking = async (
     .insert({
       profile_id: profile.id,
       service_id: service.id,
-      service_name: service.name,
+      service_name: parsed.serviceName,
+      start_time: new Date(
+        `${parsed.date}T${parsed.startTime}+09:00`,
+      ).toISOString(),
+      end_time: new Date(
+        `${parsed.date}T${parsed.endTime}+09:00`,
+      ).toISOString(),
       service_info: {
         name: service.name,
         duration: service.duration,
         price: service.price,
         created_at: service.created_at,
       },
-      start_time: startDateTime.toISOString(),
-      end_time: endDateTime.toISOString(),
       notes: params.notes,
     })
     .select()

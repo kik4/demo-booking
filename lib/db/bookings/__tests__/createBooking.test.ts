@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: for utility */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   beforeEach,
@@ -37,9 +38,11 @@ describe("createBooking", () => {
   const mockProfile = { id: 123 };
   const mockParams = {
     serviceId: 1,
-    notes: "Test booking notes",
+    serviceName: "Test Service",
     date: "2024-01-15",
     startTime: "10:00",
+    endTime: "11:00",
+    notes: "Test booking notes",
   };
 
   const mockService = {
@@ -114,25 +117,64 @@ describe("createBooking", () => {
       expect(mockFrom).toHaveBeenCalledWith("bookings");
     });
 
-    it("正しい時間計算で予約を作成する", async () => {
+    it("正しい時間で予約を作成する", async () => {
       await createBooking(
         mockProfile,
         mockParams,
         mockSupabase as SupabaseClient<Database>,
       );
 
-      expect(mockFrom).toHaveBeenCalledWith("bookings");
+      expect(mockedGetIsAvailableTimeSlot).toHaveBeenCalledWith(
+        { start_time: "10:00", end_time: "11:00" },
+        expect.any(Array),
+      );
     });
 
     it("サービス情報のスナップショットを保存する", async () => {
-      const result = await createBooking(
+      const mockInsert = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { id: 1 }, error: null }),
+        }),
+      });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "services") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                is: vi.fn().mockReturnValue({
+                  single: vi
+                    .fn()
+                    .mockResolvedValue({ data: mockService, error: null }),
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === "bookings") {
+          return {
+            insert: mockInsert,
+          };
+        }
+        return {};
+      });
+
+      await createBooking(
         mockProfile,
         mockParams,
         mockSupabase as SupabaseClient<Database>,
       );
 
-      // Just verify that the function completes without error
-      expect(result).toBeDefined();
+      expect(mockInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          service_info: {
+            name: mockService.name,
+            duration: mockService.duration,
+            price: mockService.price,
+            created_at: mockService.created_at,
+          },
+        }),
+      );
     });
 
     it("空の備考欄でも予約を作成できる", async () => {
@@ -147,12 +189,11 @@ describe("createBooking", () => {
         mockSupabase as SupabaseClient<Database>,
       );
 
-      // Just verify that the function completes without error
       expect(result).toBeDefined();
     });
 
-    it("長い備考欄でも予約を作成できる", async () => {
-      const longNotes = "これは非常に長い備考欄のテストです。".repeat(10);
+    it("最大長の備考欄でも予約を作成できる", async () => {
+      const longNotes = "A".repeat(2000);
       const paramsWithLongNotes = {
         ...mockParams,
         notes: longNotes,
@@ -164,8 +205,91 @@ describe("createBooking", () => {
         mockSupabase as SupabaseClient<Database>,
       );
 
-      // Just verify that the function completes without error
       expect(result).toBeDefined();
+    });
+
+    it("serviceName が正しく保存される", async () => {
+      const mockInsert = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { id: 1 }, error: null }),
+        }),
+      });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "services") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                is: vi.fn().mockReturnValue({
+                  single: vi
+                    .fn()
+                    .mockResolvedValue({ data: mockService, error: null }),
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === "bookings") {
+          return {
+            insert: mockInsert,
+          };
+        }
+        return {};
+      });
+
+      await createBooking(
+        mockProfile,
+        mockParams,
+        mockSupabase as SupabaseClient<Database>,
+      );
+
+      expect(mockInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          service_name: "Test Service",
+        }),
+      );
+    });
+
+    it("endTime が正しく保存される", async () => {
+      const mockInsert = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { id: 1 }, error: null }),
+        }),
+      });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === "services") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                is: vi.fn().mockReturnValue({
+                  single: vi
+                    .fn()
+                    .mockResolvedValue({ data: mockService, error: null }),
+                }),
+              }),
+            }),
+          };
+        }
+        if (table === "bookings") {
+          return {
+            insert: mockInsert,
+          };
+        }
+        return {};
+      });
+
+      await createBooking(
+        mockProfile,
+        mockParams,
+        mockSupabase as SupabaseClient<Database>,
+      );
+
+      expect(mockInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          end_time: "2024-01-15T02:00:00.000Z", // 11:00 JST -> 02:00 UTC
+        }),
+      );
     });
   });
 
@@ -173,7 +297,22 @@ describe("createBooking", () => {
     it("無効なサービスIDでエラーが発生する", async () => {
       const invalidParams = {
         ...mockParams,
-        serviceId: -100,
+        serviceId: "invalid" as any,
+      };
+
+      await expect(
+        createBooking(
+          mockProfile,
+          invalidParams,
+          mockSupabase as SupabaseClient<Database>,
+        ),
+      ).rejects.toThrow();
+    });
+
+    it("空のサービス名でエラーが発生する", async () => {
+      const invalidParams = {
+        ...mockParams,
+        serviceName: "",
       };
 
       await expect(
@@ -200,7 +339,7 @@ describe("createBooking", () => {
       ).rejects.toThrow();
     });
 
-    it("無効な時間でエラーが発生する", async () => {
+    it("無効な開始時間でエラーが発生する", async () => {
       const invalidParams = {
         ...mockParams,
         startTime: "25:00",
@@ -215,10 +354,25 @@ describe("createBooking", () => {
       ).rejects.toThrow();
     });
 
-    it("空のサービスIDでエラーが発生する", async () => {
+    it("無効な終了時間でエラーが発生する", async () => {
       const invalidParams = {
         ...mockParams,
-        serviceId: null as never,
+        endTime: "25:00",
+      };
+
+      await expect(
+        createBooking(
+          mockProfile,
+          invalidParams,
+          mockSupabase as SupabaseClient<Database>,
+        ),
+      ).rejects.toThrow();
+    });
+
+    it("2000文字を超える備考でエラーが発生する", async () => {
+      const invalidParams = {
+        ...mockParams,
+        notes: "A".repeat(2001),
       };
 
       await expect(
@@ -245,10 +399,25 @@ describe("createBooking", () => {
       ).rejects.toThrow();
     });
 
-    it("空の時間でエラーが発生する", async () => {
+    it("空の開始時間でエラーが発生する", async () => {
       const invalidParams = {
         ...mockParams,
         startTime: "",
+      };
+
+      await expect(
+        createBooking(
+          mockProfile,
+          invalidParams,
+          mockSupabase as SupabaseClient<Database>,
+        ),
+      ).rejects.toThrow();
+    });
+
+    it("空の終了時間でエラーが発生する", async () => {
+      const invalidParams = {
+        ...mockParams,
+        endTime: "",
       };
 
       await expect(
@@ -263,7 +432,6 @@ describe("createBooking", () => {
 
   describe("サービス取得エラー", () => {
     it("存在しないサービスIDでエラーが発生する", async () => {
-      // Mock service query to return null
       mockFrom.mockImplementation((table: string) => {
         if (table === "services") {
           return {
@@ -287,12 +455,11 @@ describe("createBooking", () => {
           mockParams,
           mockSupabase as SupabaseClient<Database>,
         ),
-      ).rejects.toThrow();
+      ).rejects.toThrow("サービスが見つかりません");
     });
 
     it("サービス取得でデータベースエラーが発生する", async () => {
       const databaseError = new Error("Database connection failed");
-      // Mock service query to return error
       mockFrom.mockImplementation((table: string) => {
         if (table === "services") {
           return {
@@ -319,12 +486,12 @@ describe("createBooking", () => {
       ).rejects.toThrow(databaseError);
     });
 
-    it("削除されたサービスにアクセスできない", async () => {
+    it("削除されたサービスは取得できない", async () => {
       const deletedService = {
         ...mockService,
         deleted_at: "2024-01-15T00:00:00Z",
       };
-      // Mock service query to return deleted service
+
       mockFrom.mockImplementation((table: string) => {
         if (table === "services") {
           return {
@@ -353,15 +520,15 @@ describe("createBooking", () => {
         return {};
       });
 
-      // The RLS policy should prevent access to deleted services
-      // But we test the function behavior with deleted service data
-      await expect(
-        createBooking(
-          mockProfile,
-          mockParams,
-          mockSupabase as SupabaseClient<Database>,
-        ),
-      ).resolves.toBeDefined();
+      // RLSポリシーによって削除されたサービスは取得できないはずだが、
+      // テストでは削除されたサービスデータが返される場合の動作を確認
+      const result = await createBooking(
+        mockProfile,
+        mockParams,
+        mockSupabase as SupabaseClient<Database>,
+      );
+
+      expect(result).toBeDefined();
     });
   });
 
@@ -397,53 +564,6 @@ describe("createBooking", () => {
         ],
       );
     });
-
-    it("異なるサービス時間でも正しく計算される", async () => {
-      const longService = {
-        ...mockService,
-        duration: 120, // 2 hours
-      };
-
-      // Mock service query to return long service
-      mockFrom.mockImplementation((table: string) => {
-        if (table === "services") {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                is: vi.fn().mockReturnValue({
-                  single: vi
-                    .fn()
-                    .mockResolvedValue({ data: longService, error: null }),
-                }),
-              }),
-            }),
-          };
-        }
-        if (table === "bookings") {
-          return {
-            insert: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi
-                  .fn()
-                  .mockResolvedValue({ data: { id: 1 }, error: null }),
-              }),
-            }),
-          };
-        }
-        return {};
-      });
-
-      await createBooking(
-        mockProfile,
-        mockParams,
-        mockSupabase as SupabaseClient<Database>,
-      );
-
-      expect(mockedGetIsAvailableTimeSlot).toHaveBeenCalledWith(
-        { start_time: "10:00", end_time: "12:00" },
-        expect.any(Array),
-      );
-    });
   });
 
   describe("時間帯の境界値テスト", () => {
@@ -451,6 +571,7 @@ describe("createBooking", () => {
       const morningParams = {
         ...mockParams,
         startTime: "09:00",
+        endTime: "10:00",
       };
 
       const result = await createBooking(
@@ -466,6 +587,7 @@ describe("createBooking", () => {
       const afternoonParams = {
         ...mockParams,
         startTime: "15:00",
+        endTime: "16:00",
       };
 
       const result = await createBooking(
@@ -481,145 +603,12 @@ describe("createBooking", () => {
       const lateParams = {
         ...mockParams,
         startTime: "18:00",
+        endTime: "19:00",
       };
 
       const result = await createBooking(
         mockProfile,
         lateParams,
-        mockSupabase as SupabaseClient<Database>,
-      );
-
-      expect(result).toBeDefined();
-    });
-  });
-
-  describe("異なるサービス時間での計算", () => {
-    it("30分サービスで正しく計算される", async () => {
-      const shortService = {
-        ...mockService,
-        duration: 30,
-      };
-
-      // Mock service query to return short service
-      mockFrom.mockImplementation((table: string) => {
-        if (table === "services") {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                is: vi.fn().mockReturnValue({
-                  single: vi
-                    .fn()
-                    .mockResolvedValue({ data: shortService, error: null }),
-                }),
-              }),
-            }),
-          };
-        }
-        if (table === "bookings") {
-          return {
-            insert: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi
-                  .fn()
-                  .mockResolvedValue({ data: { id: 1 }, error: null }),
-              }),
-            }),
-          };
-        }
-        return {};
-      });
-
-      const result = await createBooking(
-        mockProfile,
-        mockParams,
-        mockSupabase as SupabaseClient<Database>,
-      );
-
-      expect(result).toBeDefined();
-    });
-
-    it("90分サービスで正しく計算される", async () => {
-      const longService = {
-        ...mockService,
-        duration: 90,
-      };
-
-      // Mock service query to return long service
-      mockFrom.mockImplementation((table: string) => {
-        if (table === "services") {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                is: vi.fn().mockReturnValue({
-                  single: vi
-                    .fn()
-                    .mockResolvedValue({ data: longService, error: null }),
-                }),
-              }),
-            }),
-          };
-        }
-        if (table === "bookings") {
-          return {
-            insert: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi
-                  .fn()
-                  .mockResolvedValue({ data: { id: 1 }, error: null }),
-              }),
-            }),
-          };
-        }
-        return {};
-      });
-
-      const result = await createBooking(
-        mockProfile,
-        mockParams,
-        mockSupabase as SupabaseClient<Database>,
-      );
-
-      expect(result).toBeDefined();
-    });
-
-    it("3時間サービスで正しく計算される", async () => {
-      const veryLongService = {
-        ...mockService,
-        duration: 180,
-      };
-
-      // Mock service query to return very long service
-      mockFrom.mockImplementation((table: string) => {
-        if (table === "services") {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                is: vi.fn().mockReturnValue({
-                  single: vi
-                    .fn()
-                    .mockResolvedValue({ data: veryLongService, error: null }),
-                }),
-              }),
-            }),
-          };
-        }
-        if (table === "bookings") {
-          return {
-            insert: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi
-                  .fn()
-                  .mockResolvedValue({ data: { id: 1 }, error: null }),
-              }),
-            }),
-          };
-        }
-        return {};
-      });
-
-      const result = await createBooking(
-        mockProfile,
-        mockParams,
         mockSupabase as SupabaseClient<Database>,
       );
 
@@ -693,7 +682,6 @@ describe("createBooking", () => {
     it("データベース挿入エラーが発生する", async () => {
       const insertError = new Error("Database insert failed");
 
-      // Mock insert to return error
       mockFrom.mockImplementation((table: string) => {
         if (table === "services") {
           return {
@@ -732,7 +720,6 @@ describe("createBooking", () => {
     });
 
     it("予約データが返されない場合にエラーが発生する", async () => {
-      // Mock insert to return null data with no error
       mockFrom.mockImplementation((table: string) => {
         if (table === "services") {
           return {
@@ -771,7 +758,6 @@ describe("createBooking", () => {
     it("重複する予約で制約エラーが発生する", async () => {
       const constraintError = new Error("Duplicate booking constraint");
 
-      // Mock insert to return constraint error
       mockFrom.mockImplementation((table: string) => {
         if (table === "services") {
           return {

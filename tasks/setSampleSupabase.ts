@@ -54,18 +54,12 @@ if (listError) {
 }
 
 for (const user of existingUsers.users) {
-  if (
-    user.email === "new@example.com" ||
-    user.email === "user@example.com" ||
-    user.email === "admin@example.com"
-  ) {
-    const { error: deleteError } = await supabaseClient.auth.admin.deleteUser(
-      user.id,
-    );
-    if (deleteError) {
-      console.error("Error deleting user:", deleteError);
-      throw deleteError;
-    }
+  const { error: deleteError } = await supabaseClient.auth.admin.deleteUser(
+    user.id,
+  );
+  if (deleteError) {
+    console.error("Error deleting user:", deleteError);
+    throw deleteError;
   }
 }
 
@@ -167,9 +161,11 @@ const serviceMap = insertedServices.reduce(
     resProfile,
     {
       serviceId: serviceMap.カット.id,
-      notes: "初めてです",
+      serviceName: serviceMap.カット.name,
       date: day1,
       startTime: "10:00",
+      endTime: "11:00",
+      notes: "初めてです",
     },
     supabaseClient,
   );
@@ -179,9 +175,11 @@ const serviceMap = insertedServices.reduce(
     resProfile,
     {
       serviceId: serviceMap.パーマ.id,
-      notes: "",
+      serviceName: serviceMap.パーマ.name,
       date: day2,
       startTime: "16:00",
+      endTime: "18:30",
+      notes: "",
     },
     supabaseClient,
   );
@@ -219,9 +217,11 @@ const serviceMap = insertedServices.reduce(
     resProfile,
     {
       serviceId: serviceMap.カット.id,
-      notes: "",
+      serviceName: serviceMap.カット.name,
       date: day1,
       startTime: "11:00",
+      endTime: "12:00",
+      notes: "",
     },
     supabaseClient,
   );
