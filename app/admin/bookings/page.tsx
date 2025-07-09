@@ -6,23 +6,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { normalizeDateTime } from "@/lib/normalizeDateTime";
+import { formatDateStringYMDHM } from "@/lib/formatDateStringYMDHM";
 import { getAllBookings } from "../_actions/getAllBookings";
 
 export default async function BookingsPage() {
   const bookings = await getAllBookings();
-
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(normalizeDateTime(dateString));
-    return date.toLocaleString("ja-JP", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Tokyo",
-    });
-  };
 
   return (
     <div className="bg-gray-50 py-8">
@@ -55,14 +43,20 @@ export default async function BookingsPage() {
                     </div>
                   </TableCell>
                   <TableCell>{booking.service_name}</TableCell>
-                  <TableCell>{formatDateTime(booking.start_time)}</TableCell>
-                  <TableCell>{formatDateTime(booking.end_time)}</TableCell>
+                  <TableCell>
+                    {formatDateStringYMDHM(booking.start_time)}
+                  </TableCell>
+                  <TableCell>
+                    {formatDateStringYMDHM(booking.end_time)}
+                  </TableCell>
                   <TableCell className="max-w-xs">
                     <div className="truncate" title={booking.notes}>
                       {booking.notes || "-"}
                     </div>
                   </TableCell>
-                  <TableCell>{formatDateTime(booking.created_at)}</TableCell>
+                  <TableCell>
+                    {formatDateStringYMDHM(booking.created_at)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

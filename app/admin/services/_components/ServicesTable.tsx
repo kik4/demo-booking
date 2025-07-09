@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDateStringYMDHMS } from "@/lib/formatDateStringYMDHMS";
+import { formatDateStringYMDHM } from "@/lib/formatDateStringYMDHM";
 import type {
   AdminService,
   SortDirection,
@@ -109,12 +109,8 @@ export function ServicesTable({
               <TableCell className="font-medium text-green-600">
                 {formatPrice(service.price)}
               </TableCell>
-              <TableCell>
-                {formatDateStringYMDHMS(service.created_at)}
-              </TableCell>
-              <TableCell>
-                {formatDateStringYMDHMS(service.updated_at)}
-              </TableCell>
+              <TableCell>{formatDateStringYMDHM(service.created_at)}</TableCell>
+              <TableCell>{formatDateStringYMDHM(service.updated_at)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
