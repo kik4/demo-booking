@@ -187,4 +187,44 @@ const serviceMap = insertedServices.reduce(
   );
 }
 
+// プロフィール登録をしたユーザー2
+{
+  const user = await supabaseClient.auth.admin.createUser({
+    email: "user2@example.com",
+    password: "password",
+    email_confirm: true,
+  });
+  if (user.error) {
+    console.error(user);
+    throw user.error;
+  }
+
+  const resProfile = await createProfile(
+    user.data.user,
+    {
+      name: "テスト次郎",
+      name_hiragana: "てすとじろう",
+      sex: SEX_CODES.MALE,
+      date_of_birth: "1998-10-10",
+      role: ROLE_CODES.USER,
+    },
+    supabaseClient,
+  );
+
+  // 予約データを作成
+  const day1 = nextMonday(new Date()).toISOString().slice(0, 10);
+
+  // 1つ目の予約: カット
+  await createBooking(
+    resProfile,
+    {
+      serviceId: serviceMap.カット.id,
+      notes: "",
+      date: day1,
+      startTime: "11:00",
+    },
+    supabaseClient,
+  );
+}
+
 console.log("Sample data insertion completed successfully!");
