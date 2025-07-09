@@ -5,19 +5,18 @@ import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
-import type { Database } from "@/types/database.types";
 import {
   type CreateBookingFormState,
   createBookingAction,
 } from "./_actions/createBookingAction";
 import { getServicesAction } from "./_actions/getServicesAction";
 import { getUserProfileAction } from "./_actions/getUserProfileAction";
+import type { Service } from "./_actions/types";
 import { BookingConfirmation } from "./_components/BookingConfirmation";
 import { DateTimeSelection } from "./_components/DateTimeSelection";
 import { ServiceSelection } from "./_components/ServiceSelection";
 
 type Step = 1 | 2 | 3;
-type Service = Database["public"]["Tables"]["services"]["Row"];
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState<Step>(1);

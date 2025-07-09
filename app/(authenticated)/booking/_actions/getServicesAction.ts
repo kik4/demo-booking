@@ -2,9 +2,7 @@
 
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabaseClientServer";
-import type { Database } from "@/types/database.types";
-
-type Service = Database["public"]["Tables"]["services"]["Row"];
+import type { Service } from "./types";
 
 export async function getServicesAction(): Promise<
   | {
@@ -17,7 +15,7 @@ export async function getServicesAction(): Promise<
   return requireAuth(supabase, async () => {
     const { data, error } = await supabase
       .from("services")
-      .select("*")
+      .select("id, name, price, duration")
       .is("deleted_at", null)
       .order("id");
 

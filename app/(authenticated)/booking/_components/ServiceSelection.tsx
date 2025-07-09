@@ -1,9 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import type { Database } from "@/types/database.types";
-
-type Service = Database["public"]["Tables"]["services"]["Row"];
+import type { Service } from "../_actions/types";
 
 interface ServiceSelectionProps {
   selectedService: string;
