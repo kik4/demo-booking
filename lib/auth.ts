@@ -18,7 +18,7 @@ export interface AuthResult {
 /**
  * 認証チェック: ユーザーがログインしているかを確認
  */
-export async function checkAuth(
+async function checkAuth(
   supabase: SupabaseClient<Database>,
 ): Promise<AuthResult> {
   const {
@@ -45,7 +45,7 @@ export async function checkAuth(
 /**
  * 管理者権限チェック: ユーザーが管理者であるかを確認
  */
-export async function checkAdminAuth(
+async function checkAdminAuth(
   supabase: SupabaseClient<Database>,
 ): Promise<AuthResult> {
   // まず認証チェック
