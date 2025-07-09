@@ -2,7 +2,7 @@
 
 import { requireAuth } from "@/lib/auth";
 import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
-import { createServiceClient } from "@/lib/supabaseClientServer";
+import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
 
 export interface AvailableTimeSlot {
   start_time: string;
@@ -15,9 +15,12 @@ export async function getAvailableTimeSlotsForDateAction(date: string): Promise<
     }
   | { error: string }
 > {
-  const supabase = await createServiceClient();
+  const supabase = await createClient();
 
   return requireAuth(supabase, async () => {
-    return getAvailableTimeSlotsForDate(date, supabase);
+    // Use service client for creating booking to bypass RLS
+    const serviceClient = await createServiceClient();
+
+    return getAvailableTimeSlotsForDate(date, serviceClient);
   });
 }
