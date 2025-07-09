@@ -70,6 +70,7 @@ describe("getAvailableTimeSlotsForDate", () => {
 
       expect(result).toEqual({
         availableSlots: [],
+        message: "日曜日は休業日です",
       });
       // Database query should not be called for closed days
       expect(mockFrom).not.toHaveBeenCalled();
@@ -84,6 +85,7 @@ describe("getAvailableTimeSlotsForDate", () => {
 
       expect(result).toEqual({
         availableSlots: [],
+        message: "水曜日は休業日です",
       });
       // Database query should not be called for closed days
       expect(mockFrom).not.toHaveBeenCalled();
@@ -99,6 +101,7 @@ describe("getAvailableTimeSlotsForDate", () => {
 
       expect(result).toEqual({
         availableSlots: [],
+        message: "祝日は休業日です",
       });
       expect(mockedIsHoliday).toHaveBeenCalledWith(
         new Date("2025-07-21T09:00:00+09:00"),
@@ -125,6 +128,7 @@ describe("getAvailableTimeSlotsForDate", () => {
 
         expect(result).toEqual({
           availableSlots: [],
+          message: "年末年始期間（12月29日〜1月3日）は休業日です",
         });
         // Database query should not be called for year-end period
         expect(mockFrom).not.toHaveBeenCalled();
@@ -463,7 +467,10 @@ describe("getAvailableTimeSlotsForDate", () => {
         mockSupabase as SupabaseClient<Database>,
       );
 
-      expect(result.availableSlots).toEqual([]);
+      expect(result).toEqual({
+        availableSlots: [],
+        message: "水曜日は休業日です",
+      });
     });
 
     it("うるう年の日付でも正常に動作する", async () => {

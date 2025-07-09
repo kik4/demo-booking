@@ -1,7 +1,6 @@
 "use client";
 
-import japaneseHolidays from "japanese-holidays";
-import { useCallback, useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import {
   type AvailableTimeSlot,
   getAvailableTimeSlotsForDateAction,
@@ -31,31 +30,15 @@ export function DateTimeSelection({
   const dateInputId = useId();
   const timeSelectId = useId();
   const [availableSlots, setAvailableSlots] = useState<AvailableTimeSlot[]>([]);
-
-  // Check if a date is valid (not Wednesday, Sunday, or holiday)
-  const isValidDate = useCallback((dateString: string) => {
-    if (!dateString) return true; // Allow empty for validation message
-
-    const date = new Date(dateString);
-    const dayOfWeek = date.getDay(); // 0 = Sunday, 3 = Wednesday
-
-    // Check for Wednesday or Sunday
-    if (dayOfWeek === 0 || dayOfWeek === 3) {
-      return false;
-    }
-
-    // Check for Japanese holidays
-    if (japaneseHolidays.isHoliday(date)) {
-      return false;
-    }
-
-    return true;
-  }, []);
+  const [hasError, setHasError] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
 
   // Fetch available time slots when date changes
   useEffect(() => {
-    if (!selectedDate || !isValidDate(selectedDate)) {
+    if (!selectedDate) {
       setAvailableSlots([]);
+      setHasError(false);
+      setValidationMessage("");
       return;
     }
 
@@ -63,14 +46,24 @@ export function DateTimeSelection({
       .then((result) => {
         if ("availableSlots" in result) {
           setAvailableSlots(result.availableSlots);
+          setHasError(false);
+          setValidationMessage(result.message || "");
         } else {
           setAvailableSlots([]);
+          setHasError(true);
+          setValidationMessage(
+            "日付の確認中にエラーが発生しました。もう一度お試しください。",
+          );
         }
       })
       .catch(() => {
         setAvailableSlots([]);
+        setHasError(true);
+        setValidationMessage(
+          "日付の確認中にエラーが発生しました。もう一度お試しください。",
+        );
       });
-  }, [selectedDate, isValidDate]);
+  }, [selectedDate]);
 
   // Generate time slots for the selected service duration
   const generateTimeSlotsForService = () => {
@@ -118,28 +111,11 @@ export function DateTimeSelection({
 
   const timeSlots = generateTimeSlotsForService();
 
-  // Check if the date is a holiday
-  const getHolidayInfo = (dateString: string) => {
-    if (!dateString) return false;
-
-    const date = new Date(dateString);
-    return japaneseHolidays.isHoliday(date);
-  };
-
   // Get minimum date (tomorrow)
   const getMinDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split("T")[0];
-  };
-
-  // Check if afternoon slots should be available for the selected date
-  const isAfternoonAvailable = (dateString: string) => {
-    if (!dateString) return true;
-
-    const date = new Date(dateString);
-    const dayOfWeek = date.getDay(); // 6 = Saturday
-    return dayOfWeek !== 6; // Saturday afternoon is closed
   };
 
   const selectedEndTime =
@@ -177,25 +153,16 @@ export function DateTimeSelection({
           min={getMinDate()}
           className="neumorphism-input block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
           disabled={disabled}
+          aria-describedby={
+            validationMessage ? `${dateInputId}-message` : undefined
+          }
         />
-        {selectedDate && !isValidDate(selectedDate) && (
-          <div className="mt-1 text-red-600 text-sm">
-            {(() => {
-              const date = new Date(selectedDate);
-              const dayOfWeek = date.getDay();
-              const isHolidayDate = getHolidayInfo(selectedDate);
-
-              if (isHolidayDate) {
-                return "祝日のため休業日です。他の日をお選びください。";
-              }
-              if (dayOfWeek === 0) {
-                return "日曜日は休業日です。他の日をお選びください。";
-              }
-              if (dayOfWeek === 3) {
-                return "水曜日は休業日です。他の日をお選びください。";
-              }
-              return "選択された日は休業日です。他の日をお選びください。";
-            })()}
+        {selectedDate && !hasError && validationMessage && (
+          <div
+            id={`${dateInputId}-message`}
+            className="mt-1 text-amber-600 text-sm"
+          >
+            {validationMessage}
           </div>
         )}
       </div>
@@ -212,7 +179,7 @@ export function DateTimeSelection({
           value={selectedTime}
           onChange={(e) => onTimeChange(e.target.value)}
           className="neumorphism-input block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          disabled={disabled || !selectedDate || !isValidDate(selectedDate)}
+          disabled={disabled || !selectedDate || hasError}
         >
           <option value="">時間を選択してください</option>
           <optgroup label="午前 (9:00-13:00)">
@@ -224,7 +191,8 @@ export function DateTimeSelection({
                 </option>
               ))}
           </optgroup>
-          {isAfternoonAvailable(selectedDate) && (
+          {timeSlots.filter((slot) => slot.period === "afternoon").length >
+            0 && (
             <optgroup label="午後 (15:00-19:00)">
               {timeSlots
                 .filter((slot) => slot.period === "afternoon")
@@ -238,7 +206,8 @@ export function DateTimeSelection({
         </select>
 
         {selectedDate &&
-          isValidDate(selectedDate) &&
+          !hasError &&
+          !validationMessage &&
           timeSlots.length === 0 && (
             <div className="neumorphism-card mt-3 bg-red-50 p-3">
               <p className="text-red-700 text-sm">
@@ -279,12 +248,7 @@ export function DateTimeSelection({
         <button
           type="button"
           onClick={onNext}
-          disabled={
-            !selectedDate ||
-            !selectedTime ||
-            !isValidDate(selectedDate) ||
-            disabled
-          }
+          disabled={!selectedDate || !selectedTime || hasError || disabled}
           className="neumorphism-button-primary px-6 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           次へ

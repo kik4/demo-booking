@@ -29,27 +29,31 @@ export async function getAvailableTimeSlotsForDate(
   supabase: SupabaseClient<Database>,
 ): Promise<{
   availableSlots: AvailableTimeSlot[];
+  message?: string;
 }> {
   // Check if the date is a business day
   const bookingDate = new Date(`${date}T09:00:00+09:00`);
   const dayOfWeek = bookingDate.getUTCDay(); // 0 = Sunday, 3 = Wednesday
 
+  // Check if the date is during year-end/new year period first
+  if (isYearEndPeriod(bookingDate)) {
+    return {
+      availableSlots: [],
+      message: "年末年始期間（12月29日〜1月3日）は休業日です",
+    };
+  }
+
   if (dayOfWeek === 0 || dayOfWeek === 3) {
     return {
-      availableSlots: [], // No slots available on closed days
+      availableSlots: [],
+      message: dayOfWeek === 0 ? "日曜日は休業日です" : "水曜日は休業日です",
     };
   }
 
   if (japaneseHolidays.isHoliday(bookingDate)) {
     return {
-      availableSlots: [], // No slots available on holidays
-    };
-  }
-
-  // Check if the date is during year-end/new year period
-  if (isYearEndPeriod(bookingDate)) {
-    return {
-      availableSlots: [], // No slots available during year-end/new year period
+      availableSlots: [],
+      message: "祝日は休業日です",
     };
   }
 

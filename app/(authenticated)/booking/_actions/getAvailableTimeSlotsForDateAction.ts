@@ -12,6 +12,7 @@ export interface AvailableTimeSlot {
 export async function getAvailableTimeSlotsForDateAction(date: string): Promise<
   | {
       availableSlots: AvailableTimeSlot[];
+      message?: string;
     }
   | { error: string }
 > {
