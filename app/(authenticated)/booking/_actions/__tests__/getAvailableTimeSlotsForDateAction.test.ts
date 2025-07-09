@@ -2,7 +2,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { requireAuth } from "@/lib/auth";
 import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
-import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
+import {
+  createClient,
+  createServiceClient,
+} from "@/lib/supabase/supabaseClientServer";
 import { getAvailableTimeSlotsForDateAction } from "../getAvailableTimeSlotsForDateAction";
 
 vi.mock("@/lib/auth");

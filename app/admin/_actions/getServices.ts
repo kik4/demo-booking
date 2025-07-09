@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export interface AdminService {
   id: number;

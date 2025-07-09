@@ -6,7 +6,7 @@ import { ROLE_CODES } from "@/constants/roleCode";
 import type { SexCode } from "@/constants/sexCode";
 import { requireAuth } from "@/lib/auth";
 import { createProfile } from "@/lib/db/profiles";
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export interface RegisterFormState {
   errors?: {

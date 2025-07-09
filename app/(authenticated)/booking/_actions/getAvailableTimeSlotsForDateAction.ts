@@ -2,7 +2,10 @@
 
 import { requireAuth } from "@/lib/auth";
 import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
-import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
+import {
+  createClient,
+  createServiceClient,
+} from "@/lib/supabase/supabaseClientServer";
 
 export async function getAvailableTimeSlotsForDateAction(
   date: string,

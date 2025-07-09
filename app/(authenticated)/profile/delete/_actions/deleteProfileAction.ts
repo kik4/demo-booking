@@ -3,7 +3,10 @@
 import { redirect } from "next/navigation";
 import { requireUserAuth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
-import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
+import {
+  createClient,
+  createServiceClient,
+} from "@/lib/supabase/supabaseClientServer";
 
 export async function deleteProfileAction() {
   const supabase = await createClient();

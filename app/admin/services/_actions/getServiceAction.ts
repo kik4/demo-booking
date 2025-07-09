@@ -2,7 +2,7 @@
 
 import { requireAdminAuth } from "@/lib/auth";
 import { getService } from "@/lib/db/services";
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export async function getServiceAction(id: number) {
   const supabase = await createClient();

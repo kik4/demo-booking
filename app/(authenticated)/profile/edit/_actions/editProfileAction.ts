@@ -5,7 +5,7 @@ import { ValiError } from "valibot";
 import type { SexCode } from "@/constants/sexCode";
 import { requireUserAuth } from "@/lib/auth";
 import { updateProfile } from "@/lib/db/profiles";
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export interface EditProfileFormState {
   errors?: {

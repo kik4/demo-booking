@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import { type Booking, getBookingsAction } from "./_actions/getBookingsAction";
 import { BookingDetail } from "./_components/BookingDetail";
 import { BookingList } from "./_components/BookingList";

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/routes";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 
 export function DevLoginButtonContainer() {
   const router = useRouter();

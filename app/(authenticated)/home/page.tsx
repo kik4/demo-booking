@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import { BusinessHours } from "./_components/BusinessHours";
 import { WelcomeMessage } from "./_components/WelcomeMessage";
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SEX_LABELS, type SexCode } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export default async function ProfilePage() {
   const supabase = await createClient();

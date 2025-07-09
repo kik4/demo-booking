@@ -6,7 +6,7 @@ import { useActionState, useEffect, useId, useState } from "react";
 import toast from "react-hot-toast";
 import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import {
   type EditProfileFormState,
   editProfileAction,

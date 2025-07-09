@@ -1,7 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/lib/routes";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 
 export function LoginButtonContainer() {
   const handleOAuthLogin = async (

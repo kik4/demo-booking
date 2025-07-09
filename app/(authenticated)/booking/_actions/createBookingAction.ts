@@ -6,7 +6,10 @@ import * as v from "valibot";
 import { requireUserAuth } from "@/lib/auth";
 import { createBooking } from "@/lib/db/bookings/createBooking";
 import { ROUTES } from "@/lib/routes";
-import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
+import {
+  createClient,
+  createServiceClient,
+} from "@/lib/supabase/supabaseClientServer";
 
 export interface ExistingBooking {
   id: number;

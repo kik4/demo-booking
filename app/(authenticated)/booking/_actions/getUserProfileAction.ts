@@ -1,7 +1,7 @@
 "use server";
 
 import { requireUserAuth } from "@/lib/auth";
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export async function getUserProfileAction(): Promise<
   | {

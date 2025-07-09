@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdminAuth } from "@/lib/auth";
 import { deleteService } from "@/lib/db/services";
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export async function deleteServiceAction(id: number) {
   const supabase = await createClient();

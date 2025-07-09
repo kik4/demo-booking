@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdminAuth } from "@/lib/auth";
 import { updateService } from "@/lib/db/services";
-import { createClient } from "@/lib/supabaseClientServer";
+import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export async function updateServiceAction(id: number, formData: FormData) {
   const supabase = await createClient();
