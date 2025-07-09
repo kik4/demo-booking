@@ -18,7 +18,7 @@ export async function getAvailableTimeSlotsForDateAction(date: string): Promise<
   const supabase = await createClient();
 
   return requireAuth(supabase, async () => {
-    // Use service client for creating booking to bypass RLS
+    // Use service client for getting booking to bypass RLS
     const serviceClient = await createServiceClient();
 
     return getAvailableTimeSlotsForDate(date, serviceClient);
