@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import {
-  type AvailableTimeSlot,
-  getAvailableTimeSlotsForDateAction,
-} from "../_actions/getAvailableTimeSlotsForDateAction";
+import type { AvailableTimeSlot } from "@/lib/db/bookings/types";
+import { getAvailableTimeSlotsForDateAction } from "../_actions/getAvailableTimeSlotsForDateAction";
 
 interface DateTimeSelectionProps {
   selectedDate: string;

@@ -2,12 +2,8 @@
 
 import { requireAuth } from "@/lib/auth";
 import { getAvailableTimeSlotsForDate } from "@/lib/db/bookings/getAvailableTimeSlotsForDate";
+import type { AvailableTimeSlot } from "@/lib/db/bookings/types";
 import { createClient, createServiceClient } from "@/lib/supabaseClientServer";
-
-export interface AvailableTimeSlot {
-  start_time: string;
-  end_time: string;
-}
 
 export async function getAvailableTimeSlotsForDateAction(date: string): Promise<
   | {
