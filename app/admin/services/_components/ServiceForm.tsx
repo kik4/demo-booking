@@ -79,7 +79,7 @@ export function ServiceForm({ service, trigger }: ServiceFormProps) {
         result = await createServiceAction(formData);
       }
 
-      if (result.success) {
+      if ("success" in result && result.success) {
         setOpen(false);
         form.reset();
       } else {

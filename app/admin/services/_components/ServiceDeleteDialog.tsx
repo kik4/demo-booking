@@ -32,7 +32,7 @@ export function ServiceDeleteDialog({
 
     try {
       const result = await deleteServiceAction(service.id);
-      if (result.success) {
+      if ("success" in result && result.success) {
         setOpen(false);
       } else {
         console.error("削除に失敗しました:", result.error);
