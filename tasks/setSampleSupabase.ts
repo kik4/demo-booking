@@ -1,5 +1,6 @@
 import "./utils/envConfig";
 import { createClient } from "@supabase/supabase-js";
+import { addDays, nextMonday } from "date-fns";
 import { ROLE_CODES } from "@/constants/roleCode";
 import { SEX_CODES } from "@/constants/sexCode";
 import { createBooking } from "@/lib/db/bookings/createBooking";
@@ -158,12 +159,8 @@ const serviceMap = insertedServices.reduce(
   );
 
   // 予約データを作成
-  const tomorrow = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
-  const dayAfterTomorrow = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
+  const day1 = nextMonday(new Date()).toISOString().slice(0, 10);
+  const day2 = addDays(day1, 1).toISOString().slice(0, 10);
 
   // 1つ目の予約: カット
   await createBooking(
@@ -171,7 +168,7 @@ const serviceMap = insertedServices.reduce(
     {
       serviceId: serviceMap.カット.id,
       notes: "初めてです",
-      date: tomorrow,
+      date: day1,
       startTime: "10:00",
     },
     supabaseClient,
@@ -183,7 +180,7 @@ const serviceMap = insertedServices.reduce(
     {
       serviceId: serviceMap.パーマ.id,
       notes: "",
-      date: dayAfterTomorrow,
+      date: day2,
       startTime: "16:00",
     },
     supabaseClient,
