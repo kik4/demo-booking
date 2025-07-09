@@ -106,6 +106,60 @@ describe("getAvailableTimeSlotsForDate", () => {
       // Database query should not be called for holidays
       expect(mockFrom).not.toHaveBeenCalled();
     });
+
+    it("年末年始期間（12月29日〜1月3日）は空きスロットが0個", async () => {
+      const yearEndDates = [
+        "2024-12-29",
+        "2024-12-30",
+        "2024-12-31",
+        "2025-01-01",
+        "2025-01-02",
+        "2025-01-03",
+      ];
+
+      for (const date of yearEndDates) {
+        const result = await getAvailableTimeSlotsForDate(
+          date,
+          mockSupabase as SupabaseClient<Database>,
+        );
+
+        expect(result).toEqual({
+          availableSlots: [],
+        });
+        // Database query should not be called for year-end period
+        expect(mockFrom).not.toHaveBeenCalled();
+      }
+    });
+
+    it("年末年始期間外の日付は通常通り利用可能", async () => {
+      const regularDates = [
+        "2024-12-28", // December 28th (before year-end period)
+        "2025-01-04", // January 4th (after year-end period)
+      ];
+
+      for (const date of regularDates) {
+        vi.clearAllMocks();
+        // Reset mocks for each test
+        mockFrom.mockReturnValue({ select: mockSelect });
+        mockSelect.mockReturnValue({ is: mockIs });
+        mockIs.mockReturnValue({ gte: mockGte });
+        mockGte.mockReturnValue({ lte: mockLte });
+        mockLte.mockReturnValue({ order: mockOrder });
+        mockOrder.mockResolvedValue({ data: [], error: null });
+
+        const result = await getAvailableTimeSlotsForDate(
+          date,
+          mockSupabase as SupabaseClient<Database>,
+        );
+
+        // Both dates should be Saturday (morning only)
+        expect(result).toEqual({
+          availableSlots: [{ start_time: "09:00", end_time: "13:00" }],
+        });
+        // Database query should be called for regular dates
+        expect(mockFrom).toHaveBeenCalled();
+      }
+    });
   });
 
   describe("営業時間内のスロット生成テスト", () => {
@@ -426,9 +480,9 @@ describe("getAvailableTimeSlotsForDate", () => {
     });
 
     it("年またぎの日付でも正常に動作する", async () => {
-      // 2024-12-31 is Tuesday (should be open)
+      // 2024-12-27 is Friday (should be open, before year-end restriction period)
       const result = await getAvailableTimeSlotsForDate(
-        "2024-12-31",
+        "2024-12-27",
         mockSupabase as SupabaseClient<Database>,
       );
 

@@ -7,6 +7,23 @@ import type { Database } from "@/types/database.types";
 import { normalizeDateTime } from "../../normalizeDateTime";
 import type { AvailableTimeSlot } from "./types";
 
+function isYearEndPeriod(date: Date): boolean {
+  const month = date.getMonth() + 1; // getMonth() returns 0-11, so add 1
+  const day = date.getDate();
+
+  // December 29, 30, 31
+  if (month === 12 && day >= 29) {
+    return true;
+  }
+
+  // January 1, 2, 3
+  if (month === 1 && day <= 3) {
+    return true;
+  }
+
+  return false;
+}
+
 export async function getAvailableTimeSlotsForDate(
   date: string,
   supabase: SupabaseClient<Database>,
@@ -26,6 +43,13 @@ export async function getAvailableTimeSlotsForDate(
   if (japaneseHolidays.isHoliday(bookingDate)) {
     return {
       availableSlots: [], // No slots available on holidays
+    };
+  }
+
+  // Check if the date is during year-end/new year period
+  if (isYearEndPeriod(bookingDate)) {
+    return {
+      availableSlots: [], // No slots available during year-end/new year period
     };
   }
 
