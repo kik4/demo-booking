@@ -106,37 +106,16 @@ export async function createBookingAction(
       // Use service client for creating booking to bypass RLS
       const serviceClient = await createServiceClient();
 
-      try {
-        await createBooking(
-          authResult.profile,
-          {
-            serviceId: serviceIdNum,
-            notes: notes || "",
-            date,
-            startTime,
-          },
-          serviceClient,
-        );
-      } catch (error) {
-        console.error("Booking creation error:", error);
-        return {
-          errors: {
-            _form: [
-              error instanceof Error
-                ? error.message
-                : "予約の作成に失敗しました。時間をおいて再度お試しください。",
-            ],
-          },
-          formData: {
-            serviceId,
-            serviceName,
-            date,
-            startTime,
-            endTime,
-            notes,
-          },
-        };
-      }
+      await createBooking(
+        authResult.profile,
+        {
+          serviceId: serviceIdNum,
+          notes: notes || "",
+          date,
+          startTime,
+        },
+        serviceClient,
+      );
 
       revalidatePath(ROUTES.USER.HOME);
       return { success: true };
@@ -165,7 +144,11 @@ export async function createBookingAction(
     console.error("Unexpected error:", error);
     return {
       errors: {
-        _form: ["予期しないエラーが発生しました"],
+        _form: [
+          error instanceof Error
+            ? error.message
+            : "予期しないエラーが発生しました",
+        ],
       },
       formData: {
         serviceId,

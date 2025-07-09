@@ -85,10 +85,15 @@ export async function registerAction(
     }
 
     return result;
-  } catch {
+  } catch (error) {
+    console.error("Unexpected error:", error);
     return {
       errors: {
-        _form: ["予期しないエラーが発生しました"],
+        _form: [
+          error instanceof Error
+            ? error.message
+            : "予期しないエラーが発生しました",
+        ],
       },
       formData: { name, nameHiragana, sex, dateOfBirth },
     };

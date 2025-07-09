@@ -17,10 +17,10 @@ export async function getBookingsAction(): Promise<{
   bookings?: Booking[];
   error?: string;
 }> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const result = await requireUserAuth(supabase, async (authResult) => {
-    try {
+    const result = await requireUserAuth(supabase, async (authResult) => {
       // Get bookings for the user
       const { data: bookings, error: bookingsError } = await supabase
         .from("bookings")
@@ -41,21 +41,21 @@ export async function getBookingsAction(): Promise<{
         success: true,
         bookings: bookings || [],
       };
-    } catch (error) {
-      console.error("Unexpected error:", error);
+    });
+
+    if ("error" in result) {
       return {
         success: false,
-        error: "予期しないエラーが発生しました",
+        error: result.error,
       };
     }
-  });
 
-  if ("error" in result) {
+    return result;
+  } catch (error) {
+    console.error("Unexpected error:", error);
     return {
       success: false,
-      error: result.error,
+      error: "予期しないエラーが発生しました",
     };
   }
-
-  return result;
 }
