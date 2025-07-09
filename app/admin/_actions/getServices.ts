@@ -9,14 +9,20 @@ export interface AdminService {
   updated_at: string;
 }
 
-export async function getServices() {
+export type SortKey = keyof AdminService;
+export type SortDirection = "asc" | "desc";
+
+export async function getServices(
+  sortKey: SortKey = "id",
+  sortDirection: SortDirection = "asc",
+) {
   const supabase = await createClient();
 
   const { data: services, error } = await supabase
     .from("services")
     .select("*")
     .is("deleted_at", null)
-    .order("id", { ascending: true });
+    .order(sortKey, { ascending: sortDirection === "asc" });
 
   if (error) {
     console.error("Error fetching services:", error);
