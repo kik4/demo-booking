@@ -38,6 +38,7 @@ export function FormField({
       {React.cloneElement(children, {
         id,
         "aria-describedby": ariaDescribedBy || undefined,
+        // biome-ignore lint/suspicious/noExplicitAny: for utility
       } as any)}
       {description && (
         <p id={descriptionId} className="text-gray-500 text-sm">
