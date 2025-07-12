@@ -1,14 +1,14 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { requireUserAuth } from "@/lib/auth";
-import { ROUTES } from "@/lib/routes";
 import {
   createClient,
   createServiceClient,
 } from "@/lib/supabase/supabaseClientServer";
 
-export async function deleteProfileAction() {
+export async function deleteProfileAction(): Promise<
+  { success: true } | { success: false; error: string }
+> {
   const supabase = await createClient();
 
   const result = await requireUserAuth(supabase, async (authResult) => {
@@ -41,8 +41,8 @@ export async function deleteProfileAction() {
   });
 
   if ("error" in result) {
-    throw new Error(result.error);
+    return { success: false, error: result.error };
   }
 
-  redirect(ROUTES.ROOT);
+  return result as { success: true };
 }

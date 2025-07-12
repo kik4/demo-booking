@@ -1,17 +1,30 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
 import { deleteProfileAction } from "./_actions/deleteProfileAction";
 
 export default function DeleteAccountPage() {
   const [isPending, startTransition] = useTransition();
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const router = useRouter();
 
   const handleDelete = () => {
     startTransition(async () => {
-      await deleteProfileAction();
+      const result = await deleteProfileAction();
+      if (result.success) {
+        toast.success("アカウントを削除しました", {
+          className: "neumorphism-toast-success",
+        });
+        router.push(ROUTES.ROOT);
+      } else {
+        toast.error("error" in result ? result.error : "削除に失敗しました", {
+          className: "neumorphism-toast-error",
+        });
+      }
     });
   };
 
