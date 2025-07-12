@@ -1,11 +1,12 @@
 "use server";
 
 import { camelCase } from "lodash-es";
-import { ValiError } from "valibot";
+import * as v from "valibot";
 import type { SexCode } from "@/constants/sexCode";
 import { requireUserAuth } from "@/lib/auth";
 import { updateProfile } from "@/lib/db/profiles";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
+import { profileEditSchema } from "../../_schemas/profileSchema";
 
 export interface EditProfileFormState {
   errors?: {
@@ -13,25 +14,41 @@ export interface EditProfileFormState {
     nameHiragana?: string[];
     sex?: string[];
     dateOfBirth?: string[];
-    _form?: string[];
+    root?: string[];
   };
   success?: boolean;
-  formData?: {
-    name: string;
-    nameHiragana: string;
-    sex: string;
-    dateOfBirth: string;
-  };
 }
 
 export async function editProfileAction(
   _prevState: EditProfileFormState,
   formData: FormData,
 ): Promise<EditProfileFormState> {
-  const name = formData.get("name") as string;
-  const nameHiragana = formData.get("nameHiragana") as string;
-  const sex = formData.get("sex") as string;
-  const dateOfBirth = formData.get("dateOfBirth") as string;
+  const rawData = {
+    name: formData.get("name") as string,
+    nameHiragana: formData.get("nameHiragana") as string,
+    sex: Number(formData.get("sex")),
+    dateOfBirth: formData.get("dateOfBirth") as string,
+  };
+
+  // Client-side validation
+  const validationResult = v.safeParse(profileEditSchema, rawData);
+  if (!validationResult.success) {
+    const errors: Record<string, string[]> = {};
+    for (const issue of validationResult.issues) {
+      const path = issue.path
+        ? issue.path.map((p) => String(p.key)).join(".")
+        : "root";
+      if (!errors[path]) {
+        errors[path] = [];
+      }
+      errors[path].push(issue.message);
+    }
+    return {
+      errors,
+    };
+  }
+
+  const { name, nameHiragana, sex, dateOfBirth } = validationResult.output;
 
   try {
     const supabase = await createClient();
@@ -44,14 +61,14 @@ export async function editProfileAction(
           {
             name,
             name_hiragana: nameHiragana,
-            sex: (sex ? +sex : undefined) as SexCode,
+            sex: sex as SexCode,
             date_of_birth: dateOfBirth,
           },
           supabase,
         );
         return { success: true };
       } catch (e) {
-        if (e instanceof ValiError) {
+        if (e instanceof v.ValiError) {
           const errors: Record<string, string[]> = {};
           for (const issue of e.issues) {
             const path = issue.path
@@ -66,7 +83,6 @@ export async function editProfileAction(
           }
           return {
             errors,
-            formData: { name, nameHiragana, sex, dateOfBirth },
           };
         }
         throw e;
@@ -76,9 +92,8 @@ export async function editProfileAction(
     if ("error" in result) {
       return {
         errors: {
-          _form: [result.error],
+          root: [result.error],
         },
-        formData: { name, nameHiragana, sex, dateOfBirth },
       };
     }
 
@@ -87,13 +102,12 @@ export async function editProfileAction(
     console.error("Unexpected error:", error);
     return {
       errors: {
-        _form: [
+        root: [
           error instanceof Error
             ? error.message
             : "予期しないエラーが発生しました",
         ],
       },
-      formData: { name, nameHiragana, sex, dateOfBirth },
     };
   }
 }

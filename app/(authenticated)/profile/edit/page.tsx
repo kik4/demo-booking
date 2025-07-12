@@ -1,33 +1,38 @@
 "use client";
 
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
 import { supabase } from "@/lib/supabase/supabaseClient";
 import {
-  type EditProfileFormState,
-  editProfileAction,
-} from "./_actions/editProfileAction";
+  type ProfileEditFormData,
+  profileEditSchema,
+} from "../_schemas/profileSchema";
+import { editProfileAction } from "./_actions/editProfileAction";
 
 export default function EditProfilePage() {
-  const [currentName, setCurrentName] = useState("");
-  const [currentNameHiragana, setCurrentNameHiragana] = useState("");
-  const [currentSex, setCurrentSex] = useState<number | null>(null);
-  const [currentDateOfBirth, setCurrentDateOfBirth] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const nameInputId = useId();
   const nameHiraganaInputId = useId();
   const sexInputId = useId();
   const dateOfBirthInputId = useId();
 
-  const [state, formAction, pending] = useActionState<
-    EditProfileFormState,
-    FormData
-  >(editProfileAction, {});
+  const form = useForm<ProfileEditFormData>({
+    resolver: valibotResolver(profileEditSchema),
+    defaultValues: {
+      name: "",
+      nameHiragana: "",
+      sex: 0,
+      dateOfBirth: "",
+    },
+  });
 
   useEffect(() => {
     async function fetchCurrentProfile() {
@@ -41,42 +46,85 @@ export default function EditProfilePage() {
           return;
         }
 
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("profiles")
           .select("name, name_hiragana, sex, date_of_birth")
           .eq("user_id", user.id)
           .is("deleted_at", null)
           .single();
 
+        if (error) {
+          // プロフィールが存在しない場合は登録ページにリダイレクト
+          if (error.code === "PGRST116") {
+            toast.error(
+              "プロフィールが登録されていません。先にプロフィールを登録してください。",
+            );
+            router.push(ROUTES.REGISTER);
+            return;
+          }
+          // その他のエラーは catch で処理
+          throw error;
+        }
+
         if (data) {
-          setCurrentName(data.name);
-          setCurrentNameHiragana(data.name_hiragana);
-          setCurrentSex(data.sex);
-          setCurrentDateOfBirth(data.date_of_birth);
+          form.reset({
+            name: data.name,
+            nameHiragana: data.name_hiragana,
+            sex: data.sex,
+            dateOfBirth: data.date_of_birth,
+          });
+        } else {
+          // データが null の場合（削除済みなど）
+          toast.error(
+            "プロフィールが見つかりません。先にプロフィールを登録してください。",
+          );
+          router.push(ROUTES.REGISTER);
+          return;
         }
       } catch (error) {
         console.error("プロフィール取得エラー:", error);
+        toast.error("プロフィールの取得に失敗しました");
       } finally {
         setLoading(false);
       }
     }
 
     fetchCurrentProfile();
-  }, [router]);
+  }, [router, form]);
 
-  useEffect(() => {
-    if (state.success) {
-      router.push(ROUTES.USER.PROFILE.ROOT);
-      toast.success("プロフィールを更新しました", {
-        className: "neumorphism-toast-success",
-      });
+  const onSubmit = async (values: ProfileEditFormData) => {
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("nameHiragana", values.nameHiragana);
+      formData.append("sex", values.sex.toString());
+      formData.append("dateOfBirth", values.dateOfBirth);
+
+      const result = await editProfileAction({}, formData);
+
+      if (result.success) {
+        router.push(ROUTES.USER.PROFILE.ROOT);
+        toast.success("プロフィールを更新しました", {
+          className: "neumorphism-toast-success",
+        });
+      } else {
+        // Handle server validation errors
+        if (result.errors) {
+          Object.entries(result.errors).forEach(([field, messages]) => {
+            form.setError(field as keyof ProfileEditFormData | "root", {
+              message: messages[0],
+            });
+          });
+        }
+      }
+    } catch {
+      form.setError("root", { message: "エラーが発生しました" });
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [state.success, router]);
-
-  // 成功時は早期リターンしてフォームを表示しない
-  if (state.success) {
-    return null;
-  }
+  };
 
   if (loading) {
     return (
@@ -97,7 +145,7 @@ export default function EditProfilePage() {
             プロフィール編集
           </h1>
 
-          <form action={formAction} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <label
                 htmlFor={nameInputId}
@@ -108,16 +156,15 @@ export default function EditProfilePage() {
               <input
                 type="text"
                 id={nameInputId}
-                name="name"
-                defaultValue={state.formData?.name || currentName}
+                {...form.register("name")}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="お名前を入力してください"
-                disabled={pending}
+                disabled={isSubmitting}
                 maxLength={100}
               />
-              {state.errors?.name && (
+              {form.formState.errors.name && (
                 <p className="mt-1 text-red-600 text-sm">
-                  {state.errors.name[0]}
+                  {form.formState.errors.name.message}
                 </p>
               )}
             </div>
@@ -132,18 +179,15 @@ export default function EditProfilePage() {
               <input
                 type="text"
                 id={nameHiraganaInputId}
-                name="nameHiragana"
-                defaultValue={
-                  state.formData?.nameHiragana || currentNameHiragana
-                }
+                {...form.register("nameHiragana")}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="おなまえをひらがなでにゅうりょくしてください"
-                disabled={pending}
+                disabled={isSubmitting}
                 maxLength={100}
               />
-              {state.errors?.nameHiragana && (
+              {form.formState.errors.nameHiragana && (
                 <p className="mt-1 text-red-600 text-sm">
-                  {state.errors.nameHiragana[0]}
+                  {form.formState.errors.nameHiragana.message}
                 </p>
               )}
             </div>
@@ -157,26 +201,22 @@ export default function EditProfilePage() {
               </label>
               <select
                 id={sexInputId}
-                name="sex"
-                key={state.formData?.sex || currentSex?.toString() || "empty"}
-                defaultValue={
-                  state.formData?.sex || currentSex?.toString() || ""
-                }
+                {...form.register("sex", { valueAsNumber: true })}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                disabled={pending}
+                disabled={isSubmitting}
               >
                 <option value="" disabled>
                   性別を選択してください
                 </option>
                 {SEX_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value.toString()}>
+                  <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
               </select>
-              {state.errors?.sex && (
+              {form.formState.errors.sex && (
                 <p className="mt-1 text-red-600 text-sm">
-                  {state.errors.sex[0]}
+                  {form.formState.errors.sex.message}
                 </p>
               )}
             </div>
@@ -191,35 +231,36 @@ export default function EditProfilePage() {
               <input
                 type="date"
                 id={dateOfBirthInputId}
-                name="dateOfBirth"
-                defaultValue={state.formData?.dateOfBirth || currentDateOfBirth}
+                {...form.register("dateOfBirth")}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                disabled={pending}
+                disabled={isSubmitting}
               />
-              {state.errors?.dateOfBirth && (
+              {form.formState.errors.dateOfBirth && (
                 <p className="mt-1 text-red-600 text-sm">
-                  {state.errors.dateOfBirth[0]}
+                  {form.formState.errors.dateOfBirth.message}
                 </p>
               )}
             </div>
 
-            {state.errors?._form && (
+            {form.formState.errors.root && (
               <div className="neumorphism-input rounded-md bg-red-100 p-4">
-                <p className="text-red-800 text-sm">{state.errors._form[0]}</p>
+                <p className="text-red-800 text-sm">
+                  {form.formState.errors.root.message}
+                </p>
               </div>
             )}
 
             <div className="flex space-x-4">
               <button
                 type="submit"
-                disabled={pending}
+                disabled={isSubmitting}
                 className="neumorphism-button-primary flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
               >
-                {pending ? "更新中..." : "更新"}
+                {isSubmitting ? "更新中..." : "更新"}
               </button>
               <Link
                 href={ROUTES.USER.PROFILE.ROOT}
-                className={`neumorphism-button-secondary flex-1 px-4 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${pending ? "pointer-events-none opacity-50" : ""}`}
+                className={`neumorphism-button-secondary flex-1 px-4 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
               >
                 キャンセル
               </Link>
