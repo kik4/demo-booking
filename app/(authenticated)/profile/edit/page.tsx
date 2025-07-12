@@ -220,6 +220,7 @@ export default function EditProfilePage() {
               <input
                 type="date"
                 id={dateOfBirthInputId}
+                max={new Date().toISOString().split("T")[0]}
                 {...form.register("dateOfBirth")}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 disabled={disabled}

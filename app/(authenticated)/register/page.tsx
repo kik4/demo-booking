@@ -160,6 +160,7 @@ export default function RegisterPage() {
             <input
               type="date"
               id={dateOfBirthId}
+              max={new Date().toISOString().split("T")[0]}
               {...form.register("dateOfBirth")}
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={disabled}
