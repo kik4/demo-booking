@@ -15,16 +15,23 @@ export async function deleteProfileAction() {
     // サービスロールクライアントを使用してソフトデリート
     // （RLSの複雑さを回避し、認証チェックで安全性を担保）
     const serviceSupabase = await createServiceClient();
-    const { error: updateError } = await serviceSupabase
+    const { data, error: updateError } = await serviceSupabase
       .from("profiles")
       .update({
         deleted_at: new Date().toISOString(),
       })
       .eq("user_id", authResult.user.id)
-      .is("deleted_at", null);
+      .is("deleted_at", null)
+      .select("id");
 
     if (updateError) {
+      console.error("Profile deletion failed:", updateError);
       throw new Error("アカウント削除に失敗しました");
+    }
+
+    if (!data || data.length === 0) {
+      console.error("No profile found to delete for user:", authResult.user.id);
+      throw new Error("削除対象のプロフィールが見つかりませんでした");
     }
 
     // ユーザーをログアウト
