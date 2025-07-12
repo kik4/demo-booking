@@ -156,7 +156,7 @@ export function BookingDetail({
             </h3>
             <div className="min-h-[80px]">
               {booking.notes ? (
-                <p className="whitespace-pre-wrap text-gray-700 text-sm">
+                <p className="whitespace-pre-wrap break-all text-gray-700 text-sm">
                   {booking.notes}
                 </p>
               ) : (

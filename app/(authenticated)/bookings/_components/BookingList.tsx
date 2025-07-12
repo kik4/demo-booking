@@ -122,7 +122,7 @@ export function BookingList({ bookings, onBookingSelect }: BookingListProps) {
                       )}
                     </div>
                     {booking.notes && (
-                      <p className="mt-2 line-clamp-2 text-gray-600 text-sm">
+                      <p className="mt-2 line-clamp-2 whitespace-pre-wrap break-all text-gray-600 text-sm">
                         {booking.notes}
                       </p>
                     )}

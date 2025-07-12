@@ -101,7 +101,7 @@ export function BookingConfirmation({
           </h3>
           <div className="neumorphism-pressed min-h-[80px] p-3">
             {bookingData.notes ? (
-              <p className="whitespace-pre-wrap break-words text-gray-700 text-sm">
+              <p className="whitespace-pre-wrap break-all text-gray-700 text-sm">
                 {bookingData.notes}
               </p>
             ) : (
