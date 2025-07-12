@@ -2,7 +2,7 @@
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useRouter } from "next/navigation";
-import { useId, useState } from "react";
+import { useId } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { SEX_OPTIONS } from "@/constants/sexCode";
@@ -14,7 +14,6 @@ import {
 import { registerAction } from "./_actions/registerAction";
 
 export default function RegisterPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const nameId = useId();
   const nameHiraganaId = useId();
   const sexId = useId();
@@ -32,8 +31,6 @@ export default function RegisterPage() {
   });
 
   const onSubmit = async (values: ProfileFormData) => {
-    setIsSubmitting(true);
-
     try {
       const formData = new FormData();
       formData.append("name", values.name);
@@ -60,10 +57,11 @@ export default function RegisterPage() {
       }
     } catch {
       form.setError("root", { message: "エラーが発生しました" });
-    } finally {
-      setIsSubmitting(false);
     }
   };
+
+  const { isSubmitting, isSubmitSuccessful } = form.formState;
+  const disabled = isSubmitting || isSubmitSuccessful;
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -87,7 +85,7 @@ export default function RegisterPage() {
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="お名前を入力してください"
               maxLength={100}
-              disabled={isSubmitting}
+              disabled={disabled}
             />
             {form.formState.errors.name && (
               <div className="mt-1 text-red-500 text-sm">
@@ -110,7 +108,7 @@ export default function RegisterPage() {
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="おなまえをひらがなでにゅうりょくしてください"
               maxLength={100}
-              disabled={isSubmitting}
+              disabled={disabled}
             />
             {form.formState.errors.nameHiragana && (
               <div className="mt-1 text-red-500 text-sm">
@@ -130,7 +128,7 @@ export default function RegisterPage() {
               id={sexId}
               {...form.register("sex")}
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isSubmitting}
+              disabled={disabled}
             >
               <option value="" disabled>
                 性別を選択してください
@@ -160,7 +158,7 @@ export default function RegisterPage() {
               id={dateOfBirthId}
               {...form.register("dateOfBirth")}
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isSubmitting}
+              disabled={disabled}
             />
             {form.formState.errors.dateOfBirth && (
               <div className="mt-1 text-red-500 text-sm">
@@ -177,10 +175,10 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={disabled}
             className="neumorphism-button-primary w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSubmitting ? "登録中..." : "登録"}
+            {disabled ? "登録中..." : "登録"}
           </button>
         </form>
       </div>
