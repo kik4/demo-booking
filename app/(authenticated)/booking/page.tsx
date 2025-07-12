@@ -23,7 +23,6 @@ type Step = 1 | 2 | 3;
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const { services, customerName, loading } = useBookingData();
@@ -95,8 +94,6 @@ export default function BookingPage() {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
       const formData = new FormData();
       formData.append("serviceId", data.serviceId);
@@ -129,8 +126,6 @@ export default function BookingPage() {
       toast.error("予期しないエラーが発生しました", {
         className: "neumorphism-toast-error",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   });
 
@@ -142,6 +137,9 @@ export default function BookingPage() {
       form.setValue("serviceDuration", selectedServiceData.duration.toString());
     }
   }, [selectedServiceData, form]);
+
+  const { isSubmitting, isSubmitSuccessful } = form.formState;
+  const disabled = isSubmitting || isSubmitSuccessful;
 
   if (loading) {
     return <LoadingSpinner fullScreen />;
@@ -214,7 +212,7 @@ export default function BookingPage() {
               onServiceChange={(value) => form.setValue("serviceId", value)}
               onNotesChange={(value) => form.setValue("notes", value)}
               onNext={handleServiceNext}
-              disabled={isSubmitting}
+              disabled={disabled}
             />
           )}
 
@@ -227,7 +225,7 @@ export default function BookingPage() {
               onTimeChange={(value) => form.setValue("startTime", value)}
               onPrevious={handleDateTimePrevious}
               onNext={handleDateTimeNext}
-              disabled={isSubmitting}
+              disabled={disabled}
             />
           )}
 
@@ -246,7 +244,7 @@ export default function BookingPage() {
               }}
               onPrevious={handleConfirmationPrevious}
               onConfirm={handleBookingConfirm}
-              disabled={isSubmitting}
+              disabled={disabled}
               isSubmitting={isSubmitting}
             />
           )}
@@ -254,7 +252,7 @@ export default function BookingPage() {
           <div className="mt-8 flex justify-center">
             <Link
               href={ROUTES.USER.HOME}
-              className={`neumorphism-button-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
+              className={`neumorphism-button-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 ${disabled ? "pointer-events-none opacity-50" : ""}`}
             >
               ホームに戻る
             </Link>
