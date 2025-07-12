@@ -1,3 +1,5 @@
+import type { BookingFormData } from "./bookingFormSchema";
+
 /**
  * Calculate end time based on start time and duration
  * @param startTime Time in HH:MM format
@@ -22,10 +24,12 @@ export function calculateEndTime(startTime: string, duration: number): string {
  * @param formData The form data to validate
  * @returns Array of field names to validate for the step
  */
-export function getValidationFieldsForStep(step: 1 | 2 | 3): string[] {
+export function getValidationFieldsForStep(
+  step: 1 | 2 | 3,
+): (keyof BookingFormData)[] {
   switch (step) {
     case 1:
-      return ["serviceId"];
+      return ["serviceId", "notes"];
     case 2:
       return ["date", "startTime"];
     case 3:

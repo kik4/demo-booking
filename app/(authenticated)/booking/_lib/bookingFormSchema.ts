@@ -11,7 +11,7 @@ export const bookingFormSchema = v.object({
   endTime: v.pipe(v.string(), v.minLength(1, "終了時間が必要です")),
   notes: v.pipe(
     v.string(),
-    v.maxLength(2000, "補足は2000文字以内で入力してください"),
+    v.maxLength(500, "補足は500文字以内で入力してください"),
   ),
 });
 

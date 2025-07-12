@@ -97,7 +97,6 @@ export function ServiceSelection({
           rows={4}
           placeholder="ご要望やお悩みがございましたらお気軽にお書きください"
           disabled={disabled}
-          maxLength={500}
         />
         <p className="mt-1 text-gray-500 text-xs">{notes.length}/500文字</p>
       </div>

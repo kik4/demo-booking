@@ -64,7 +64,7 @@ export default function BookingPage() {
 
   const handleServiceNext = async () => {
     const fields = getValidationFieldsForStep(1);
-    const isValid = await form.trigger(fields as (keyof BookingFormData)[]);
+    const isValid = await form.trigger(fields);
     if (isValid) {
       setCurrentStep(2);
     }
@@ -76,7 +76,7 @@ export default function BookingPage() {
 
   const handleDateTimeNext = async () => {
     const fields = getValidationFieldsForStep(2);
-    const isValid = await form.trigger(fields as (keyof BookingFormData)[]);
+    const isValid = await form.trigger(fields);
     if (isValid) {
       setCurrentStep(3);
     }

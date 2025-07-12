@@ -14,7 +14,7 @@ const bookingValidationSchema = v.object({
   date: v.pipe(v.string(), v.isoDate()),
   startTime: v.pipe(v.string(), v.isoTime()),
   endTime: v.pipe(v.string(), v.isoTime()),
-  notes: v.pipe(v.string(), v.trim(), v.maxLength(2000)),
+  notes: v.pipe(v.string(), v.trim(), v.maxLength(500)),
 });
 
 export const createBooking = async (
