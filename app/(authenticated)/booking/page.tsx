@@ -1,95 +1,72 @@
 "use client";
 
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
-import {
-  type CreateBookingFormState,
-  createBookingAction,
-} from "./_actions/createBookingAction";
-import { getServicesAction } from "./_actions/getServicesAction";
-import { getUserProfileAction } from "./_actions/getUserProfileAction";
-import type { Service } from "./_actions/types";
+import { createBookingAction } from "./_actions/createBookingAction";
 import { BookingConfirmation } from "./_components/BookingConfirmation";
 import { DateTimeSelection } from "./_components/DateTimeSelection";
+import { LoadingSpinner } from "./_components/LoadingSpinner";
 import { ServiceSelection } from "./_components/ServiceSelection";
+import { useBookingData } from "./_hooks/useBookingData";
+import {
+  type BookingFormData,
+  bookingFormSchema,
+} from "./_lib/bookingFormSchema";
+import { calculateEndTime, getValidationFieldsForStep } from "./_lib/timeUtils";
 
 type Step = 1 | 2 | 3;
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [selectedService, setSelectedService] = useState("");
-  const [notes, setNotes] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const [state, formAction, pending] = useActionState<
-    CreateBookingFormState,
-    FormData
-  >(createBookingAction, {});
+  const { services, customerName, loading } = useBookingData();
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch customer profile
-        const profileResult = await getUserProfileAction();
-        if ("error" in profileResult) {
-          console.error("プロフィール取得エラー:", profileResult.error);
-          toast.error(profileResult.error);
-          router.push(ROUTES.ROOT);
-          return;
-        }
-        setCustomerName(profileResult.profile.name);
+  const form = useForm<BookingFormData>({
+    resolver: valibotResolver(bookingFormSchema),
+    defaultValues: {
+      serviceId: "",
+      serviceName: "",
+      servicePrice: "",
+      serviceDuration: "",
+      date: "",
+      startTime: "",
+      endTime: "",
+      notes: "",
+    },
+  });
 
-        // Fetch services
-        const servicesResult = await getServicesAction();
-        if ("error" in servicesResult) {
-          console.error("サービス取得エラー:", servicesResult.error);
-          toast.error(servicesResult.error);
-        } else {
-          setServices(servicesResult.services);
-        }
-      } catch (error) {
-        console.error("データ取得エラー:", error);
-        toast.error("データの取得に失敗しました");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [router]);
-
+  const selectedServiceId = form.watch("serviceId");
   const selectedServiceData = services.find(
-    (s) => s.id.toString() === selectedService,
+    (s) => s.id.toString() === selectedServiceId,
   );
 
-  // Calculate end time based on start time and duration
-  const calculateEndTime = (startTime: string, duration: number): string => {
-    if (!startTime) return "";
+  // Watch form values for calculations
+  const startTime = form.watch("startTime");
 
-    const [hours, minutes] = startTime.split(":").map(Number);
-    const startMinutes = hours * 60 + minutes;
-    const endMinutes = startMinutes + duration;
-    const endHours = Math.floor(endMinutes / 60);
-    const endMins = endMinutes % 60;
-
-    return `${endHours.toString().padStart(2, "0")}:${endMins.toString().padStart(2, "0")}`;
-  };
-
+  const serviceDuration = form.watch("serviceDuration");
   const endTime =
-    selectedTime && selectedServiceData
-      ? calculateEndTime(selectedTime, selectedServiceData.duration)
+    startTime && serviceDuration
+      ? calculateEndTime(startTime, Number.parseInt(serviceDuration, 10))
       : "";
 
-  const handleServiceNext = () => {
-    if (selectedService) {
+  // Update endTime in form when it changes
+  useEffect(() => {
+    if (endTime) {
+      form.setValue("endTime", endTime);
+    }
+  }, [endTime, form]);
+
+  const handleServiceNext = async () => {
+    const fields = getValidationFieldsForStep(1);
+    const isValid = await form.trigger(fields as (keyof BookingFormData)[]);
+    if (isValid) {
       setCurrentStep(2);
     }
   };
@@ -98,8 +75,10 @@ export default function BookingPage() {
     setCurrentStep(1);
   };
 
-  const handleDateTimeNext = () => {
-    if (selectedDate && selectedTime) {
+  const handleDateTimeNext = async () => {
+    const fields = getValidationFieldsForStep(2);
+    const isValid = await form.trigger(fields as (keyof BookingFormData)[]);
+    if (isValid) {
       setCurrentStep(3);
     }
   };
@@ -108,48 +87,64 @@ export default function BookingPage() {
     setCurrentStep(2);
   };
 
-  const handleBookingConfirm = () => {
-    if (!selectedServiceData || !selectedDate || !selectedTime || !endTime) {
-      toast.error("必要な情報が不足しています", {
+  const handleBookingConfirm = form.handleSubmit(async (data) => {
+    if (!selectedServiceData) {
+      toast.error("サービス情報が不足しています", {
         className: "neumorphism-toast-error",
       });
       return;
     }
 
-    const formData = new FormData();
-    formData.append("serviceId", selectedService);
-    formData.append("serviceName", selectedServiceData.name);
-    formData.append("servicePrice", selectedServiceData.price.toString());
-    formData.append("serviceDuration", selectedServiceData.duration.toString());
-    formData.append("date", selectedDate);
-    formData.append("startTime", selectedTime);
-    formData.append("endTime", endTime);
-    formData.append("notes", notes);
+    setIsSubmitting(true);
 
-    startTransition(() => {
-      formAction(formData);
-    });
-  };
+    try {
+      const formData = new FormData();
+      formData.append("serviceId", data.serviceId);
+      formData.append("serviceName", data.serviceName);
+      formData.append("servicePrice", data.servicePrice);
+      formData.append("serviceDuration", data.serviceDuration);
+      formData.append("date", data.date);
+      formData.append("startTime", data.startTime);
+      formData.append("endTime", data.endTime);
+      formData.append("notes", data.notes);
 
-  useEffect(() => {
-    if (state.errors?._form) {
-      state.errors._form.forEach((error) => {
-        toast.error(error, {
-          className: "neumorphism-toast-error",
+      const result = await createBookingAction({}, formData);
+
+      if (result.success) {
+        toast.success("予約を完了しました", {
+          className: "neumorphism-toast-success",
         });
+        router.push(ROUTES.USER.HOME);
+        return;
+      }
+
+      if (result.errors?.root) {
+        result.errors.root.forEach((error) => {
+          toast.error(error, {
+            className: "neumorphism-toast-error",
+          });
+        });
+      }
+    } catch {
+      toast.error("予期しないエラーが発生しました", {
+        className: "neumorphism-toast-error",
       });
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [state.errors]);
+  });
+
+  // Set service data when service is selected
+  useEffect(() => {
+    if (selectedServiceData) {
+      form.setValue("serviceName", selectedServiceData.name);
+      form.setValue("servicePrice", selectedServiceData.price.toString());
+      form.setValue("serviceDuration", selectedServiceData.duration.toString());
+    }
+  }, [selectedServiceData, form]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-          <p className="mt-2 text-gray-600">読み込み中...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   const renderStepIndicator = () => (
@@ -201,61 +196,65 @@ export default function BookingPage() {
 
           {renderStepIndicator()}
 
-          {state.errors?._form && (
+          {Object.keys(form.formState.errors).length > 0 && (
             <div className="neumorphism-input mb-6 rounded-md bg-red-100 p-4">
-              <p className="text-red-800 text-sm">{state.errors._form[0]}</p>
+              {Object.entries(form.formState.errors).map(([key, error]) => (
+                <p key={key} className="text-red-800 text-sm">
+                  {error?.message}
+                </p>
+              ))}
             </div>
           )}
 
           {currentStep === 1 && (
             <ServiceSelection
-              selectedService={selectedService}
-              notes={notes}
+              selectedService={form.watch("serviceId")}
+              notes={form.watch("notes")}
               services={services}
-              onServiceChange={setSelectedService}
-              onNotesChange={setNotes}
+              onServiceChange={(value) => form.setValue("serviceId", value)}
+              onNotesChange={(value) => form.setValue("notes", value)}
               onNext={handleServiceNext}
-              disabled={pending}
+              disabled={isSubmitting}
             />
           )}
 
-          {currentStep === 2 && selectedServiceData && (
+          {currentStep === 2 && serviceDuration && (
             <DateTimeSelection
-              selectedDate={selectedDate}
-              selectedTime={selectedTime}
-              serviceDuration={selectedServiceData.duration}
-              onDateChange={setSelectedDate}
-              onTimeChange={setSelectedTime}
+              selectedDate={form.watch("date")}
+              selectedTime={form.watch("startTime")}
+              serviceDuration={Number.parseInt(serviceDuration, 10)}
+              onDateChange={(value) => form.setValue("date", value)}
+              onTimeChange={(value) => form.setValue("startTime", value)}
               onPrevious={handleDateTimePrevious}
               onNext={handleDateTimeNext}
-              disabled={pending}
+              disabled={isSubmitting}
             />
           )}
 
           {currentStep === 3 && selectedServiceData && (
             <BookingConfirmation
               bookingData={{
-                serviceId: selectedService,
+                serviceId: form.watch("serviceId"),
                 serviceName: selectedServiceData.name,
-                duration: selectedServiceData.duration,
-                price: selectedServiceData.price,
-                date: selectedDate,
-                startTime: selectedTime,
-                endTime: endTime,
-                notes: notes,
+                duration: Number.parseInt(form.watch("serviceDuration"), 10),
+                price: Number.parseInt(form.watch("servicePrice"), 10),
+                date: form.watch("date"),
+                startTime: form.watch("startTime"),
+                endTime: form.watch("endTime"),
+                notes: form.watch("notes"),
                 customerName: customerName,
               }}
               onPrevious={handleConfirmationPrevious}
               onConfirm={handleBookingConfirm}
-              disabled={pending}
-              isSubmitting={pending}
+              disabled={isSubmitting}
+              isSubmitting={isSubmitting}
             />
           )}
 
           <div className="mt-8 flex justify-center">
             <Link
               href={ROUTES.USER.HOME}
-              className={`neumorphism-button-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 ${pending ? "pointer-events-none opacity-50" : ""}`}
+              className={`neumorphism-button-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 ${isSubmitting ? "pointer-events-none opacity-50" : ""}`}
             >
               ホームに戻る
             </Link>

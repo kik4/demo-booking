@@ -1,60 +1,23 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
-import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
-import { supabase } from "@/lib/supabase/supabaseClient";
+import { logoutAction } from "./_actions/logoutAction";
 import { BusinessHours } from "./_components/BusinessHours";
 import { WelcomeMessage } from "./_components/WelcomeMessage";
 
 export default function HomePage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const hasShownToast = useRef(false);
-
-  useEffect(() => {
-    const bookingStatus = searchParams.get("booking");
-    if (bookingStatus === "success" && !hasShownToast.current) {
-      hasShownToast.current = true;
-      toast.success("予約が完了しました！", {
-        className: "neumorphism-toast-success",
-      });
-      // Clear the query parameter immediately to prevent re-execution
-      const url = new URL(window.location.href);
-      url.searchParams.delete("booking");
-      router.replace(url.pathname + url.search);
-    }
-  }, [searchParams, router]);
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Logout error:", error);
-      toast.error("ログアウトに失敗しました", {
-        className: "neumorphism-toast-error",
-      });
-    } else {
-      router.push(ROUTES.ROOT);
-      toast.success("ログアウトしました", {
-        className: "neumorphism-toast-success",
-      });
-    }
-  };
-
   return (
     <div className="pt-24 pb-8">
       <div className="mx-auto max-w-4xl">
         <div className="neumorphism-raised p-8">
           <div className="mb-4 flex justify-end">
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="neumorphism-button-secondary px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
-            >
-              ログアウト
-            </button>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="neumorphism-button-secondary px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+              >
+                ログアウト
+              </button>
+            </form>
           </div>
           <div className="mb-8 text-center">
             <h1 className="mb-4 font-bold text-4xl text-gray-800">

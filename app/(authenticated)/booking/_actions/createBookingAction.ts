@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import * as v from "valibot";
 import { requireUserAuth } from "@/lib/auth";
 import { createBooking } from "@/lib/db/bookings/createBooking";
@@ -10,26 +9,13 @@ import {
   createClient,
   createServiceClient,
 } from "@/lib/supabase/supabaseClientServer";
+import { bookingFormSchema } from "../_lib/bookingFormSchema";
 
 export interface ExistingBooking {
   id: number;
   start_time: string;
   end_time: string;
 }
-
-const createBookingSchema = v.object({
-  serviceId: v.pipe(v.string(), v.minLength(1, "サービスを選択してください")),
-  serviceName: v.pipe(v.string(), v.minLength(1, "サービス名が必要です")),
-  servicePrice: v.pipe(v.string(), v.minLength(1, "サービス価格が必要です")),
-  serviceDuration: v.pipe(v.string(), v.minLength(1, "サービス時間が必要です")),
-  date: v.pipe(v.string(), v.minLength(1, "予約日を選択してください")),
-  startTime: v.pipe(v.string(), v.minLength(1, "予約時間を選択してください")),
-  endTime: v.pipe(v.string(), v.minLength(1, "終了時間が必要です")),
-  notes: v.pipe(
-    v.string(),
-    v.maxLength(2000, "補足は2000文字以内で入力してください"),
-  ),
-});
 
 export interface CreateBookingFormState {
   success?: boolean;
@@ -42,17 +28,7 @@ export interface CreateBookingFormState {
     startTime?: string[];
     endTime?: string[];
     notes?: string[];
-    _form?: string[];
-  };
-  formData?: {
-    serviceId?: string;
-    serviceName?: string;
-    servicePrice?: string;
-    serviceDuration?: string;
-    date?: string;
-    startTime?: string;
-    endTime?: string;
-    notes?: string;
+    root?: string[];
   };
 }
 
@@ -69,7 +45,7 @@ export async function createBookingAction(
   const endTime = formData.get("endTime") as string;
   const notes = formData.get("notes") as string;
 
-  const result = v.safeParse(createBookingSchema, {
+  const result = v.safeParse(bookingFormSchema, {
     serviceId,
     serviceName,
     servicePrice,
@@ -94,16 +70,6 @@ export async function createBookingAction(
 
     return {
       errors: errors,
-      formData: {
-        serviceId,
-        serviceName,
-        servicePrice,
-        serviceDuration,
-        date,
-        startTime,
-        endTime,
-        notes,
-      },
     };
   }
 
@@ -136,17 +102,7 @@ export async function createBookingAction(
     if ("error" in result) {
       return {
         errors: {
-          _form: [result.error],
-        },
-        formData: {
-          serviceId,
-          serviceName,
-          servicePrice,
-          serviceDuration,
-          date,
-          startTime,
-          endTime,
-          notes,
+          root: [result.error],
         },
       };
     }
@@ -158,24 +114,14 @@ export async function createBookingAction(
     console.error("Unexpected error:", error);
     return {
       errors: {
-        _form: [
+        root: [
           error instanceof Error
             ? error.message
             : "予期しないエラーが発生しました",
         ],
       },
-      formData: {
-        serviceId,
-        serviceName,
-        servicePrice,
-        serviceDuration,
-        date,
-        startTime,
-        endTime,
-        notes,
-      },
     };
   }
 
-  redirect(`${ROUTES.USER.HOME}?booking=success`);
+  return { success: true };
 }
