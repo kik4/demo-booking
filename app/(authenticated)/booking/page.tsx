@@ -105,7 +105,7 @@ export default function BookingPage() {
       formData.append("endTime", data.endTime);
       formData.append("notes", data.notes);
 
-      const result = await createBookingAction({}, formData);
+      const result = await createBookingAction(formData);
 
       if (result.success) {
         toast.success("予約を完了しました", {

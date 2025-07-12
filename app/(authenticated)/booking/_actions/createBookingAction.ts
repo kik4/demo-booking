@@ -33,7 +33,6 @@ export interface CreateBookingFormState {
 }
 
 export async function createBookingAction(
-  _prevState: CreateBookingFormState,
   formData: FormData,
 ): Promise<CreateBookingFormState> {
   const serviceId = formData.get("serviceId") as string;
