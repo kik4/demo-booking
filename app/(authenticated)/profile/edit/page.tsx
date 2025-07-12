@@ -18,7 +18,6 @@ import { editProfileAction } from "./_actions/editProfileAction";
 
 export default function EditProfilePage() {
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const nameInputId = useId();
   const nameHiraganaInputId = useId();
@@ -95,8 +94,6 @@ export default function EditProfilePage() {
   }, [router, form]);
 
   const onSubmit = async (values: ProfileFormData) => {
-    setIsSubmitting(true);
-
     try {
       const formData = new FormData();
       formData.append("name", values.name);
@@ -123,14 +120,15 @@ export default function EditProfilePage() {
       }
     } catch {
       form.setError("root", { message: "エラーが発生しました" });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   if (loading) {
     return <LoadingSpinner fullScreen />;
   }
+
+  const { isSubmitting, isSubmitSuccessful } = form.formState;
+  const disabled = isSubmitting || isSubmitSuccessful;
 
   return (
     <div className="py-12">
@@ -154,7 +152,7 @@ export default function EditProfilePage() {
                 {...form.register("name")}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="お名前を入力してください"
-                disabled={isSubmitting}
+                disabled={disabled}
                 maxLength={100}
               />
               {form.formState.errors.name && (
@@ -177,7 +175,7 @@ export default function EditProfilePage() {
                 {...form.register("nameHiragana")}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="おなまえをひらがなでにゅうりょくしてください"
-                disabled={isSubmitting}
+                disabled={disabled}
                 maxLength={100}
               />
               {form.formState.errors.nameHiragana && (
@@ -198,7 +196,7 @@ export default function EditProfilePage() {
                 id={sexInputId}
                 {...form.register("sex")}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                disabled={isSubmitting}
+                disabled={disabled}
               >
                 <option value="" disabled>
                   性別を選択してください
@@ -228,7 +226,7 @@ export default function EditProfilePage() {
                 id={dateOfBirthInputId}
                 {...form.register("dateOfBirth")}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                disabled={isSubmitting}
+                disabled={disabled}
               />
               {form.formState.errors.dateOfBirth && (
                 <p className="mt-1 text-red-600 text-sm">
@@ -248,10 +246,10 @@ export default function EditProfilePage() {
             <div className="flex space-x-4">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={disabled}
                 className="neumorphism-button-primary flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
               >
-                {isSubmitting ? "更新中..." : "更新"}
+                {disabled ? "更新中..." : "更新"}
               </button>
               <Link
                 href={ROUTES.USER.PROFILE.ROOT}
