@@ -3,7 +3,7 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useState } from "react";
+import { useId } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { LoadingSpinner } from "@/app/_components/LoadingSpinner";
@@ -17,7 +17,6 @@ import {
 import { editProfileAction } from "./_actions/editProfileAction";
 
 export default function EditProfilePage() {
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const nameInputId = useId();
   const nameHiraganaInputId = useId();
@@ -26,17 +25,13 @@ export default function EditProfilePage() {
 
   const form = useForm<ProfileFormData>({
     resolver: valibotResolver(profileFormSchema),
-    // デフォルト値は一時的なもの（サーバーデータで即座に上書き）
-    defaultValues: {
-      name: "",
-      nameHiragana: "",
-      sex: "", // 未選択状態
-      dateOfBirth: "",
-    },
-  });
-
-  useEffect(() => {
-    async function fetchCurrentProfile() {
+    defaultValues: async () => {
+      const defaultValue: ProfileFormData = {
+        name: "",
+        nameHiragana: "",
+        sex: "",
+        dateOfBirth: "",
+      };
       try {
         const {
           data: { user },
@@ -44,7 +39,7 @@ export default function EditProfilePage() {
 
         if (!user) {
           router.push(ROUTES.ROOT);
-          return;
+          return defaultValue;
         }
 
         const { data, error } = await supabase
@@ -61,37 +56,34 @@ export default function EditProfilePage() {
               "プロフィールが登録されていません。先にプロフィールを登録してください。",
             );
             router.push(ROUTES.REGISTER);
-            return;
+            return defaultValue;
           }
           // その他のエラーは catch で処理
           throw error;
         }
 
         if (data) {
-          form.reset({
+          return {
             name: data.name,
             nameHiragana: data.name_hiragana,
             sex: data.sex.toString(),
             dateOfBirth: data.date_of_birth,
-          });
-        } else {
-          // データが null の場合（削除済みなど）
-          toast.error(
-            "プロフィールが見つかりません。先にプロフィールを登録してください。",
-          );
-          router.push(ROUTES.REGISTER);
-          return;
+          };
         }
+
+        // データが null の場合（削除済みなど）
+        toast.error(
+          "プロフィールが見つかりません。先にプロフィールを登録してください。",
+        );
+        router.push(ROUTES.REGISTER);
+        return defaultValue;
       } catch (error) {
         console.error("プロフィール取得エラー:", error);
         toast.error("プロフィールの取得に失敗しました");
-      } finally {
-        setLoading(false);
+        return defaultValue;
       }
-    }
-
-    fetchCurrentProfile();
-  }, [router, form]);
+    },
+  });
 
   const onSubmit = async (values: ProfileFormData) => {
     try {
@@ -123,12 +115,12 @@ export default function EditProfilePage() {
     }
   };
 
-  if (loading) {
+  const { isSubmitting, isSubmitSuccessful, isLoading } = form.formState;
+  const disabled = isSubmitting || isSubmitSuccessful;
+
+  if (isLoading) {
     return <LoadingSpinner fullScreen />;
   }
-
-  const { isSubmitting, isSubmitSuccessful } = form.formState;
-  const disabled = isSubmitting || isSubmitSuccessful;
 
   return (
     <div className="py-12">
