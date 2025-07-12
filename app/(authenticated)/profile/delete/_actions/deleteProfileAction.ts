@@ -20,7 +20,8 @@ export async function deleteProfileAction() {
       .update({
         deleted_at: new Date().toISOString(),
       })
-      .eq("user_id", authResult.user.id);
+      .eq("user_id", authResult.user.id)
+      .is("deleted_at", null);
 
     if (updateError) {
       throw new Error("アカウント削除に失敗しました");
