@@ -84,9 +84,11 @@ export default function RegisterPage() {
               {...form.register("name")}
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="お名前を入力してください"
-              maxLength={100}
               disabled={disabled}
             />
+            <div className="mt-1 text-gray-500 text-xs">
+              {form.watch("name")?.length || 0}/100文字
+            </div>
             {form.formState.errors.name && (
               <div className="mt-1 text-red-500 text-sm">
                 {form.formState.errors.name.message}
@@ -107,9 +109,11 @@ export default function RegisterPage() {
               {...form.register("nameHiragana")}
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="おなまえをひらがなでにゅうりょくしてください"
-              maxLength={100}
               disabled={disabled}
             />
+            <div className="mt-1 text-gray-500 text-xs">
+              {form.watch("nameHiragana")?.length || 0}/100文字
+            </div>
             {form.formState.errors.nameHiragana && (
               <div className="mt-1 text-red-500 text-sm">
                 {form.formState.errors.nameHiragana.message}

@@ -145,8 +145,10 @@ export default function EditProfilePage() {
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="お名前を入力してください"
                 disabled={disabled}
-                maxLength={100}
               />
+              <div className="mt-1 text-gray-500 text-xs">
+                {form.watch("name")?.length || 0}/100文字
+              </div>
               {form.formState.errors.name && (
                 <p className="mt-1 text-red-600 text-sm">
                   {form.formState.errors.name.message}
@@ -168,8 +170,10 @@ export default function EditProfilePage() {
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="おなまえをひらがなでにゅうりょくしてください"
                 disabled={disabled}
-                maxLength={100}
               />
+              <div className="mt-1 text-gray-500 text-xs">
+                {form.watch("nameHiragana")?.length || 0}/100文字
+              </div>
               {form.formState.errors.nameHiragana && (
                 <p className="mt-1 text-red-600 text-sm">
                   {form.formState.errors.nameHiragana.message}
