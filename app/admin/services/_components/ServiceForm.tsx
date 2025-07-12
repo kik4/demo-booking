@@ -34,7 +34,6 @@ interface ServiceFormProps {
 
 export function ServiceForm({ service, trigger }: ServiceFormProps) {
   const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!service;
 
   const form = useForm<FormValues>({
@@ -47,8 +46,6 @@ export function ServiceForm({ service, trigger }: ServiceFormProps) {
   });
 
   const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
-
     try {
       const formData = new FormData();
       formData.append("name", values.name);
@@ -70,10 +67,11 @@ export function ServiceForm({ service, trigger }: ServiceFormProps) {
       }
     } catch (_error) {
       form.setError("root", { message: "エラーが発生しました" });
-    } finally {
-      setIsSubmitting(false);
     }
   };
+
+  const { isSubmitting, isSubmitSuccessful } = form.formState;
+  const disabled = isSubmitting || isSubmitSuccessful;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -145,11 +143,12 @@ export function ServiceForm({ service, trigger }: ServiceFormProps) {
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
+                disabled={disabled}
               >
                 キャンセル
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "処理中..." : isEditing ? "更新" : "作成"}
+              <Button type="submit" disabled={disabled}>
+                {disabled ? "処理中..." : isEditing ? "更新" : "作成"}
               </Button>
             </div>
           </form>
