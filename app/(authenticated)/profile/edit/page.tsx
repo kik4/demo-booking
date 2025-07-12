@@ -10,8 +10,8 @@ import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
 import { supabase } from "@/lib/supabase/supabaseClient";
 import {
-  type ProfileEditFormData,
-  profileEditSchema,
+  type ProfileFormData,
+  profileFormSchema,
 } from "../_schemas/profileSchema";
 import { editProfileAction } from "./_actions/editProfileAction";
 
@@ -24,12 +24,13 @@ export default function EditProfilePage() {
   const sexInputId = useId();
   const dateOfBirthInputId = useId();
 
-  const form = useForm<ProfileEditFormData>({
-    resolver: valibotResolver(profileEditSchema),
+  const form = useForm<ProfileFormData>({
+    resolver: valibotResolver(profileFormSchema),
+    // デフォルト値は一時的なもの（サーバーデータで即座に上書き）
     defaultValues: {
       name: "",
       nameHiragana: "",
-      sex: 0,
+      sex: "", // 未選択状態
       dateOfBirth: "",
     },
   });
@@ -70,7 +71,7 @@ export default function EditProfilePage() {
           form.reset({
             name: data.name,
             nameHiragana: data.name_hiragana,
-            sex: data.sex,
+            sex: data.sex.toString(),
             dateOfBirth: data.date_of_birth,
           });
         } else {
@@ -92,14 +93,14 @@ export default function EditProfilePage() {
     fetchCurrentProfile();
   }, [router, form]);
 
-  const onSubmit = async (values: ProfileEditFormData) => {
+  const onSubmit = async (values: ProfileFormData) => {
     setIsSubmitting(true);
 
     try {
       const formData = new FormData();
       formData.append("name", values.name);
       formData.append("nameHiragana", values.nameHiragana);
-      formData.append("sex", values.sex.toString());
+      formData.append("sex", values.sex);
       formData.append("dateOfBirth", values.dateOfBirth);
 
       const result = await editProfileAction({}, formData);
@@ -113,7 +114,7 @@ export default function EditProfilePage() {
         // Handle server validation errors
         if (result.errors) {
           Object.entries(result.errors).forEach(([field, messages]) => {
-            form.setError(field as keyof ProfileEditFormData | "root", {
+            form.setError(field as keyof ProfileFormData | "root", {
               message: messages[0],
             });
           });
@@ -201,7 +202,7 @@ export default function EditProfilePage() {
               </label>
               <select
                 id={sexInputId}
-                {...form.register("sex", { valueAsNumber: true })}
+                {...form.register("sex")}
                 className="neumorphism-input mt-1 block w-full px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 disabled={isSubmitting}
               >

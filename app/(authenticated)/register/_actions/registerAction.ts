@@ -1,12 +1,13 @@
 "use server";
 
 import { camelCase } from "lodash-es";
-import { ValiError } from "valibot";
+import * as v from "valibot";
 import { ROLE_CODES } from "@/constants/roleCode";
 import type { SexCode } from "@/constants/sexCode";
 import { requireAuth } from "@/lib/auth";
 import { createProfile } from "@/lib/db/profiles";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
+import { profileFormSchema } from "../../profile/_schemas/profileSchema";
 
 export interface RegisterFormState {
   errors?: {
@@ -14,25 +15,41 @@ export interface RegisterFormState {
     nameHiragana?: string[];
     sex?: string[];
     dateOfBirth?: string[];
-    _form?: string[];
+    root?: string[];
   };
   success?: boolean;
-  formData?: {
-    name: string;
-    nameHiragana: string;
-    sex: string;
-    dateOfBirth: string;
-  };
 }
 
 export async function registerAction(
   _prevState: RegisterFormState,
   formData: FormData,
 ): Promise<RegisterFormState> {
-  const name = formData.get("name") as string;
-  const nameHiragana = formData.get("nameHiragana") as string;
-  const sex = formData.get("sex") as string;
-  const dateOfBirth = formData.get("dateOfBirth") as string;
+  const rawData = {
+    name: formData.get("name") as string,
+    nameHiragana: formData.get("nameHiragana") as string,
+    sex: formData.get("sex") as string,
+    dateOfBirth: formData.get("dateOfBirth") as string,
+  };
+
+  // Client-side validation
+  const validationResult = v.safeParse(profileFormSchema, rawData);
+  if (!validationResult.success) {
+    const errors: Record<string, string[]> = {};
+    for (const issue of validationResult.issues) {
+      const path = issue.path
+        ? issue.path.map((p) => String(p.key)).join(".")
+        : "root";
+      if (!errors[path]) {
+        errors[path] = [];
+      }
+      errors[path].push(issue.message);
+    }
+    return {
+      errors,
+    };
+  }
+
+  const { name, nameHiragana, sex, dateOfBirth } = validationResult.output;
 
   try {
     const supabase = await createClient();
@@ -45,7 +62,7 @@ export async function registerAction(
           {
             name,
             name_hiragana: nameHiragana,
-            sex: (sex ? +sex : undefined) as SexCode,
+            sex: Number(sex) as SexCode,
             date_of_birth: dateOfBirth,
             role: ROLE_CODES.USER,
           },
@@ -53,7 +70,7 @@ export async function registerAction(
         );
         return { success: true };
       } catch (e) {
-        if (e instanceof ValiError) {
+        if (e instanceof v.ValiError) {
           const errors: Record<string, string[]> = {};
           for (const issue of e.issues) {
             const path = issue.path
@@ -68,7 +85,6 @@ export async function registerAction(
           }
           return {
             errors,
-            formData: { name, nameHiragana, sex, dateOfBirth },
           };
         }
         throw e;
@@ -78,9 +94,8 @@ export async function registerAction(
     if ("error" in result) {
       return {
         errors: {
-          _form: [result.error],
+          root: [result.error],
         },
-        formData: { name, nameHiragana, sex, dateOfBirth },
       };
     }
 
@@ -89,13 +104,12 @@ export async function registerAction(
     console.error("Unexpected error:", error);
     return {
       errors: {
-        _form: [
+        root: [
           error instanceof Error
             ? error.message
             : "予期しないエラーが発生しました",
         ],
       },
-      formData: { name, nameHiragana, sex, dateOfBirth },
     };
   }
 }

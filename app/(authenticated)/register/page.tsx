@@ -1,35 +1,69 @@
 "use client";
 
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useId } from "react";
+import { useId, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
 import {
-  type RegisterFormState,
-  registerAction,
-} from "./_actions/registerAction";
+  type ProfileFormData,
+  profileFormSchema,
+} from "../profile/_schemas/profileSchema";
+import { registerAction } from "./_actions/registerAction";
 
 export default function RegisterPage() {
-  const [state, formAction, isPending] = useActionState<
-    RegisterFormState,
-    FormData
-  >(registerAction, {});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const nameId = useId();
   const nameHiraganaId = useId();
   const sexId = useId();
   const dateOfBirthId = useId();
   const router = useRouter();
 
-  useEffect(() => {
-    if (state.success) {
-      router.push(ROUTES.USER.HOME);
-    }
-  }, [state.success, router]);
+  const form = useForm<ProfileFormData>({
+    resolver: valibotResolver(profileFormSchema),
+    defaultValues: {
+      name: "",
+      nameHiragana: "",
+      sex: "", // 未選択状態（空文字列）
+      dateOfBirth: "",
+    },
+  });
 
-  // 成功時は早期リターンしてフォームを表示しない
-  if (state.success) {
-    return null;
-  }
+  const onSubmit = async (values: ProfileFormData) => {
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("nameHiragana", values.nameHiragana);
+      formData.append("sex", values.sex);
+      formData.append("dateOfBirth", values.dateOfBirth);
+
+      const result = await registerAction({}, formData);
+
+      if (result.success) {
+        router.push(ROUTES.USER.HOME);
+        toast.success("プロフィールを登録しました", {
+          className: "neumorphism-toast-success",
+        });
+      } else {
+        // Handle server validation errors
+        if (result.errors) {
+          Object.entries(result.errors).forEach(([field, messages]) => {
+            form.setError(field as keyof ProfileFormData | "root", {
+              message: messages[0],
+            });
+          });
+        }
+      }
+    } catch {
+      form.setError("root", { message: "エラーが発生しました" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -38,7 +72,7 @@ export default function RegisterPage() {
           新規登録
         </h1>
 
-        <form action={formAction} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label
               htmlFor={nameId}
@@ -49,18 +83,15 @@ export default function RegisterPage() {
             <input
               type="text"
               id={nameId}
-              name="name"
+              {...form.register("name")}
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="お名前を入力してください"
               maxLength={100}
-              disabled={isPending}
-              defaultValue={state.formData?.name || ""}
+              disabled={isSubmitting}
             />
-            {state.errors?.name && (
+            {form.formState.errors.name && (
               <div className="mt-1 text-red-500 text-sm">
-                {state.errors.name.map((error, _index) => (
-                  <div key={error}>{error}</div>
-                ))}
+                {form.formState.errors.name.message}
               </div>
             )}
           </div>
@@ -75,18 +106,15 @@ export default function RegisterPage() {
             <input
               type="text"
               id={nameHiraganaId}
-              name="nameHiragana"
+              {...form.register("nameHiragana")}
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="おなまえをひらがなでにゅうりょくしてください"
               maxLength={100}
-              disabled={isPending}
-              defaultValue={state.formData?.nameHiragana || ""}
+              disabled={isSubmitting}
             />
-            {state.errors?.nameHiragana && (
+            {form.formState.errors.nameHiragana && (
               <div className="mt-1 text-red-500 text-sm">
-                {state.errors.nameHiragana.map((error, _index) => (
-                  <div key={error}>{error}</div>
-                ))}
+                {form.formState.errors.nameHiragana.message}
               </div>
             )}
           </div>
@@ -100,26 +128,22 @@ export default function RegisterPage() {
             </label>
             <select
               id={sexId}
-              name="sex"
+              {...form.register("sex")}
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isPending}
-              key={state.formData?.sex || "empty"}
-              defaultValue={state.formData?.sex || ""}
+              disabled={isSubmitting}
             >
               <option value="" disabled>
                 性別を選択してください
               </option>
               {SEX_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value.toString()}>
+                <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
-            {state.errors?.sex && (
+            {form.formState.errors.sex && (
               <div className="mt-1 text-red-500 text-sm">
-                {state.errors.sex.map((error, _index) => (
-                  <div key={error}>{error}</div>
-                ))}
+                {form.formState.errors.sex.message}
               </div>
             )}
           </div>
@@ -134,34 +158,29 @@ export default function RegisterPage() {
             <input
               type="date"
               id={dateOfBirthId}
-              name="dateOfBirth"
+              {...form.register("dateOfBirth")}
               className="neumorphism-input w-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isPending}
-              defaultValue={state.formData?.dateOfBirth || ""}
+              disabled={isSubmitting}
             />
-            {state.errors?.dateOfBirth && (
+            {form.formState.errors.dateOfBirth && (
               <div className="mt-1 text-red-500 text-sm">
-                {state.errors.dateOfBirth.map((error, _index) => (
-                  <div key={error}>{error}</div>
-                ))}
+                {form.formState.errors.dateOfBirth.message}
               </div>
             )}
           </div>
 
-          {state.errors?._form && (
+          {form.formState.errors.root && (
             <div className="neumorphism-input rounded-md bg-red-100 p-3 text-red-500 text-sm">
-              {state.errors._form.map((error, _index) => (
-                <div key={error}>{error}</div>
-              ))}
+              {form.formState.errors.root.message}
             </div>
           )}
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isSubmitting}
             className="neumorphism-button-primary w-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isPending ? "登録中..." : "登録"}
+            {isSubmitting ? "登録中..." : "登録"}
           </button>
         </form>
       </div>

@@ -6,7 +6,7 @@ import type { SexCode } from "@/constants/sexCode";
 import { requireUserAuth } from "@/lib/auth";
 import { updateProfile } from "@/lib/db/profiles";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
-import { profileEditSchema } from "../../_schemas/profileSchema";
+import { profileFormSchema } from "../../_schemas/profileSchema";
 
 export interface EditProfileFormState {
   errors?: {
@@ -26,12 +26,12 @@ export async function editProfileAction(
   const rawData = {
     name: formData.get("name") as string,
     nameHiragana: formData.get("nameHiragana") as string,
-    sex: Number(formData.get("sex")),
+    sex: formData.get("sex") as string,
     dateOfBirth: formData.get("dateOfBirth") as string,
   };
 
   // Client-side validation
-  const validationResult = v.safeParse(profileEditSchema, rawData);
+  const validationResult = v.safeParse(profileFormSchema, rawData);
   if (!validationResult.success) {
     const errors: Record<string, string[]> = {};
     for (const issue of validationResult.issues) {
@@ -61,7 +61,7 @@ export async function editProfileAction(
           {
             name,
             name_hiragana: nameHiragana,
-            sex: sex as SexCode,
+            sex: Number(sex) as SexCode,
             date_of_birth: dateOfBirth,
           },
           supabase,
