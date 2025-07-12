@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { LoadingSpinner } from "@/app/_components/LoadingSpinner";
 import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
 import { supabase } from "@/lib/supabase/supabaseClient";
@@ -128,14 +129,7 @@ export default function EditProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-          <p className="mt-2 text-gray-600">読み込み中...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   return (

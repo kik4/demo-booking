@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { LoadingSpinner } from "@/app/_components/LoadingSpinner";
 import { ROUTES } from "@/lib/routes";
 import { createBookingAction } from "./_actions/createBookingAction";
 import { BookingConfirmation } from "./_components/BookingConfirmation";
 import { DateTimeSelection } from "./_components/DateTimeSelection";
-import { LoadingSpinner } from "./_components/LoadingSpinner";
 import { ServiceSelection } from "./_components/ServiceSelection";
 import { useBookingData } from "./_hooks/useBookingData";
 import {

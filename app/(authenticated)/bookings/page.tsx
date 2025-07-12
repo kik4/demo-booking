@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { LoadingSpinner } from "@/app/_components/LoadingSpinner";
 import { ROUTES } from "@/lib/routes";
 import { supabase } from "@/lib/supabase/supabaseClient";
 import { type Booking, getBookingsAction } from "./_actions/getBookingsAction";
@@ -105,14 +106,7 @@ export default function BookingsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-          <p className="mt-2 text-gray-600">読み込み中...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   return (
