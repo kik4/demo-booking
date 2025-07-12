@@ -1,7 +1,8 @@
 import * as v from "valibot";
 import { SEX_CODES } from "@/constants/sexCode";
 
-const baseProfileFields = {
+// 共通のプロフィールスキーマ（Edit/Register両方で使用）
+export const profileFormSchema = v.object({
   name: v.pipe(
     v.string("名前は有効な値を入力してください"),
     v.trim(),
@@ -24,11 +25,6 @@ const baseProfileFields = {
       "生年月日は今日以前の日付を入力してください",
     ),
   ),
-};
-
-// 共通のプロフィールスキーマ（Edit/Register両方で使用）
-export const profileFormSchema = v.object({
-  ...baseProfileFields,
   sex: v.pipe(
     v.string("性別を選択してください"),
     v.minLength(1, "性別を選択してください"),
