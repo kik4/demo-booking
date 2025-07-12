@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdminAuth } from "@/lib/auth";
 import { deleteService } from "@/lib/db/services";
+import { ROUTES } from "@/lib/routes";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export async function deleteServiceAction(id: number) {
@@ -12,7 +13,7 @@ export async function deleteServiceAction(id: number) {
     try {
       const result = await deleteService(id, supabase);
 
-      revalidatePath("/admin/services");
+      revalidatePath(ROUTES.ADMIN.SERVICES);
       return { success: true, data: result };
     } catch (error) {
       console.error("Error deleting service:", error);

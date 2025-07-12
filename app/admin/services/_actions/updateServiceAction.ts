@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import * as v from "valibot";
 import { requireAdminAuth } from "@/lib/auth";
 import { updateService } from "@/lib/db/services";
+import { ROUTES } from "@/lib/routes";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
 import { serviceSchema } from "../_schemas/serviceSchema";
 
@@ -33,7 +34,7 @@ export async function updateServiceAction(id: number, formData: FormData) {
         supabase,
       );
 
-      revalidatePath("/admin/services");
+      revalidatePath(ROUTES.ADMIN.SERVICES);
       return { success: true, data: result };
     } catch (error) {
       console.error("Error updating service:", error);
