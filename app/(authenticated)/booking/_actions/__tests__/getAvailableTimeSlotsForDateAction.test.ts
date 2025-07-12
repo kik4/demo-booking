@@ -10,7 +10,7 @@ import { getAvailableTimeSlotsForDateAction } from "../getAvailableTimeSlotsForD
 
 vi.mock("@/lib/auth");
 vi.mock("@/lib/db/bookings/getAvailableTimeSlotsForDate");
-vi.mock("@/lib/supabaseClientServer");
+vi.mock("@/lib/supabase/supabaseClientServer");
 
 describe("getAvailableTimeSlotsForDateAction", () => {
   const mockCreateClient = vi.mocked(createClient);
@@ -24,8 +24,8 @@ describe("getAvailableTimeSlotsForDateAction", () => {
   const mockServiceClient = {} as any;
 
   beforeEach(() => {
-    mockCreateClient.mockResolvedValue(mockSupabaseClient);
-    mockCreateServiceClient.mockResolvedValue(mockServiceClient);
+    mockCreateClient.mockReturnValue(mockSupabaseClient);
+    mockCreateServiceClient.mockReturnValue(mockServiceClient);
   });
 
   afterEach(() => {
