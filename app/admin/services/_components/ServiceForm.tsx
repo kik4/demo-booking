@@ -3,7 +3,6 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import * as v from "valibot";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,25 +23,9 @@ import { Input } from "@/components/ui/input";
 import type { AdminService } from "../../_actions/getServices";
 import { createServiceAction } from "../_actions/createServiceAction";
 import { updateServiceAction } from "../_actions/updateServiceAction";
+import { type ServiceFormData, serviceSchema } from "../_schemas/serviceSchema";
 
-const formSchema = v.object({
-  name: v.pipe(
-    v.string(),
-    v.trim(),
-    v.minLength(1, "サービス名は必須です"),
-    v.maxLength(100, "サービス名は100文字以内で入力してください"),
-  ),
-  duration: v.pipe(
-    v.number(),
-    v.minValue(1, "所要時間は1分以上で入力してください"),
-  ),
-  price: v.pipe(
-    v.number(),
-    v.minValue(100, "料金は100円以上で入力してください"),
-  ),
-});
-
-type FormValues = v.InferInput<typeof formSchema>;
+type FormValues = ServiceFormData;
 
 interface ServiceFormProps {
   service?: AdminService;
@@ -55,7 +38,7 @@ export function ServiceForm({ service, trigger }: ServiceFormProps) {
   const isEditing = !!service;
 
   const form = useForm<FormValues>({
-    resolver: valibotResolver(formSchema),
+    resolver: valibotResolver(serviceSchema),
     defaultValues: {
       name: service?.name || "",
       duration: service?.duration || 0,

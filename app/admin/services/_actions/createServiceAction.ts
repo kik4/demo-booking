@@ -1,22 +1,30 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import * as v from "valibot";
 import { requireAdminAuth } from "@/lib/auth";
 import { createService } from "@/lib/db/services";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
+import { serviceSchema } from "../_schemas/serviceSchema";
 
 export async function createServiceAction(formData: FormData) {
   const supabase = await createClient();
 
   return requireAdminAuth(supabase, async () => {
     // 入力値の検証
-    const name = formData.get("name") as string;
-    const duration = Number(formData.get("duration"));
-    const price = Number(formData.get("price"));
+    const rawData = {
+      name: formData.get("name") as string,
+      duration: Number(formData.get("duration")),
+      price: Number(formData.get("price")),
+    };
 
-    if (!name || Number.isNaN(duration) || Number.isNaN(price)) {
-      return { error: "全てのフィールドを正しく入力してください" };
+    const result = v.safeParse(serviceSchema, rawData);
+    if (!result.success) {
+      const firstError = result.issues[0];
+      return { error: firstError?.message || "入力値が無効です" };
     }
+
+    const { name, duration, price } = result.output;
 
     try {
       const result = await createService({ name, duration, price }, supabase);
