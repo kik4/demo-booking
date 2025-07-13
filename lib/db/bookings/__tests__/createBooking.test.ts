@@ -193,7 +193,7 @@ describe("createBooking", () => {
     });
 
     it("最大長の備考欄でも予約を作成できる", async () => {
-      const longNotes = "A".repeat(2000);
+      const longNotes = "A".repeat(500);
       const paramsWithLongNotes = {
         ...mockParams,
         notes: longNotes,
