@@ -17,7 +17,7 @@ import type {
   AdminService,
   SortDirection,
   SortKey,
-} from "../../_actions/getServices";
+} from "../../_actions/getServicesAction";
 import { ServiceDeleteDialog } from "./ServiceDeleteDialog";
 import { ServiceForm } from "./ServiceForm";
 

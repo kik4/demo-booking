@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROLE_CODES } from "@/constants/roleCode";
 import { formatDateStringYMD } from "@/lib/formatDateStringYMD";
 import { formatTime } from "@/lib/formatTime";
-import { getAllBookings } from "./_actions/getAllBookings";
-import { getUsers } from "./_actions/getUsers";
+import { getAllBookingsAction } from "./_actions/getAllBookingsAction";
+import { getUsersAction } from "./_actions/getUsersAction";
 
 export default async function AdminPage() {
-  const users = await getUsers();
-  const bookings = await getAllBookings();
+  const users = await getUsersAction();
+  const bookings = await getAllBookingsAction();
 
   const adminUsers = users.filter((user) => user.role === ROLE_CODES.ADMIN);
   const regularUsers = users.filter((user) => user.role === ROLE_CODES.USER);

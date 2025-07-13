@@ -1,4 +1,8 @@
-import { createClient } from "@/lib/supabase/supabaseClientServer";
+import { requireAdminAuth } from "@/lib/auth";
+import {
+  createClient,
+  createServiceClient,
+} from "@/lib/supabase/supabaseClientServer";
 
 export interface AdminBooking {
   id: number;
@@ -14,10 +18,21 @@ export interface AdminBooking {
   };
 }
 
-export async function getAllBookings() {
+export async function getAllBookingsAction(): Promise<AdminBooking[]> {
   const supabase = await createClient();
 
-  const { data: bookings, error } = await supabase
+  // Check admin authentication
+  const authResult = await requireAdminAuth(supabase, async () => {
+    return { authenticated: true };
+  });
+  if ("error" in authResult) {
+    console.error("Admin authentication failed:", authResult.error);
+    return [];
+  }
+
+  // Use service client for admin operations
+  const serviceClient = await createServiceClient();
+  const { data: bookings, error } = await serviceClient
     .from("bookings")
     .select(`
       id,
@@ -40,5 +55,5 @@ export async function getAllBookings() {
     return [];
   }
 
-  return bookings as AdminBooking[];
+  return bookings;
 }

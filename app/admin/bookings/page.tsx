@@ -9,10 +9,10 @@ import {
 import { formatDateStringYMDHM } from "@/lib/formatDateStringYMDHM";
 import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
 import { formatTime } from "@/lib/formatTime";
-import { getAllBookings } from "../_actions/getAllBookings";
+import { getAllBookingsAction } from "../_actions/getAllBookingsAction";
 
 export default async function BookingsPage() {
-  const bookings = await getAllBookings();
+  const bookings = await getAllBookingsAction();
 
   return (
     <div className="bg-gray-50 py-8">

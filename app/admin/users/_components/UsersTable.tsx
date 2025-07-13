@@ -19,7 +19,7 @@ import type {
   AdminUser,
   SortDirection,
   SortKey,
-} from "../../_actions/getUsers";
+} from "../../_actions/getUsersAction";
 
 interface UsersTableProps {
   users: AdminUser[];

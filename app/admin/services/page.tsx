@@ -1,10 +1,10 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  getServices,
+  getServicesAction,
   type SortDirection,
   type SortKey,
-} from "../_actions/getServices";
+} from "../_actions/getServicesAction";
 import { ServiceForm } from "./_components/ServiceForm";
 import { ServicesTable } from "./_components/ServicesTable";
 
@@ -24,7 +24,7 @@ export default async function ServicesPage({
   const sortKey = resolvedSearchParams.sortKey || "id";
   const sortDirection = resolvedSearchParams.sortDirection || "asc";
 
-  const services = await getServices(sortKey, sortDirection);
+  const services = await getServicesAction(sortKey, sortDirection);
 
   return (
     <div className="bg-gray-50 py-8">

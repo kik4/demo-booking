@@ -1,8 +1,8 @@
 import {
-  getUsers,
+  getUsersAction,
   type SortDirection,
   type SortKey,
-} from "../_actions/getUsers";
+} from "../_actions/getUsersAction";
 import { UsersTable } from "./_components/UsersTable";
 
 interface UsersPageProps {
@@ -14,7 +14,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   const sortKey = (params.sortKey as SortKey) || "created_at";
   const sortDirection = (params.sortDirection as SortDirection) || "desc";
 
-  const users = await getUsers(sortKey, sortDirection);
+  const users = await getUsersAction(sortKey, sortDirection);
 
   return (
     <div className="bg-gray-50 py-8">

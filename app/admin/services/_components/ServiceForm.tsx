@@ -20,7 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { AdminService } from "../../_actions/getServices";
+import type { AdminService } from "../../_actions/getServicesAction";
 import { createServiceAction } from "../_actions/createServiceAction";
 import { updateServiceAction } from "../_actions/updateServiceAction";
 import { type ServiceFormData, serviceSchema } from "../_schemas/serviceSchema";

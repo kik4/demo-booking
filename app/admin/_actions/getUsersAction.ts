@@ -1,4 +1,8 @@
-import { createClient } from "@/lib/supabase/supabaseClientServer";
+import { requireAdminAuth } from "@/lib/auth";
+import {
+  createClient,
+  createServiceClient,
+} from "@/lib/supabase/supabaseClientServer";
 
 export interface AdminUser {
   id: number;
@@ -14,13 +18,24 @@ export interface AdminUser {
 export type SortKey = keyof AdminUser;
 export type SortDirection = "asc" | "desc";
 
-export async function getUsers(
+export async function getUsersAction(
   sortKey: SortKey = "created_at",
   sortDirection: SortDirection = "desc",
-) {
+): Promise<AdminUser[]> {
   const supabase = await createClient();
 
-  const { data: users, error } = await supabase
+  // Check admin authentication
+  const authResult = await requireAdminAuth(supabase, async () => {
+    return { authenticated: true };
+  });
+  if ("error" in authResult) {
+    console.error("Admin authentication failed:", authResult.error);
+    return [];
+  }
+
+  // Use service client for admin operations
+  const serviceClient = await createServiceClient();
+  const { data: users, error } = await serviceClient
     .from("profiles")
     .select("*")
     .is("deleted_at", null)

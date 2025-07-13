@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { AdminService } from "../../_actions/getServices";
+import type { AdminService } from "../../_actions/getServicesAction";
 import { deleteServiceAction } from "../_actions/deleteServiceAction";
 
 interface ServiceDeleteDialogProps {
