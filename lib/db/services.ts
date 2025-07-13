@@ -111,21 +111,3 @@ export const deleteService = async (
   }
   return data;
 };
-
-export const getService = async (
-  id: number,
-  supabase: SupabaseClient<Database>,
-) => {
-  const { data, error } = await supabase
-    .from("services")
-    .select("id, name, duration, price, created_at, updated_at")
-    .eq("id", id)
-    .is("deleted_at", null)
-    .single();
-
-  if (error || !data) {
-    console.error(error);
-    throw error || new Error("データが取得できませんでした");
-  }
-  return data;
-};
