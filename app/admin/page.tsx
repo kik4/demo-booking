@@ -2,6 +2,7 @@ import { Calendar, Clock, UserCheck, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROLE_CODES } from "@/constants/roleCode";
 import { formatDateStringYMD } from "@/lib/formatDateStringYMD";
+import { formatTime } from "@/lib/formatTime";
 import { getAllBookings } from "./_actions/getAllBookings";
 import { getUsers } from "./_actions/getUsers";
 
@@ -87,13 +88,22 @@ export default async function AdminPage() {
                     className="flex items-center justify-between rounded-lg bg-gray-50 p-2"
                   >
                     <div>
+                      <div className="text-gray-500 text-sm">
+                        ユーザーID: {booking.profile.id}
+                      </div>
                       <div className="font-medium">{booking.profile.name}</div>
                       <div className="text-gray-500 text-sm">
                         {booking.service_name}
                       </div>
                     </div>
                     <div className="text-gray-500 text-sm">
-                      {formatDateStringYMD(booking.start_time)}
+                      <div>
+                        予定日: {formatDateStringYMD(booking.start_time)}
+                      </div>
+                      <div className="text-right">
+                        {formatTime(booking.start_time)}-
+                        {formatTime(booking.end_time)}
+                      </div>
                     </div>
                   </div>
                 ))}
