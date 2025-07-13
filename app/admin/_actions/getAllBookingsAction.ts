@@ -18,7 +18,21 @@ export interface AdminBooking {
   };
 }
 
-export async function getAllBookingsAction(): Promise<AdminBooking[]> {
+export type BookingSortKey =
+  | "id"
+  | "service_name"
+  | "start_time"
+  | "end_time"
+  | "notes"
+  | "created_at"
+  | "profile_name";
+
+export type BookingSortDirection = "asc" | "desc";
+
+export async function getAllBookingsAction(
+  sortKey: BookingSortKey = "start_time",
+  sortDirection: BookingSortDirection = "desc",
+): Promise<AdminBooking[]> {
   const supabase = await createClient();
 
   // Check admin authentication
@@ -32,7 +46,8 @@ export async function getAllBookingsAction(): Promise<AdminBooking[]> {
 
   // Use service client for admin operations
   const serviceClient = await createServiceClient();
-  const { data: bookings, error } = await serviceClient
+
+  let query = serviceClient
     .from("bookings")
     .select(`
       id,
@@ -47,8 +62,19 @@ export async function getAllBookingsAction(): Promise<AdminBooking[]> {
         name_hiragana
       )
     `)
-    .is("deleted_at", null)
-    .order("start_time", { ascending: false });
+    .is("deleted_at", null);
+
+  // For profile name sorting, we need to reference the profiles table correctly
+  if (sortKey === "profile_name") {
+    query = query.order("name", {
+      ascending: sortDirection === "asc",
+      referencedTable: "profiles",
+    });
+  } else {
+    // For other fields, order directly in the database
+    query = query.order(sortKey, { ascending: sortDirection === "asc" });
+  }
+  const { data: bookings, error } = await query;
 
   if (error) {
     console.error("Error fetching bookings:", error);
