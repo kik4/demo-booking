@@ -464,4 +464,57 @@ describe("createBookingAction - Unit Tests with Real Validation", () => {
       expect(result).toEqual({ success: true });
     });
   });
+
+  describe("3か月制限テスト", () => {
+    it("3か月後の日付は受け入れられる", async () => {
+      // 固定時刻2024-01-15の3か月後は2024-04-15
+      const formData = createValidFormData({ date: "2024-04-15" });
+
+      const result = await createBookingAction(formData);
+
+      expect(result).toEqual({ success: true });
+    });
+
+    it("3か月後の翌日はエラーになる", async () => {
+      // 固定時刻2024-01-15の3か月後の翌日は2024-04-16
+      const formData = createValidFormData({ date: "2024-04-16" });
+
+      const result = await createBookingAction(formData);
+
+      expect(result).toEqual({
+        errors: {
+          date: ["3か月以上先の日付は選択できません"],
+        },
+      });
+      expect(mockCreateBooking).not.toHaveBeenCalled();
+    });
+
+    it("4か月後の日付はエラーになる", async () => {
+      // 固定時刻2024-01-15の4か月後は2024-05-15
+      const formData = createValidFormData({ date: "2024-05-15" });
+
+      const result = await createBookingAction(formData);
+
+      expect(result).toEqual({
+        errors: {
+          date: ["3か月以上先の日付は選択できません"],
+        },
+      });
+      expect(mockCreateBooking).not.toHaveBeenCalled();
+    });
+
+    it("6か月後の日付はエラーになる", async () => {
+      // 固定時刻2024-01-15の6か月後は2024-07-15
+      const formData = createValidFormData({ date: "2024-07-15" });
+
+      const result = await createBookingAction(formData);
+
+      expect(result).toEqual({
+        errors: {
+          date: ["3か月以上先の日付は選択できません"],
+        },
+      });
+      expect(mockCreateBooking).not.toHaveBeenCalled();
+    });
+  });
 });
