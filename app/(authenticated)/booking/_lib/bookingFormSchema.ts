@@ -6,7 +6,19 @@ export const bookingFormSchema = v.object({
   serviceName: v.pipe(v.string(), v.minLength(1, "サービス名が必要です")),
   servicePrice: v.pipe(v.string(), v.minLength(1, "サービス価格が必要です")),
   serviceDuration: v.pipe(v.string(), v.minLength(1, "サービス時間が必要です")),
-  date: v.pipe(v.string(), v.minLength(1, "予約日を選択してください")),
+  date: v.pipe(
+    v.string(),
+    v.minLength(1, "予約日を選択してください"),
+    v.check((value) => {
+      const selectedDate = new Date(`${value}T00:00:00+09:00`);
+      const today = new Date();
+      const jstToday = new Date(
+        today.toLocaleString("sv-SE", { timeZone: "Asia/Tokyo" }),
+      );
+      jstToday.setHours(0, 0, 0, 0);
+      return selectedDate >= jstToday;
+    }, "過去の日付は選択できません"),
+  ),
   startTime: v.pipe(v.string(), v.minLength(1, "予約時間を選択してください")),
   endTime: v.pipe(v.string(), v.minLength(1, "終了時間が必要です")),
   notes: v.pipe(

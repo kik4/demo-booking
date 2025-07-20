@@ -11,13 +11,7 @@ import {
 } from "@/lib/supabase/supabaseClientServer";
 import { bookingFormSchema } from "../_lib/bookingFormSchema";
 
-export interface ExistingBooking {
-  id: number;
-  start_time: string;
-  end_time: string;
-}
-
-export interface CreateBookingFormState {
+interface CreateBookingFormState {
   success?: boolean;
   errors?: {
     serviceId?: string[];
