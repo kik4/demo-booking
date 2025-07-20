@@ -2,25 +2,19 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import * as v from "valibot";
 import type { Database } from "@/types/database.types";
 
-const serviceValidationSchema = v.array(
-  v.object({
-    name: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(100)),
-    duration: v.pipe(v.number(), v.minValue(1)),
-    price: v.pipe(v.number(), v.minValue(100)),
-  }),
-);
-
-const singleServiceValidationSchema = v.object({
+const serviceValidationSchema = v.object({
   name: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(100)),
   duration: v.pipe(v.number(), v.minValue(1)),
   price: v.pipe(v.number(), v.minValue(100)),
 });
 
+const servicesValidationSchema = v.array(serviceValidationSchema);
+
 export const createServices = async (
   params: { name: string; duration: number; price: number }[],
   supabase: SupabaseClient<Database>,
 ) => {
-  const parsed = v.parse(serviceValidationSchema, params);
+  const parsed = v.parse(servicesValidationSchema, params);
 
   const { data, error } = await supabase
     .from("services")
@@ -37,7 +31,7 @@ export const createService = async (
   params: { name: string; duration: number; price: number },
   supabase: SupabaseClient<Database>,
 ) => {
-  const parsed = v.parse(singleServiceValidationSchema, params);
+  const parsed = v.parse(serviceValidationSchema, params);
 
   const { data, error } = await supabase
     .from("services")
