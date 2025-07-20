@@ -626,6 +626,11 @@ describe("createBooking", () => {
 
   describe("時間帯の可用性チェック", () => {
     it("利用できない時間帯でエラーが発生する", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       mockedGetIsAvailableTimeSlot.mockReturnValue(false);
 
       await expect(
@@ -635,6 +640,15 @@ describe("createBooking", () => {
           mockSupabase as SupabaseClient<Database>,
         ),
       ).rejects.toThrow("指定された時間帯は利用できません");
+
+      // Verify console.error was called with availability data
+      expect(consoleSpy).toHaveBeenCalledWith({
+        date: mockParams.date,
+        start_time: mockParams.startTime,
+        end_time: mockParams.endTime,
+        availableSlots: expect.any(Array),
+      });
+      consoleSpy.mockRestore();
     });
 
     it("可用性チェックで正しいパラメータが使用される", async () => {
@@ -772,6 +786,11 @@ describe("createBooking", () => {
 
   describe("データベース挿入エラー", () => {
     it("データベース挿入エラーが発生する", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const insertError = new Error("Database insert failed");
 
       mockFrom.mockImplementation((table: string) => {
@@ -809,9 +828,18 @@ describe("createBooking", () => {
           mockSupabase as SupabaseClient<Database>,
         ),
       ).rejects.toThrow(insertError);
+
+      // Verify console.error was called with the error
+      expect(consoleSpy).toHaveBeenCalledWith(insertError);
+      consoleSpy.mockRestore();
     });
 
     it("予約データが返されない場合にエラーが発生する", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       mockFrom.mockImplementation((table: string) => {
         if (table === "services") {
           return {
@@ -845,9 +873,18 @@ describe("createBooking", () => {
           mockSupabase as SupabaseClient<Database>,
         ),
       ).rejects.toThrow("データが取得できませんでした");
+
+      // Verify console.error was called with null
+      expect(consoleSpy).toHaveBeenCalledWith(null);
+      consoleSpy.mockRestore();
     });
 
     it("重複する予約で制約エラーが発生する", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const constraintError = new Error("Duplicate booking constraint");
 
       mockFrom.mockImplementation((table: string) => {
@@ -885,6 +922,10 @@ describe("createBooking", () => {
           mockSupabase as SupabaseClient<Database>,
         ),
       ).rejects.toThrow(constraintError);
+
+      // Verify console.error was called with the error
+      expect(consoleSpy).toHaveBeenCalledWith(constraintError);
+      consoleSpy.mockRestore();
     });
   });
 });

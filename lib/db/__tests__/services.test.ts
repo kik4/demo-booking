@@ -275,6 +275,11 @@ describe("createServices", () => {
 
   describe("データベースエラー", () => {
     it("データベースエラーが発生した場合エラーを投げる", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const params = [{ name: "カット", duration: 60, price: 5000 }];
       const mockError = {
         message: "Database error",
@@ -285,18 +290,36 @@ describe("createServices", () => {
       await expect(createServices(params, mockClient as any)).rejects.toEqual(
         mockError,
       );
+
+      // Verify console.error was called with the error
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      consoleSpy.mockRestore();
     });
 
     it("データが返されない場合エラーを投げる", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const params = [{ name: "カット", duration: 60, price: 5000 }];
       const mockClient = createMockSupabaseClient(null, null);
 
       await expect(createServices(params, mockClient as any)).rejects.toThrow(
         "データが取得できませんでした",
       );
+
+      // Verify console.error was called with null
+      expect(consoleSpy).toHaveBeenCalledWith(null);
+      consoleSpy.mockRestore();
     });
 
     it("制約違反エラーの場合適切なエラーを投げる", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const params = [{ name: "カット", duration: 60, price: 5000 }];
       const mockError = {
         message: "duplicate key value violates unique constraint",
@@ -308,9 +331,18 @@ describe("createServices", () => {
       await expect(createServices(params, mockClient as any)).rejects.toEqual(
         mockError,
       );
+
+      // Verify console.error was called with the error
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      consoleSpy.mockRestore();
     });
 
     it("権限エラーの場合適切なエラーを投げる", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const params = [{ name: "カット", duration: 60, price: 5000 }];
       const mockError = {
         message: "permission denied for table services",
@@ -321,6 +353,10 @@ describe("createServices", () => {
       await expect(createServices(params, mockClient as any)).rejects.toEqual(
         mockError,
       );
+
+      // Verify console.error was called with the error
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      consoleSpy.mockRestore();
     });
   });
 

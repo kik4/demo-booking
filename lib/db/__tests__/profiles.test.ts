@@ -1038,6 +1038,11 @@ describe("updateProfile", () => {
 
   describe("データベースエラー", () => {
     it("データベースエラーが発生した場合エラーを投げる", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const mockError = {
         message: "Database error",
         code: "42000",
@@ -1050,9 +1055,18 @@ describe("updateProfile", () => {
       } catch (error: any) {
         expect(error).toEqual(mockError);
       }
+
+      // Verify console.error was called with the error
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      consoleSpy.mockRestore();
     });
 
     it("制約違反エラーの場合適切なエラーを投げる", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const mockError = {
         message: "constraint violation error",
         code: "23505",
@@ -1066,9 +1080,18 @@ describe("updateProfile", () => {
       } catch (error: any) {
         expect(error).toEqual(mockError);
       }
+
+      // Verify console.error was called with the error
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      consoleSpy.mockRestore();
     });
 
     it("権限エラーの場合適切なエラーを投げる", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const mockError = {
         message: "permission denied for table profiles",
         code: "42501",
@@ -1081,9 +1104,18 @@ describe("updateProfile", () => {
       } catch (error: any) {
         expect(error).toEqual(mockError);
       }
+
+      // Verify console.error was called with the error
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      consoleSpy.mockRestore();
     });
 
     it("データが返されない場合エラーを投げる", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const mockClient = createMockSupabaseClientForUpdate(null, null);
 
       try {
@@ -1092,6 +1124,10 @@ describe("updateProfile", () => {
       } catch (error: any) {
         expect(error.message).toBe("データが取得できませんでした");
       }
+
+      // Verify console.error was called with null
+      expect(consoleSpy).toHaveBeenCalledWith(null);
+      consoleSpy.mockRestore();
     });
   });
 });

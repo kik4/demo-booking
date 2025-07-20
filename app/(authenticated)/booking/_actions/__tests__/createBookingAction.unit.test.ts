@@ -363,6 +363,11 @@ describe("createBookingAction - Unit Tests with Real Validation", () => {
     });
 
     it("予約作成でエラーが発生した場合", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       mockCreateBooking.mockRejectedValue(new Error("データベースエラー"));
 
       const formData = createValidFormData();
@@ -374,9 +379,20 @@ describe("createBookingAction - Unit Tests with Real Validation", () => {
         },
       });
       expect(mockRevalidatePath).not.toHaveBeenCalled();
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Unexpected error:",
+        expect.any(Error),
+      );
+      consoleSpy.mockRestore();
     });
 
     it("予期しないエラーが発生した場合", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       mockCreateBooking.mockRejectedValue("非Errorオブジェクト");
 
       const formData = createValidFormData();
@@ -387,6 +403,12 @@ describe("createBookingAction - Unit Tests with Real Validation", () => {
           root: ["予期しないエラーが発生しました"],
         },
       });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Unexpected error:",
+        "非Errorオブジェクト",
+      );
+      consoleSpy.mockRestore();
     });
   });
 

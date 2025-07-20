@@ -403,6 +403,11 @@ describe("createBookingAction", () => {
 
   describe("予約作成エラー", () => {
     it("createBookingでエラーが発生した場合", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       mockSafeParse.mockReturnValue({
         typed: true,
         success: true,
@@ -436,9 +441,20 @@ describe("createBookingAction", () => {
         },
       });
       expect(mockRevalidatePath).not.toHaveBeenCalled();
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Unexpected error:",
+        expect.any(Error),
+      );
+      consoleSpy.mockRestore();
     });
 
     it("予期しないエラーが発生した場合", async () => {
+      // Suppress console.error for this test
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       mockSafeParse.mockReturnValue({
         typed: true,
         success: true,
@@ -470,6 +486,12 @@ describe("createBookingAction", () => {
           root: ["予期しないエラーが発生しました"],
         },
       });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Unexpected error:",
+        "非Errorオブジェクト",
+      );
+      consoleSpy.mockRestore();
     });
   });
 
