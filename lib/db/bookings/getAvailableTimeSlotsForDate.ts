@@ -8,8 +8,8 @@ import { normalizeDateTime } from "../../normalizeDateTime";
 import type { AvailableTimeSlot } from "./types";
 
 function isYearEndPeriod(date: Date): boolean {
-  const month = date.getMonth() + 1; // getMonth() returns 0-11, so add 1
-  const day = date.getDate();
+  const month = date.getUTCMonth() + 1; // getMonth() returns 0-11, so add 1
+  const day = date.getUTCDate();
 
   // December 29, 30, 31
   if (month === 12 && day >= 29) {
