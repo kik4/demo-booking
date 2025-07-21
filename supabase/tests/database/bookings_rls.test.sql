@@ -2,7 +2,7 @@
 -- bookingsテーブルのRLS（行レベルセキュリティ）機能テスト
 
 BEGIN;
-SELECT plan(10);
+SELECT plan(15);
 
 -- テスト用のユーザーIDを作成
 INSERT INTO auth.users (
@@ -246,6 +246,87 @@ SELECT is(
     (SELECT COUNT(*)::int FROM bookings WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid)),
     0,
     '論理削除後、認証ユーザーから見えない'
+);
+
+-- =============================================================================
+-- deleted_by_profile_id カラムテスト
+-- =============================================================================
+
+-- テスト11: サービスロールでdeleted_by_profile_idを設定して予約作成
+RESET role;
+INSERT INTO bookings (
+    profile_id,
+    service_id,
+    service_name,
+    service_info,
+    notes,
+    start_time,
+    end_time,
+    deleted_by_profile_id
+) VALUES (
+    (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid),
+    (SELECT id FROM services WHERE name = 'ネイルケア'),
+    'ネイルケア追加',
+    '{"name": "ネイルケア", "duration": 90, "price": 5000}'::jsonb,
+    'deleted_by_profile_idテスト用予約',
+    '2024-01-02 10:00:00',
+    '2024-01-02 11:30:00',
+    (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid)
+);
+
+SELECT is(
+    (SELECT COUNT(*)::int FROM bookings WHERE deleted_by_profile_id IS NOT NULL),
+    1,
+    'サービスロールでdeleted_by_profile_id設定済み予約を作成可能'
+);
+
+-- テスト12: ユーザーがdeleted_by_profile_idカラムにアクセス可能
+SET LOCAL role authenticated;
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440002", "role": "authenticated"}';
+
+SELECT ok(
+    (SELECT deleted_by_profile_id IS NOT NULL FROM bookings 
+     WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid)
+     AND notes = 'deleted_by_profile_idテスト用予約'),
+    'ユーザーがdeleted_by_profile_idカラムにアクセス可能'
+);
+
+-- テスト13: deleted_by_profile_idが設定されていても通常の予約として表示される
+SELECT is(
+    (SELECT COUNT(*)::int FROM bookings WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid)),
+    2,
+    'deleted_by_profile_idが設定されていても通常の予約として表示される（deleted_atがNULLの場合）'
+);
+
+-- テスト14: サービスロールでdeleted_by_profile_idを更新
+RESET role;
+UPDATE bookings 
+SET deleted_by_profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid)
+WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid)
+  AND deleted_by_profile_id IS NOT NULL;
+
+SELECT is(
+    (SELECT COUNT(*)::int FROM bookings 
+     WHERE deleted_by_profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid)),
+    1,
+    'サービスロールでdeleted_by_profile_idを更新可能'
+);
+
+-- テスト15: 論理削除時にdeleted_by_profile_idも設定
+UPDATE bookings 
+SET deleted_at = NOW(),
+    deleted_by_profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440001'::uuid)
+WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid)
+  AND notes = 'ジェルネイルお願いします';
+
+-- 論理削除後、ユーザーから見えない（deleted_by_profile_idが設定されていても）
+SET LOCAL role authenticated;
+SET LOCAL request.jwt.claims TO '{"sub": "550e8400-e29b-41d4-a716-446655440002", "role": "authenticated"}';
+
+SELECT is(
+    (SELECT COUNT(*)::int FROM bookings WHERE profile_id = (SELECT id FROM profiles WHERE user_id = '550e8400-e29b-41d4-a716-446655440002'::uuid)),
+    1,
+    '論理削除後はdeleted_by_profile_idが設定されていてもユーザーから見えない'
 );
 
 -- =============================================================================
