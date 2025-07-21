@@ -28,14 +28,6 @@ export function BookingDetail({
     return durationMinutes;
   };
 
-  // Check if booking is upcoming
-  const isUpcoming = (startTime: string) => {
-    const now = new Date();
-    const normalizedStartTime = normalizeDateTime(startTime);
-    const bookingDate = new Date(normalizedStartTime);
-    return bookingDate > now;
-  };
-
   // Format creation date
   const formatCreationDate = (dateString: string) => {
     const normalizedString = normalizeDateTime(dateString);
@@ -51,7 +43,6 @@ export function BookingDetail({
   };
 
   const duration = calculateDuration(booking.start_time, booking.end_time);
-  const upcoming = isUpcoming(booking.start_time);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -86,14 +77,8 @@ export function BookingDetail({
         <div className="space-y-6 p-6">
           {/* Status */}
           <div className="flex items-center justify-center">
-            <div
-              className={`inline-flex items-center rounded-full px-3 py-1 font-medium text-sm ${
-                upcoming
-                  ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-800"
-              }`}
-            >
-              {upcoming ? "予約済み" : "完了"}
+            <div className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 font-medium text-green-800 text-sm">
+              予約済み
             </div>
           </div>
 
@@ -185,30 +170,28 @@ export function BookingDetail({
           </div>
 
           {/* Action Buttons */}
-          {upcoming && (
-            <div className="neumorphism-card bg-yellow-50 p-4">
-              <h3 className="mb-2 font-semibold text-yellow-800">
-                予約の変更・キャンセル
-              </h3>
-              <p className="mb-4 text-sm text-yellow-700">
-                予約の変更やキャンセルをご希望の場合は、お電話にてお問い合わせください。
-              </p>
-              <div className="flex space-x-3">
-                <button
-                  type="button"
-                  className="neumorphism-button-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2"
-                >
-                  変更依頼
-                </button>
-                <button
-                  type="button"
-                  className="neumorphism-button-danger px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
-                >
-                  キャンセル依頼
-                </button>
-              </div>
+          <div className="neumorphism-card bg-yellow-50 p-4">
+            <h3 className="mb-2 font-semibold text-yellow-800">
+              予約の変更・キャンセル
+            </h3>
+            <p className="mb-4 text-sm text-yellow-700">
+              予約の変更やキャンセルをご希望の場合は、お電話にてお問い合わせください。
+            </p>
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                className="neumorphism-button-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2"
+              >
+                変更依頼
+              </button>
+              <button
+                type="button"
+                className="neumorphism-button-danger px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+              >
+                キャンセル依頼
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
         <div className="sticky bottom-0 border-gray-200 border-t bg-orange-50 p-6">

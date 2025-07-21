@@ -21,12 +21,21 @@ export async function getBookingsAction(): Promise<{
     const supabase = await createClient();
 
     const result = await requireUserAuth(supabase, async (authResult) => {
-      // Get bookings for the user
+      // Get bookings for the user (excluding bookings from previous day and earlier)
+      // Use JST timezone for today calculation
+      const now = new Date();
+      const jstOffset = 9 * 60; // JST is UTC+9
+      const jstTime = new Date(now.getTime() + jstOffset * 60 * 1000);
+      const today = new Date(
+        `${jstTime.toISOString().slice(0, 10)}T00:00+09:00`,
+      );
+
       const { data: bookings, error: bookingsError } = await supabase
         .from("bookings")
         .select("id, service_name, start_time, end_time, notes, created_at")
         .eq("profile_id", authResult.profile.id)
         .is("deleted_at", null)
+        .gte("start_time", today.toISOString())
         .order("start_time", { ascending: true });
 
       if (bookingsError) {
