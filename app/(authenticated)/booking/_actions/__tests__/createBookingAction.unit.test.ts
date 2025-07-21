@@ -69,6 +69,7 @@ describe("createBookingAction - Unit Tests with Real Validation", () => {
       id: 1,
       created_at: "2024-01-15T01:00:00.000Z",
       deleted_at: null,
+      deleted_by_profile_id: null,
       end_time: "2024-01-15T02:00:00.000Z",
       notes: "テスト備考",
       profile_id: 123,
