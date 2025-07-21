@@ -4,6 +4,7 @@ import { addDays, nextMonday } from "date-fns";
 import { ROLE_CODES } from "@/constants/roleCode";
 import { SEX_CODES } from "@/constants/sexCode";
 import { createBooking } from "@/lib/db/bookings/createBooking";
+import { deleteBooking } from "@/lib/db/bookings/deleteBooking";
 import { createProfile } from "@/lib/db/profiles";
 import { createServices } from "@/lib/db/services";
 
@@ -155,6 +156,8 @@ const serviceMap = insertedServices.reduce(
   // 予約データを作成
   const day1 = nextMonday(new Date()).toISOString().slice(0, 10);
   const day2 = addDays(day1, 1).toISOString().slice(0, 10);
+  const day3 = addDays(day1, 3).toISOString().slice(0, 10);
+  const day4 = addDays(day1, -14).toISOString().slice(0, 10);
 
   // 1つ目の予約: カット
   await createBooking(
@@ -183,6 +186,39 @@ const serviceMap = insertedServices.reduce(
       date: day2,
       startTime: "16:00",
       endTime: "18:30",
+      notes: "",
+    },
+    supabaseClient,
+  );
+
+  // 3つ目の予約: 削除済み
+  const b = await createBooking(
+    resProfile,
+    {
+      serviceId: serviceMap.カット.id,
+      serviceName: serviceMap.カット.name,
+      servicePrice: serviceMap.カット.price,
+      serviceDuration: serviceMap.カット.duration,
+      date: day3,
+      startTime: "10:00",
+      endTime: "11:00",
+      notes: "",
+    },
+    supabaseClient,
+  );
+  await deleteBooking(resProfile, { bookingId: b.id }, supabaseClient);
+
+  // 4つ目の予約: 過去
+  await createBooking(
+    resProfile,
+    {
+      serviceId: serviceMap.トリートメント.id,
+      serviceName: serviceMap.トリートメント.name,
+      servicePrice: serviceMap.トリートメント.price,
+      serviceDuration: serviceMap.トリートメント.duration,
+      date: day4,
+      startTime: "16:00",
+      endTime: "16:45",
       notes: "",
     },
     supabaseClient,
