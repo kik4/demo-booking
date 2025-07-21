@@ -76,7 +76,7 @@ export default function BookingsPage() {
     setSelectedBooking(null);
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = async (silent = false) => {
     setLoading(true);
     setError(null);
 
@@ -85,9 +85,11 @@ export default function BookingsPage() {
 
       if (result.success && result.bookings) {
         setBookings(result.bookings);
-        toast.success("予約情報を更新しました", {
-          className: "neumorphism-toast-success",
-        });
+        if (!silent) {
+          toast.success("予約情報を更新しました", {
+            className: "neumorphism-toast-success",
+          });
+        }
       } else {
         setError(result.error || "予約情報の取得に失敗しました");
         toast.error(result.error || "予約情報の取得に失敗しました", {
@@ -126,7 +128,7 @@ export default function BookingsPage() {
               </div>
               <button
                 type="button"
-                onClick={handleRefresh}
+                onClick={() => handleRefresh()}
                 disabled={loading}
                 className="neumorphism-button-secondary inline-flex flex-col items-center px-4 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:opacity-50"
               >
@@ -204,6 +206,7 @@ export default function BookingsPage() {
           booking={selectedBooking}
           customerName={customerName}
           onClose={handleCloseDetail}
+          onBookingDeleted={() => handleRefresh(true)}
         />
       )}
     </div>

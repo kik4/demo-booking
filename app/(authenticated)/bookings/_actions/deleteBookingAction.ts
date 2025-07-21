@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { requireUserAuth } from "@/lib/auth";
 import { deleteBooking } from "@/lib/db/bookings/deleteBooking";
 import { ROUTES } from "@/lib/routes";
-import { createClient } from "@/lib/supabase/supabaseClientServer";
+import {
+  createClient,
+  createServiceClient,
+} from "@/lib/supabase/supabaseClientServer";
 
 interface DeleteBookingResult {
   success?: boolean;
@@ -18,7 +21,10 @@ export async function deleteBookingAction(
     const supabase = await createClient();
 
     const result = await requireUserAuth(supabase, async (authResult) => {
-      await deleteBooking(authResult.profile, { bookingId }, supabase);
+      // Use service client for creating booking to bypass RLS
+      const serviceClient = await createServiceClient();
+
+      await deleteBooking(authResult.profile, { bookingId }, serviceClient);
 
       revalidatePath(ROUTES.USER.BOOKING.LIST);
       return { success: true };

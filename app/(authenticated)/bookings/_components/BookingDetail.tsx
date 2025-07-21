@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import toast from "react-hot-toast";
 import { ConfirmationModal } from "@/app/_components/ConfirmationModal";
 import { deleteBookingAction } from "@/app/(authenticated)/bookings/_actions/deleteBookingAction";
 import type { Booking } from "@/app/(authenticated)/bookings/_actions/getBookingsAction";
@@ -12,12 +13,14 @@ interface BookingDetailProps {
   booking: Booking;
   onClose: () => void;
   customerName: string;
+  onBookingDeleted?: () => void;
 }
 
 export function BookingDetail({
   booking,
   onClose,
   customerName,
+  onBookingDeleted,
 }: BookingDetailProps) {
   const [isPending, startTransition] = useTransition();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -54,13 +57,19 @@ export function BookingDetail({
       try {
         const result = await deleteBookingAction(booking.id);
         if (result.success) {
+          toast.success("予約を取り消しました。", {
+            className: "neumorphism-toast-success",
+          });
+          onBookingDeleted?.();
           onClose();
         } else {
-          alert(result.error || "予約の取り消しに失敗しました");
+          throw new Error(result.error || "予約の取り消しに失敗しました");
         }
       } catch (error) {
         console.error("Error cancelling booking:", error);
-        alert("予約の取り消しに失敗しました");
+        toast.error("予約の取り消しに失敗しました", {
+          className: "neumorphism-toast-error",
+        });
       }
     });
   };
