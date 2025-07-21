@@ -1,5 +1,8 @@
 "use client";
 
+import { useState, useTransition } from "react";
+import { ConfirmationModal } from "@/app/_components/ConfirmationModal";
+import { deleteBookingAction } from "@/app/(authenticated)/bookings/_actions/deleteBookingAction";
 import type { Booking } from "@/app/(authenticated)/bookings/_actions/getBookingsAction";
 import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
 import { formatTime } from "@/lib/formatTime";
@@ -16,6 +19,8 @@ export function BookingDetail({
   onClose,
   customerName,
 }: BookingDetailProps) {
+  const [isPending, startTransition] = useTransition();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   // Calculate duration
   const calculateDuration = (startTime: string, endTime: string) => {
     const normalizedStartTime = normalizeDateTime(startTime);
@@ -43,6 +48,22 @@ export function BookingDetail({
   };
 
   const duration = calculateDuration(booking.start_time, booking.end_time);
+
+  const handleCancelBooking = () => {
+    startTransition(async () => {
+      try {
+        const result = await deleteBookingAction(booking.id);
+        if (result.success) {
+          onClose();
+        } else {
+          alert(result.error || "予約の取り消しに失敗しました");
+        }
+      } catch (error) {
+        console.error("Error cancelling booking:", error);
+        alert("予約の取り消しに失敗しました");
+      }
+    });
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -170,25 +191,19 @@ export function BookingDetail({
           </div>
 
           {/* Action Buttons */}
-          <div className="neumorphism-card bg-yellow-50 p-4">
-            <h3 className="mb-2 font-semibold text-yellow-800">
-              予約の変更・キャンセル
-            </h3>
-            <p className="mb-4 text-sm text-yellow-700">
-              予約の変更やキャンセルをご希望の場合は、お電話にてお問い合わせください。
+          <div className="neumorphism-card bg-red-50 p-4">
+            <h3 className="mb-2 font-semibold text-red-800">予約の取り消し</h3>
+            <p className="mb-4 text-red-700 text-sm">
+              予約を取り消すと元に戻すことはできません。本当によろしいですか？
             </p>
-            <div className="flex space-x-3">
+            <div className="flex justify-center">
               <button
                 type="button"
-                className="neumorphism-button-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2"
+                onClick={() => setShowConfirmModal(true)}
+                disabled={isPending}
+                className="neumorphism-button-danger px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 disabled:opacity-50"
               >
-                変更依頼
-              </button>
-              <button
-                type="button"
-                className="neumorphism-button-danger px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
-              >
-                キャンセル依頼
+                {isPending ? "処理中..." : "予約を取り消す"}
               </button>
             </div>
           </div>
@@ -205,6 +220,18 @@ export function BookingDetail({
             </button>
           </div>
         </div>
+
+        <ConfirmationModal
+          isOpen={showConfirmModal}
+          title="予約の取り消し確認"
+          message="この予約を取り消しますか？取り消した予約は元に戻すことができません。"
+          confirmText="予約を取り消す"
+          cancelText="キャンセル"
+          onConfirm={handleCancelBooking}
+          onCancel={() => setShowConfirmModal(false)}
+          isLoading={isPending}
+          danger={true}
+        />
       </div>
     </div>
   );
