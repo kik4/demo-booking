@@ -63,7 +63,7 @@
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "lint-staged": "^16.1.2",
-    "supabase": "^2.31.4",
+    "supabase": "^2.31.7",
     "tailwindcss": "^4.1.11",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
