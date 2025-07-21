@@ -124,8 +124,8 @@ importers:
         specifier: ^16.1.2
         version: 16.1.2
       supabase:
-        specifier: ^2.31.7
-        version: 2.31.7
+        specifier: ^2.31.8
+        version: 2.31.8
       tailwindcss:
         specifier: ^4.1.11
         version: 4.1.11
@@ -1504,8 +1504,8 @@ packages:
   dom-accessibility-api@0.6.3:
     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
 
-  electron-to-chromium@1.5.187:
-    resolution: {integrity: sha512-cl5Jc9I0KGUoOoSbxvTywTa40uspGJt/BDBoDLoxJRSBpWh4FFXBsjNRHfQrONsV/OoEjDfHUmZQa2d6Ze4YgA==}
+  electron-to-chromium@1.5.188:
+    resolution: {integrity: sha512-pfEx5CBFAocOKNrc+i5fSvhDaI1Vr9R9aT5uX1IzM3hhdL6k649wfuUcdUd9EZnmbE1xdfA51CwqQ61CO3Xl3g==}
 
   emoji-regex@10.4.0:
     resolution: {integrity: sha512-EC+0oUMY1Rqm4O6LLrgjtYDvcVYTy7chDnM4Q7030tP4Kwj3u/pR6gP9ygnp2CJMK5Gq+9Q2oqmrFJAz01DXjw==}
@@ -2083,8 +2083,8 @@ packages:
       babel-plugin-macros:
         optional: true
 
-  supabase@2.31.7:
-    resolution: {integrity: sha512-355gAPUlYAcTvJLrwhqdGPdKuj9SQUOT7U641jqGwNz/aXQNHhGaFolxf6tiR4SM3sS7Yy8Mae9fhwmJFYj3DA==}
+  supabase@2.31.8:
+    resolution: {integrity: sha512-AsALbB9qKqUhu5A8gZK5VMR2SPo2DPP7W544MBk7JKfLo3Pi8YoAxGxx5skarfeqDtHkzEREU/seFIaYP/bl3A==}
     engines: {npm: '>=8'}
     hasBin: true
 
@@ -3402,7 +3402,7 @@ snapshots:
   browserslist@4.25.1:
     dependencies:
       caniuse-lite: 1.0.30001727
-      electron-to-chromium: 1.5.187
+      electron-to-chromium: 1.5.188
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.1)
 
@@ -3515,7 +3515,7 @@ snapshots:
 
   dom-accessibility-api@0.6.3: {}
 
-  electron-to-chromium@1.5.187: {}
+  electron-to-chromium@1.5.188: {}
 
   emoji-regex@10.4.0: {}
 
@@ -4082,7 +4082,7 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.28.0
 
-  supabase@2.31.7:
+  supabase@2.31.8:
     dependencies:
       bin-links: 5.0.0
       https-proxy-agent: 7.0.6
