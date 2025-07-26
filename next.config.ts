@@ -1,6 +1,32 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    // HTTPS強制リダイレクト（本番環境のみ）
+    if (process.env.NODE_ENV === "production") {
+      const domain = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
+
+      return [
+        {
+          source: "/(.*)",
+          has: [
+            {
+              type: "header",
+              key: "x-forwarded-proto",
+              value: "http",
+            },
+          ],
+          destination: `${domain}/$1`,
+          permanent: true,
+        },
+      ];
+    }
+
+    // 開発環境ではリダイレクトなし
+    return [];
+  },
   async headers() {
     // Dynamic CSP based on environment
     const isDevelopment = process.env.NODE_ENV === "development";

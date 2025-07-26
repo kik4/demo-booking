@@ -24,6 +24,7 @@
 | **XSS入力検証** | HTMLタグ・危険文字パターンの検出とバリデーションエラー | 2025-07-26 |
 | **統一ログ管理** | 44箇所のconsole使用をsafeLogで統一、改行・制御文字除去 | 2025-07-26 |
 | **包括的セキュリティテスト** | 19件のサニタイゼーション・ログインジェクションテスト | 2025-07-26 |
+| **HTTPS強制リダイレクト** | 環境対応リダイレクト設定（本番環境のみ） | 2025-07-26 |
 
 ### ⚠️ 改善対象項目
 
@@ -223,28 +224,43 @@ export const SecurityEvents = {
 } as const;
 ```
 
-#### 2.3 HTTPS強制リダイレクト
+#### 2.3 HTTPS強制リダイレクト ✅ **完了: 2025-07-26**
 
-**実装**: next.config.tsに追加
+**実装完了**: next.config.tsに環境対応リダイレクト設定追加
 
 ```typescript
 async redirects() {
-  return [
-    {
-      source: '/(.*)',
-      has: [
-        {
-          type: 'header',
-          key: 'x-forwarded-proto',
-          value: 'http',
-        },
-      ],
-      destination: 'https://yourdomain.com/$1',
-      permanent: true,
-    },
-  ];
+  // HTTPS強制リダイレクト（本番環境のみ）
+  if (process.env.NODE_ENV === "production") {
+    const domain = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
+    
+    return [
+      {
+        source: "/(.*)",
+        has: [
+          {
+            type: "header",
+            key: "x-forwarded-proto",
+            value: "http",
+          },
+        ],
+        destination: `${domain}/$1`,
+        permanent: true,
+      },
+    ];
+  }
+  
+  // 開発環境ではリダイレクトなし
+  return [];
 },
 ```
+
+**機能**:
+- 本番環境でのみHTTPS強制（開発環境は除外）
+- 環境変数対応（Vercel、カスタムドメイン）
+- 301永続リダイレクト
 
 ---
 
@@ -493,14 +509,14 @@ export async function runSecurityAudit(): Promise<void> {
 - [x] 本番環境でのヘッダー確認
 - [x] 全ページの動作確認
 
-### フェーズ2 チェックリスト ✅ **フェーズ2.1完了**
+### フェーズ2 チェックリスト ✅ **フェーズ2.1-2.3完了**
 - [x] HTMLタグ検証機能実装（Valibotスキーマ）
 - [x] ログインジェクション対策実装（safeLogユーティリティ）
 - [x] 統一ログ管理（44箇所のconsole使用統一）
 - [x] 包括的セキュリティテスト（19件のテストケース）
 - [x] XSS攻撃パターン検出機能
+- [x] HTTPS強制リダイレクト設定（環境対応）
 - [ ] 外部監査ログサービス統合（フェーズ2.2として継続）
-- [ ] HTTPS強制リダイレクト設定
 - [ ] セキュリティイベントのアラート機能
 
 ### フェーズ3 チェックリスト
@@ -526,6 +542,7 @@ export async function runSecurityAudit(): Promise<void> {
 | 2.1 | XSS入力検証 | 100% | ✅ **達成** (HTMLタグ・危険文字検証) |
 | 2.1 | ログインジェクション対策 | 100% | ✅ **達成** (44箇所統一) |
 | 2.1 | セキュリティテストカバレッジ | >90% | ✅ **達成** (19件テスト) |
+| 2.3 | HTTPS強制リダイレクト | 100% | ✅ **達成** (環境対応) |
 | 2.2 | 外部監査ログ記録率 | 100% | ⏳ **未実装** |
 | 3 | CSP違反 | 0件 | ✅ **達成** |
 | 3 | Redis応答時間 | <100ms | ⏳ **未実装** |
@@ -551,6 +568,8 @@ export async function runSecurityAudit(): Promise<void> {
   - セキュリティヘッダー、JWT有効期限短縮、基本CSP設定
 - ✅ **フェーズ2.1（HTMLサニタイゼーション & ログインジェクション対策）**: 2025-07-26完了
   - Valibotバリデーション、safeLogユーティリティ、包括的セキュリティテスト
+- ✅ **フェーズ2.3（HTTPS強制リダイレクト）**: 2025-07-26完了
+  - 環境対応リダイレクト設定、本番環境でのHTTPS強制
 
 ### 次のステップ
 - 🔄 **フェーズ2.2（監査ログ強化）**: 外部ログサービス統合、アラート機能
@@ -561,4 +580,5 @@ export async function runSecurityAudit(): Promise<void> {
 
 **最終更新**: 2025-07-26  
 **フェーズ1完了**: 2025-07-26  
-**フェーズ2.1完了**: 2025-07-26
+**フェーズ2.1完了**: 2025-07-26  
+**フェーズ2.3完了**: 2025-07-26
