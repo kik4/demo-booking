@@ -121,92 +121,148 @@ supabase status
 
 ---
 
-## 🛠️ フェーズ2: 短期実装ガイド
+## 🛠️ フェーズ2: 短期実装ガイド ✅ **フェーズ2.1完了: 2025-01-26**
 
-### 2.1 HTMLサニタイゼーション実装
+### 2.1 HTMLサニタイゼーション & ログインジェクション対策実装 ✅ **完了: 2025-01-26**
 
-#### ステップ1: 依存関係追加
+#### 実装アプローチの決定
 
-```bash
-pnpm add isomorphic-dompurify
-pnpm add -D @types/dompurify
-```
+**採用アプローチ**: Valibotバリデーション中心のXSS対策
 
-#### ステップ2: サニタイゼーション関数作成
+**バリデーション vs サニタイゼーション比較**:
+
+| 項目 | バリデーション（採用） | サニタイゼーション（不採用） |
+|------|---------------------|---------------------------|
+| **UX** | ✅ 明確なエラーメッセージ | ❌ 勝手に文字が消える |
+| **透明性** | ✅ ユーザーが問題を理解 | ❌ 何が削除されたか不明 |
+| **セキュリティ** | ✅ 攻撃を事前に阻止 | ✅ 攻撃を無害化 |
+| **実装複雑度** | ✅ Valibotスキーマで簡潔 | ❌ DOMPurify設定が複雑 |
+| **デバッグ性** | ✅ 問題箇所が明確 | ❌ サニタイゼーション後の検証が困難 |
+
+**実装理由**: 
+- **ユーザビリティ重視**: HTMLタグが勝手に消えることを防止
+- **開発効率**: Valibotスキーマの正規表現1行で実装可能
+- **保守性**: 一箇所でセキュリティルールを管理
+
+#### ステップ1: セキュリティライブラリ作成
 
 **ファイル**: `lib/sanitize.ts`
 
 ```typescript
-import DOMPurify from 'isomorphic-dompurify';
-
 /**
- * HTMLタグを完全に除去するサニタイゼーション
+ * ログインジェクション対策
+ * 改行文字、制御文字を削除してログの整合性を保つ
  */
-export function sanitizeText(input: string): string {
-  return DOMPurify.sanitize(input, {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-  });
+export function sanitizeForLog(input: string): string {
+  return (
+    input
+      .replace(/[\r\n\t]/g, " ") // 改行・タブを空白に変換
+      .replace(/[\u0000-\u001f]/g, "") // 制御文字除去
+      .replace(/[\u007f-\u009f]/g, "") // 拡張制御文字除去
+      .substring(0, 200) // 長さ制限（ログの肥大化防止）
+      .trim()
+  );
 }
 
 /**
- * 基本的なXSS対策
+ * 危険なパターンの検出
+ * サニタイゼーション前に攻撃パターンを検出してログに記録
  */
-export function sanitizeUserInput(input: string): string {
-  return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '') // onclickなどのイベントハンドラ削除
-    .trim();
-}
+export function detectSuspiciousInput(input: string): {
+  isSuspicious: boolean;
+  patterns: string[];
+} {
+  const suspiciousPatterns = [
+    { name: "script_tag", regex: /<script\b/i },
+    { name: "javascript_url", regex: /javascript:/i },
+    { name: "event_handler", regex: /on\w+\s*=/i },
+    { name: "data_url", regex: /data:/i },
+    { name: "style_expression", regex: /expression\s*\(/i },
+    { name: "vbscript", regex: /vbscript:/i },
+    { name: "log_injection", regex: /[\r\n].*\[(?:ERROR|WARN|INFO|DEBUG)\]/i },
+  ];
 
-/**
- * バリデーション後のサニタイゼーション適用
- */
-export function applySanitization<T extends Record<string, any>>(
-  data: T,
-  fieldsToSanitize: (keyof T)[]
-): T {
-  const sanitized = { ...data };
-  
-  for (const field of fieldsToSanitize) {
-    if (typeof sanitized[field] === 'string') {
-      sanitized[field] = sanitizeText(sanitized[field] as string) as T[keyof T];
+  const detectedPatterns: string[] = [];
+
+  for (const pattern of suspiciousPatterns) {
+    if (pattern.regex.test(input)) {
+      detectedPatterns.push(pattern.name);
     }
   }
-  
-  return sanitized;
+
+  return {
+    isSuspicious: detectedPatterns.length > 0,
+    patterns: detectedPatterns,
+  };
 }
+
+/**
+ * 安全なログ出力ユーティリティ
+ * 44箇所のconsole使用を統一
+ */
+export const safeLog = {
+  error: (message: string, data?: unknown) => {
+    const safeData = sanitizeLogData(data);
+    console.error(message, safeData);
+  },
+  warn: (message: string, data?: unknown) => {
+    const safeData = sanitizeLogData(data);
+    console.warn(message, safeData);
+  },
+  info: (message: string, data?: unknown) => {
+    console.info(message, data);
+  },
+} as const;
 ```
 
-#### ステップ3: Server Actionsに適用
+#### ステップ2: Valibotスキーマにセキュリティ検証追加
 
-**createBookingAction.ts**の更新:
+**booking/_lib/bookingFormSchema.ts**の更新:
 
 ```typescript
-import { applySanitization, sanitizeText } from "@/lib/sanitize";
+import * as v from "valibot";
 
-export async function createBookingAction(
-  formData: FormData,
-): Promise<CreateBookingFormState> {
-  return withRateLimit(BOOKING_RATE_LIMIT, async () => {
-    const rawData = {
-      serviceId: formData.get("serviceId") as string,
-      serviceName: formData.get("serviceName") as string,
-      servicePrice: formData.get("servicePrice") as string,
-      serviceDuration: formData.get("serviceDuration") as string,
-      date: formData.get("date") as string,
-      startTime: formData.get("startTime") as string,
-      endTime: formData.get("endTime") as string,
-      notes: formData.get("notes") as string,
-    };
+export const bookingFormSchema = v.object({
+  // ... 他のフィールド
+  notes: v.pipe(
+    v.string(),
+    v.maxLength(500, "補足は500文字以内で入力してください"),
+    v.regex(/^[^<>]*$/, "HTMLタグは使用できません"), // HTMLタグ検証
+  ),
+});
+```
 
-    // サニタイゼーション適用
-    const sanitizedData = applySanitization(rawData, ['notes', 'serviceName']);
+**profile/_schemas/profileSchema.ts**の更新:
 
-    const result = v.safeParse(bookingFormSchema, sanitizedData);
-    // ... 以降の処理
-  });
+```typescript
+export const profileFormSchema = v.object({
+  name: v.pipe(
+    v.string("名前は有効な値を入力してください"),
+    v.trim(),
+    v.minLength(2, "名前は2文字以上で入力してください"),
+    v.maxLength(100, "名前は100文字以内で入力してください"),
+    v.regex(/^[^<>]*$/, "HTMLタグは使用できません"), // HTMLタグ検証
+    v.regex(/^[\p{L}\p{N}\s\-.]+$/u, "文字、数字、スペース、ハイフン、ドットのみ使用できます"), // 文字種制限
+  ),
+  // ... 他のフィールド
+});
+```
+
+#### ステップ3: Server ActionsでsafeLog使用
+
+**全Server Actions（44箇所）**でconsole.error/warn/logをsafeLogに置換:
+
+```typescript
+import { safeLog } from "@/lib/sanitize";
+
+export async function createBookingAction(formData: FormData) {
+  try {
+    // ... 処理
+  } catch (error) {
+    // console.error → safeLog.error
+    safeLog.error("Booking creation failed:", error);
+    throw error;
+  }
 }
 ```
 
@@ -373,39 +429,66 @@ export default function TestCSP() {
 EOF
 ```
 
-### フェーズ2 検証
+### フェーズ2.1 検証 ✅ **完了: 2025-01-26**
 
-#### サニタイゼーションテスト
+#### 包括的セキュリティテスト（19件のテストケース）
+
+**ファイル**: `lib/__tests__/sanitize.test.ts`
 
 ```typescript
-// lib/__tests__/sanitize.test.ts
 import { describe, expect, it } from 'vitest';
-import { sanitizeText, sanitizeUserInput, applySanitization } from '../sanitize';
+import { sanitizeForLog, detectSuspiciousInput, safeLog } from '../sanitize';
 
-describe('Sanitization', () => {
-  it('should remove script tags', () => {
-    const malicious = '<script>alert("xss")</script>Hello';
-    const result = sanitizeText(malicious);
-    expect(result).toBe('Hello');
+describe('Log Injection Protection', () => {
+  it('should remove newlines and control characters', () => {
+    const malicious = 'User input\n[ERROR] Fake log entry\r\nAnother line';
+    const result = sanitizeForLog(malicious);
+    expect(result).not.toContain('\n');
+    expect(result).not.toContain('\r');
   });
 
-  it('should remove javascript: URLs', () => {
-    const malicious = 'javascript:alert("xss")';
-    const result = sanitizeUserInput(malicious);
-    expect(result).not.toContain('javascript:');
+  it('should detect XSS patterns', () => {
+    const xssInput = '<script>alert("xss")</script>';
+    const result = detectSuspiciousInput(xssInput);
+    expect(result.isSuspicious).toBe(true);
+    expect(result.patterns).toContain('script_tag');
   });
 
-  it('should sanitize multiple fields', () => {
-    const data = {
-      safe: 'normal text',
-      dangerous: '<script>alert("xss")</script>',
-    };
-    
-    const result = applySanitization(data, ['dangerous']);
-    expect(result.safe).toBe('normal text');
-    expect(result.dangerous).toBe('');
+  it('should detect log injection patterns', () => {
+    const logInjection = 'user input\n[ERROR] Fake error message';
+    const result = detectSuspiciousInput(logInjection);
+    expect(result.isSuspicious).toBe(true);
+    expect(result.patterns).toContain('log_injection');
   });
 });
+
+describe('SafeLog Functionality', () => {
+  it('should sanitize error data', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errorData = { message: 'Error\nwith\nnewlines' };
+    
+    safeLog.error('Test error:', errorData);
+    
+    expect(spy).toHaveBeenCalledWith('Test error:', 
+      expect.objectContaining({
+        message: expect.not.stringContaining('\n')
+      })
+    );
+    spy.mockRestore();
+  });
+});
+```
+
+#### Valibotバリデーションテスト
+
+**Server Actions統合テスト**でHTMLタグ入力がバリデーションエラーになることを確認:
+
+```bash
+# テスト実行
+pnpm test:run
+
+# 期待結果: 369/369 tests passed
+# すべてのセキュリティテストが成功
 ```
 
 #### 監査ログテスト
@@ -542,9 +625,9 @@ class LogBuffer {
 
 ---
 
-## 📊 フェーズ1実装記録
+## 📊 実装記録
 
-### 実装詳細
+### フェーズ1実装詳細
 - **実装日**: 2025年1月26日
 - **実装者**: Claude Code assisted implementation
 - **実装ファイル**:
@@ -552,14 +635,24 @@ class LogBuffer {
   - `supabase/config.toml`: JWT有効期限設定
   - `scripts/check-headers.sh`: ヘッダー検証スクリプト
 
-### 実装上の注意点
-1. **CSP設定**: 開発環境では自動的にローカルSupabaseエンドポイントを許可
-2. **JWT設定**: ローカルSupabaseインスタンスの再起動が必要
-3. **検証**: 全セキュリティヘッダーの動作確認済み
+### フェーズ2.1実装詳細 ✅ **完了: 2025-01-26**
+- **実装日**: 2025年1月26日
+- **実装ファイル**:
+  - `lib/sanitize.ts`: ログインジェクション対策・safeLogユーティリティ
+  - `app/(authenticated)/booking/_lib/bookingFormSchema.ts`: HTMLタグ検証
+  - `app/(authenticated)/profile/_schemas/profileSchema.ts`: 文字種制限・HTMLタグ検証
+  - `lib/__tests__/sanitize.test.ts`: 19件の包括的セキュリティテスト
+  - 44箇所のServer Actions: console → safeLog統一
+
+### 実装上の重要決定
+1. **バリデーション優先アプローチ**: DOMPurifyによる自動サニタイゼーションではなく、Valibotバリデーションによる明示的エラー表示を採用
+2. **ユーザビリティ重視**: HTMLタグが勝手に消えることを防止し、明確なエラーメッセージを提供
+3. **ログ統一**: 44箇所のconsole使用をsafeLogで統一し、ログインジェクション攻撃を防止
 
 ### トラブルシューティング事例
 - **CSP 'unsafe-eval' エラー**: Next.js runtime要件のため追加
 - **Supabase認証エラー**: 開発環境用connect-src設定で解決
+- **テスト失敗**: safeLogフォーマット変更に伴うテストケース更新（16件のテスト修正）
 
 ---
 
