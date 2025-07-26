@@ -5,6 +5,7 @@ import * as v from "valibot";
 import type { SexCode } from "@/constants/sexCode";
 import { requireUserAuth } from "@/lib/auth";
 import { updateProfile } from "@/lib/db/profiles";
+import { PROFILE_UPDATE_RATE_LIMIT, withUserRateLimit } from "@/lib/rateLimit";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
 import { profileFormSchema } from "../../_schemas/profileSchema";
 
@@ -17,6 +18,8 @@ export interface EditProfileFormState {
     root?: string[];
   };
   success?: boolean;
+  error?: string;
+  rateLimited?: true;
 }
 
 export async function editProfileAction(
@@ -54,39 +57,45 @@ export async function editProfileAction(
     const supabase = await createClient();
 
     const result = await requireUserAuth(supabase, async (authResult) => {
-      // プロフィールを更新
-      try {
-        await updateProfile(
-          authResult.user,
-          {
-            name,
-            name_hiragana: nameHiragana,
-            sex: Number(sex) as SexCode,
-            date_of_birth: dateOfBirth,
-          },
-          supabase,
-        );
-        return { success: true };
-      } catch (e) {
-        if (e instanceof v.ValiError) {
-          const errors: Record<string, string[]> = {};
-          for (const issue of e.issues) {
-            const path = issue.path
-              ? issue.path
-                  .map((p: { key: string }) => camelCase(p.key))
-                  .join(".")
-              : "root";
-            if (!errors[path]) {
-              errors[path] = [];
+      return withUserRateLimit(
+        authResult.user.id,
+        PROFILE_UPDATE_RATE_LIMIT,
+        async () => {
+          // プロフィールを更新
+          try {
+            await updateProfile(
+              authResult.user,
+              {
+                name,
+                name_hiragana: nameHiragana,
+                sex: Number(sex) as SexCode,
+                date_of_birth: dateOfBirth,
+              },
+              supabase,
+            );
+            return { success: true };
+          } catch (e) {
+            if (e instanceof v.ValiError) {
+              const errors: Record<string, string[]> = {};
+              for (const issue of e.issues) {
+                const path = issue.path
+                  ? issue.path
+                      .map((p: { key: string }) => camelCase(p.key))
+                      .join(".")
+                  : "root";
+                if (!errors[path]) {
+                  errors[path] = [];
+                }
+                errors[path].push(issue.message);
+              }
+              return {
+                errors,
+              };
             }
-            errors[path].push(issue.message);
+            throw e;
           }
-          return {
-            errors,
-          };
-        }
-        throw e;
-      }
+        },
+      );
     });
 
     if ("error" in result) {

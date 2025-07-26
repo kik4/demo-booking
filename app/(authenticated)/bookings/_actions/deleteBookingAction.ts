@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireUserAuth } from "@/lib/auth";
 import { deleteBooking } from "@/lib/db/bookings/deleteBooking";
+import { DEFAULT_RATE_LIMIT, withUserRateLimit } from "@/lib/rateLimit";
 import { ROUTES } from "@/lib/routes";
 import {
   createClient,
@@ -12,6 +13,7 @@ import {
 interface DeleteBookingResult {
   success?: boolean;
   error?: string;
+  rateLimited?: true;
 }
 
 export async function deleteBookingAction(
@@ -21,13 +23,19 @@ export async function deleteBookingAction(
     const supabase = await createClient();
 
     const result = await requireUserAuth(supabase, async (authResult) => {
-      // Use service client for creating booking to bypass RLS
-      const serviceClient = await createServiceClient();
+      return withUserRateLimit(
+        authResult.user.id,
+        DEFAULT_RATE_LIMIT,
+        async () => {
+          // Use service client for creating booking to bypass RLS
+          const serviceClient = await createServiceClient();
 
-      await deleteBooking(authResult.profile, { bookingId }, serviceClient);
+          await deleteBooking(authResult.profile, { bookingId }, serviceClient);
 
-      revalidatePath(ROUTES.USER.BOOKING.LIST);
-      return { success: true };
+          revalidatePath(ROUTES.USER.BOOKING.LIST);
+          return { success: true };
+        },
+      );
     });
 
     if ("error" in result) {
