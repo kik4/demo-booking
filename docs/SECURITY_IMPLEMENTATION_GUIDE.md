@@ -2,9 +2,9 @@
 
 このガイドは、SECURITY_ROADMAP.mdで定義された各フェーズの具体的な実装手順を提供します。
 
-## 🚀 フェーズ1: 即座実装ガイド
+## 🚀 フェーズ1: 即座実装ガイド ✅ **完了: 2025-01-26**
 
-### 1.1 セキュリティヘッダー実装
+### 1.1 セキュリティヘッダー実装 ✅ **完了: 2025-01-26**
 
 #### ステップ1: next.config.tsの更新
 
@@ -71,7 +71,7 @@ Referrer-Policy: strict-origin-when-cross-origin
 X-XSS-Protection: 1; mode=block
 ```
 
-### 1.2 JWT有効期限短縮
+### 1.2 JWT有効期限短縮 ✅ **完了: 2025-01-26**
 
 #### ステップ1: supabase/config.tomlの更新
 
@@ -100,7 +100,7 @@ pnpm supabase:start
 supabase status
 ```
 
-### 1.3 基本CSP実装
+### 1.3 基本CSP実装 ✅ **完了: 2025-01-26**
 
 #### next.config.tsに追加
 
@@ -539,5 +539,28 @@ class LogBuffer {
   }
 }
 ```
+
+---
+
+## 📊 フェーズ1実装記録
+
+### 実装詳細
+- **実装日**: 2025年1月26日
+- **実装者**: Claude Code assisted implementation
+- **実装ファイル**:
+  - `next.config.ts`: セキュリティヘッダー・CSP設定
+  - `supabase/config.toml`: JWT有効期限設定
+  - `scripts/check-headers.sh`: ヘッダー検証スクリプト
+
+### 実装上の注意点
+1. **CSP設定**: 開発環境では自動的にローカルSupabaseエンドポイントを許可
+2. **JWT設定**: ローカルSupabaseインスタンスの再起動が必要
+3. **検証**: 全セキュリティヘッダーの動作確認済み
+
+### トラブルシューティング事例
+- **CSP 'unsafe-eval' エラー**: Next.js runtime要件のため追加
+- **Supabase認証エラー**: 開発環境用connect-src設定で解決
+
+---
 
 このガイドに従って実装することで、段階的かつ確実にセキュリティを強化できます。
