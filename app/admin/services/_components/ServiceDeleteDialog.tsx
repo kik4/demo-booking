@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { safeLog } from "@/lib/sanitize";
 import type { AdminService } from "../../_actions/getServicesAction";
 import { deleteServiceAction } from "../_actions/deleteServiceAction";
 
@@ -35,10 +36,10 @@ export function ServiceDeleteDialog({
       if ("success" in result && result.success) {
         setOpen(false);
       } else {
-        console.error("削除に失敗しました:", result.error);
+        safeLog.error("削除に失敗しました:", result.error);
       }
     } catch (error) {
-      console.error("削除エラー:", error);
+      safeLog.error("削除エラー:", error);
     } finally {
       setIsDeleting(false);
     }

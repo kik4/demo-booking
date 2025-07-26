@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as v from "valibot";
+import { safeLog } from "@/lib/sanitize";
 import type { Database } from "@/types/database.types";
 
 const serviceValidationSchema = v.object({
@@ -21,7 +22,7 @@ export const createServices = async (
     .insert(parsed)
     .select("id, name, duration, price");
   if (error || !data) {
-    console.error(error);
+    safeLog.error("Database operation failed:", error);
     throw error || new Error("データが取得できませんでした");
   }
   return data;
@@ -40,7 +41,7 @@ export const createService = async (
     .single();
 
   if (error || !data) {
-    console.error(error);
+    safeLog.error("Database operation failed:", error);
     throw error || new Error("データが取得できませんでした");
   }
   return data;
@@ -81,7 +82,7 @@ export const updateService = async (
     .single();
 
   if (error || !data) {
-    console.error(error);
+    safeLog.error("Database operation failed:", error);
     throw error || new Error("データが取得できませんでした");
   }
   return data;
@@ -100,7 +101,7 @@ export const deleteService = async (
     .single();
 
   if (error || !data) {
-    console.error(error);
+    safeLog.error("Database operation failed:", error);
     throw error || new Error("データが取得できませんでした");
   }
   return data;

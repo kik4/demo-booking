@@ -1,6 +1,7 @@
 "use server";
 
 import { requireUserAuth } from "@/lib/auth";
+import { safeLog } from "@/lib/sanitize";
 import {
   createClient,
   createServiceClient,
@@ -25,12 +26,12 @@ export async function deleteProfileAction(): Promise<
       .select("id");
 
     if (updateError) {
-      console.error("Profile deletion failed:", updateError);
+      safeLog.error("Profile deletion failed:", updateError);
       throw new Error("アカウント削除に失敗しました");
     }
 
     if (!data || data.length === 0) {
-      console.error("No profile found to delete for user:", authResult.user.id);
+      safeLog.error("No profile found to delete for user:", authResult.user.id);
       throw new Error("削除対象のプロフィールが見つかりませんでした");
     }
 

@@ -6,6 +6,7 @@ import type { SexCode } from "@/constants/sexCode";
 import { requireUserAuth } from "@/lib/auth";
 import { updateProfile } from "@/lib/db/profiles";
 import { PROFILE_UPDATE_RATE_LIMIT, withUserRateLimit } from "@/lib/rateLimit";
+import { detectSuspiciousInput, safeLog } from "@/lib/sanitize";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
 import { profileFormSchema } from "../../_schemas/profileSchema";
 
@@ -33,7 +34,26 @@ export async function editProfileAction(
     dateOfBirth: formData.get("dateOfBirth") as string,
   };
 
-  // Client-side validation
+  // セキュリティ脅威の検出とログ記録
+  const fieldsToCheck = ["name", "nameHiragana"];
+  for (const field of fieldsToCheck) {
+    const value = rawData[field as keyof typeof rawData];
+    if (value) {
+      const suspiciousAnalysis = detectSuspiciousInput(value);
+      if (suspiciousAnalysis.isSuspicious) {
+        safeLog.warn(
+          `[SECURITY] Suspicious input detected in profile ${field}:`,
+          {
+            patterns: suspiciousAnalysis.patterns,
+            sanitizedInput: value, // safeLog内部でサニタイゼーション済み
+            timestamp: new Date().toISOString(),
+          },
+        );
+      }
+    }
+  }
+
+  // バリデーション実行（サニタイゼーションはバリデーションスキーマで処理）
   const validationResult = v.safeParse(profileFormSchema, rawData);
   if (!validationResult.success) {
     const errors: Record<string, string[]> = {};
@@ -108,7 +128,7 @@ export async function editProfileAction(
 
     return result;
   } catch (error) {
-    console.error("Unexpected error:", error);
+    safeLog.error("Unexpected error:", error);
     return {
       errors: {
         root: [

@@ -6,6 +6,7 @@ import { ROLE_CODES } from "@/constants/roleCode";
 import type { SexCode } from "@/constants/sexCode";
 import { requireAuth } from "@/lib/auth";
 import { createProfile } from "@/lib/db/profiles";
+import { safeLog } from "@/lib/sanitize";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
 import { profileFormSchema } from "../../profile/_schemas/profileSchema";
 
@@ -101,7 +102,7 @@ export async function registerAction(
 
     return result;
   } catch (error) {
-    console.error("Unexpected error:", error);
+    safeLog.error("Unexpected error:", error);
     return {
       errors: {
         root: [

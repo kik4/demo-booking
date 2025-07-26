@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { LoadingSpinner } from "@/app/_components/LoadingSpinner";
 import { SEX_OPTIONS } from "@/constants/sexCode";
 import { ROUTES } from "@/lib/routes";
+import { safeLog } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase/supabaseClient";
 import {
   type ProfileFormData,
@@ -78,7 +79,7 @@ export default function EditProfilePage() {
         router.push(ROUTES.REGISTER);
         return defaultValue;
       } catch (error) {
-        console.error("プロフィール取得エラー:", error);
+        safeLog.error("プロフィール取得エラー:", error);
         toast.error("プロフィールの取得に失敗しました");
         return defaultValue;
       }

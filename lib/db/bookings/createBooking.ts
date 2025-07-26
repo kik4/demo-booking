@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { differenceInMinutes } from "date-fns";
 import { isEqual } from "lodash-es";
 import * as v from "valibot";
+import { safeLog } from "@/lib/sanitize";
 import type { Database } from "@/types/database.types";
 import { getAvailableTimeSlotsForDate } from "./getAvailableTimeSlotsForDate";
 import { getIsAvailableTimeSlot } from "./getIsAvailableTimeSlot";
@@ -67,7 +68,7 @@ export const createBooking = async (
       availableSlots,
     )
   ) {
-    console.error({
+    safeLog.error("Time slot not available:", {
       date: parsed.date,
       start_time: parsed.startTime,
       end_time: parsed.endTime,
@@ -100,7 +101,7 @@ export const createBooking = async (
     .select()
     .single();
   if (error || !data) {
-    console.error(error);
+    safeLog.error("Booking creation failed:", error);
     throw error || new Error("データが取得できませんでした");
   }
   return data;

@@ -7,6 +7,7 @@ import { createBooking } from "@/lib/db/bookings/createBooking";
 import { deleteBooking } from "@/lib/db/bookings/deleteBooking";
 import { createProfile } from "@/lib/db/profiles";
 import { createServices } from "@/lib/db/services";
+import { safeLog } from "@/lib/sanitize";
 
 const supabaseClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -14,7 +15,7 @@ const supabaseClient = createClient(
 );
 
 // データベースリセット
-console.log("Resetting database...");
+safeLog.info("Resetting database...");
 
 // 既存の予約データを削除
 const { error: bookingsError } = await supabaseClient
@@ -22,7 +23,7 @@ const { error: bookingsError } = await supabaseClient
   .delete()
   .gt("id", 0);
 if (bookingsError) {
-  console.error("Error deleting bookings:", bookingsError);
+  safeLog.error("Error deleting bookings:", bookingsError);
   throw bookingsError;
 }
 
@@ -32,7 +33,7 @@ const { error: profilesError } = await supabaseClient
   .delete()
   .gt("id", 0);
 if (profilesError) {
-  console.error("Error deleting profiles:", profilesError);
+  safeLog.error("Error deleting profiles:", profilesError);
   throw profilesError;
 }
 
@@ -42,7 +43,7 @@ const { error: servicesError } = await supabaseClient
   .delete()
   .gt("id", 0);
 if (servicesError) {
-  console.error("Error deleting services:", servicesError);
+  safeLog.error("Error deleting services:", servicesError);
   throw servicesError;
 }
 
@@ -50,7 +51,7 @@ if (servicesError) {
 const { data: existingUsers, error: listError } =
   await supabaseClient.auth.admin.listUsers();
 if (listError) {
-  console.error("Error listing users:", listError);
+  safeLog.error("Error listing users:", listError);
   throw listError;
 }
 
@@ -59,12 +60,12 @@ for (const user of existingUsers.users) {
     user.id,
   );
   if (deleteError) {
-    console.error("Error deleting user:", deleteError);
+    safeLog.error("Error deleting user:", deleteError);
     throw deleteError;
   }
 }
 
-console.log("Database reset completed. Inserting sample data...");
+safeLog.info("Database reset completed. Inserting sample data...");
 
 // サンプルサービスデータを挿入
 const sampleServicesData = [
@@ -80,7 +81,7 @@ const insertedServices = await createServices(
   sampleServicesData,
   supabaseClient,
 );
-console.log(`Successfully inserted ${insertedServices.length} services`);
+safeLog.info(`Successfully inserted ${insertedServices.length} services`);
 
 // サービスIDをマッピング
 const serviceMap = insertedServices.reduce(
@@ -99,7 +100,7 @@ const serviceMap = insertedServices.reduce(
     email_confirm: true,
   });
   if (user.error) {
-    console.error(user);
+    safeLog.error("User creation failed:", user.error);
     throw user.error;
   }
 
@@ -124,7 +125,7 @@ const serviceMap = insertedServices.reduce(
     email_confirm: true,
   });
   if (user.error) {
-    console.error(user);
+    safeLog.error("User creation failed:", user.error);
     throw user.error;
   }
 }
@@ -137,7 +138,7 @@ const serviceMap = insertedServices.reduce(
     email_confirm: true,
   });
   if (user.error) {
-    console.error(user);
+    safeLog.error("User creation failed:", user.error);
     throw user.error;
   }
 
@@ -233,7 +234,7 @@ const serviceMap = insertedServices.reduce(
     email_confirm: true,
   });
   if (user.error) {
-    console.error(user);
+    safeLog.error("User creation failed:", user.error);
     throw user.error;
   }
 
@@ -269,4 +270,4 @@ const serviceMap = insertedServices.reduce(
   );
 }
 
-console.log("Sample data insertion completed successfully!");
+safeLog.info("Sample data insertion completed successfully!");

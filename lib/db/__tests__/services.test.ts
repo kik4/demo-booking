@@ -292,7 +292,10 @@ describe("createServices", () => {
       );
 
       // Verify console.error was called with the error
-      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Database operation failed:",
+        mockError,
+      );
       consoleSpy.mockRestore();
     });
 
@@ -310,7 +313,10 @@ describe("createServices", () => {
       );
 
       // Verify console.error was called with null
-      expect(consoleSpy).toHaveBeenCalledWith(null);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Database operation failed:",
+        null,
+      );
       consoleSpy.mockRestore();
     });
 
@@ -333,7 +339,10 @@ describe("createServices", () => {
       );
 
       // Verify console.error was called with the error
-      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Database operation failed:",
+        mockError,
+      );
       consoleSpy.mockRestore();
     });
 
@@ -355,7 +364,10 @@ describe("createServices", () => {
       );
 
       // Verify console.error was called with the error
-      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Database operation failed:",
+        mockError,
+      );
       consoleSpy.mockRestore();
     });
   });

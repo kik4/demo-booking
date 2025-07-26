@@ -38,6 +38,7 @@ export const bookingFormSchema = v.object({
   notes: v.pipe(
     v.string(),
     v.maxLength(500, "補足は500文字以内で入力してください"),
+    v.regex(/^[^<>]*$/, "HTMLタグは使用できません"),
   ),
 });
 

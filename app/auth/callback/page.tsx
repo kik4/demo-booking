@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { ROUTES } from "@/lib/routes";
+import { safeLog } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase/supabaseClient";
 
 export default function AuthCallback() {
@@ -15,7 +16,7 @@ export default function AuthCallback() {
         const { data, error } = await supabase.auth.getSession();
 
         if (error) {
-          console.error("Auth error:", error);
+          safeLog.error("Auth error:", error);
           router.push(ROUTES.ROOT);
           return;
         }
@@ -36,7 +37,7 @@ export default function AuthCallback() {
           router.push(ROUTES.ROOT);
         }
       } catch (error) {
-        console.error("Callback error:", error);
+        safeLog.error("Callback error:", error);
         router.push(ROUTES.ROOT);
       }
     };

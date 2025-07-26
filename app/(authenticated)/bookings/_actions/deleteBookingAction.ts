@@ -5,6 +5,7 @@ import { requireUserAuth } from "@/lib/auth";
 import { deleteBooking } from "@/lib/db/bookings/deleteBooking";
 import { DEFAULT_RATE_LIMIT, withUserRateLimit } from "@/lib/rateLimit";
 import { ROUTES } from "@/lib/routes";
+import { safeLog } from "@/lib/sanitize";
 import {
   createClient,
   createServiceClient,
@@ -46,7 +47,13 @@ export async function deleteBookingAction(
 
     return result;
   } catch (error) {
-    console.error("Error deleting booking:", error);
+    // ログインジェクション対策を適用したエラーログ
+    safeLog.error("Error deleting booking:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      bookingId,
+      timestamp: new Date().toISOString(),
+    });
+
     return {
       error:
         error instanceof Error ? error.message : "予約の削除に失敗しました",

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { LoadingSpinner } from "@/app/_components/LoadingSpinner";
 import { ROUTES } from "@/lib/routes";
+import { safeLog } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase/supabaseClient";
 import { type Booking, getBookingsAction } from "./_actions/getBookingsAction";
 import { BookingDetail } from "./_components/BookingDetail";
@@ -55,7 +56,7 @@ export default function BookingsPage() {
           });
         }
       } catch (error) {
-        console.error("Data fetch error:", error);
+        safeLog.error("Data fetch error:", error);
         setError("予期しないエラーが発生しました");
         toast.error("予期しないエラーが発生しました", {
           className: "neumorphism-toast-error",
@@ -97,7 +98,7 @@ export default function BookingsPage() {
         });
       }
     } catch (error) {
-      console.error("Refresh error:", error);
+      safeLog.error("Refresh error:", error);
       setError("予期しないエラーが発生しました");
       toast.error("予期しないエラーが発生しました", {
         className: "neumorphism-toast-error",

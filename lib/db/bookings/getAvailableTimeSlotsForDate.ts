@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import japaneseHolidays from "japanese-holidays";
 import { decimalHoursToTimeString } from "@/lib/decimalHoursToTimeString";
+import { safeLog } from "@/lib/sanitize";
 import { splitRange } from "@/lib/splitRange";
 import { timeToDecimalHoursInTokyo } from "@/lib/timeToDecimalHoursInTokyo";
 import type { Database } from "@/types/database.types";
@@ -70,7 +71,7 @@ export async function getAvailableTimeSlotsForDate(
     .order("start_time", { ascending: true });
 
   if (bookingsError) {
-    console.error("Bookings fetch error:", bookingsError);
+    safeLog.error("Bookings fetch error:", bookingsError);
     throw bookingsError;
   }
 

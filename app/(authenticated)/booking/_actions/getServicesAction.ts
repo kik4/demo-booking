@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/lib/auth";
+import { safeLog } from "@/lib/sanitize";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
 import type { Service } from "./types";
 
@@ -20,7 +21,7 @@ export async function getServicesAction(): Promise<
       .order("id");
 
     if (error) {
-      console.error("サービス取得エラー:", error);
+      safeLog.error("サービス取得エラー:", error);
       throw new Error("サービス情報の取得に失敗しました");
     }
 

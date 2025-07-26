@@ -1,4 +1,5 @@
 import { requireAdminAuth } from "@/lib/auth";
+import { safeLog } from "@/lib/sanitize";
 import {
   createClient,
   createServiceClient,
@@ -27,7 +28,7 @@ export async function getServicesAction(
     return { authenticated: true };
   });
   if ("error" in authResult) {
-    console.error("Admin authentication failed:", authResult.error);
+    safeLog.error("Admin authentication failed:", authResult.error);
     return [];
   }
 
@@ -40,7 +41,7 @@ export async function getServicesAction(
     .order(sortKey, { ascending: sortDirection === "asc" });
 
   if (error) {
-    console.error("Error fetching services:", error);
+    safeLog.error("Error fetching services:", error);
     return [];
   }
 

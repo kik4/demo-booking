@@ -8,6 +8,7 @@ import type { Booking } from "@/app/(authenticated)/bookings/_actions/getBooking
 import { formatDateStringYMDW } from "@/lib/formatDateStringYMDW";
 import { formatTime } from "@/lib/formatTime";
 import { normalizeDateTime } from "@/lib/normalizeDateTime";
+import { safeLog } from "@/lib/sanitize";
 
 interface BookingDetailProps {
   booking: Booking;
@@ -66,7 +67,7 @@ export function BookingDetail({
           throw new Error(result.error || "予約の取り消しに失敗しました");
         }
       } catch (error) {
-        console.error("Error cancelling booking:", error);
+        safeLog.error("Error cancelling booking:", error);
         toast.error("予約の取り消しに失敗しました", {
           className: "neumorphism-toast-error",
         });

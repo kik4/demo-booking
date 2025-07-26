@@ -445,7 +445,14 @@ describe("deleteBooking", () => {
         ),
       ).rejects.toThrow(updateError);
 
-      expect(consoleSpy).toHaveBeenCalledWith(updateError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Booking deletion failed:",
+        expect.objectContaining({
+          name: updateError.name,
+          message: updateError.message,
+          timestamp: expect.any(String),
+        }),
+      );
       consoleSpy.mockRestore();
     });
 
@@ -487,7 +494,7 @@ describe("deleteBooking", () => {
         ),
       ).rejects.toThrow("予約の削除に失敗しました");
 
-      expect(consoleSpy).toHaveBeenCalledWith(null);
+      expect(consoleSpy).toHaveBeenCalledWith("Booking deletion failed:", null);
       consoleSpy.mockRestore();
     });
   });

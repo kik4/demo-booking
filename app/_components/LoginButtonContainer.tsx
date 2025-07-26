@@ -1,6 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/lib/routes";
+import { safeLog } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase/supabaseClient";
 
 export function LoginButtonContainer() {
@@ -15,7 +16,7 @@ export function LoginButtonContainer() {
     });
 
     if (error) {
-      console.error(`${provider} login error:`, error);
+      safeLog.error(`${provider} login error:`, error);
     }
   };
 

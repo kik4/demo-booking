@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as v from "valibot";
+import { safeLog } from "@/lib/sanitize";
 import type { Database } from "@/types/database.types";
 
 const deleteBookingValidationSchema = v.object({
@@ -49,7 +50,7 @@ export const deleteBooking = async (
     .single();
 
   if (error || !data) {
-    console.error(error);
+    safeLog.error("Booking deletion failed:", error);
     throw error || new Error("予約の削除に失敗しました");
   }
 

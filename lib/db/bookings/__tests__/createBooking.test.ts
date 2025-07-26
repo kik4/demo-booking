@@ -642,7 +642,7 @@ describe("createBooking", () => {
       ).rejects.toThrow("指定された時間帯は利用できません");
 
       // Verify console.error was called with availability data
-      expect(consoleSpy).toHaveBeenCalledWith({
+      expect(consoleSpy).toHaveBeenCalledWith("Time slot not available:", {
         date: mockParams.date,
         start_time: mockParams.startTime,
         end_time: mockParams.endTime,
@@ -830,7 +830,14 @@ describe("createBooking", () => {
       ).rejects.toThrow(insertError);
 
       // Verify console.error was called with the error
-      expect(consoleSpy).toHaveBeenCalledWith(insertError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Booking creation failed:",
+        expect.objectContaining({
+          name: insertError.name,
+          message: insertError.message,
+          timestamp: expect.any(String),
+        }),
+      );
       consoleSpy.mockRestore();
     });
 
@@ -875,7 +882,7 @@ describe("createBooking", () => {
       ).rejects.toThrow("データが取得できませんでした");
 
       // Verify console.error was called with null
-      expect(consoleSpy).toHaveBeenCalledWith(null);
+      expect(consoleSpy).toHaveBeenCalledWith("Booking creation failed:", null);
       consoleSpy.mockRestore();
     });
 
@@ -924,7 +931,14 @@ describe("createBooking", () => {
       ).rejects.toThrow(constraintError);
 
       // Verify console.error was called with the error
-      expect(consoleSpy).toHaveBeenCalledWith(constraintError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Booking creation failed:",
+        expect.objectContaining({
+          name: constraintError.name,
+          message: constraintError.message,
+          timestamp: expect.any(String),
+        }),
+      );
       consoleSpy.mockRestore();
     });
   });

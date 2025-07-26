@@ -8,12 +8,18 @@ export const profileFormSchema = v.object({
     v.trim(),
     v.minLength(2, "名前は2文字以上で入力してください"),
     v.maxLength(100, "名前は100文字以内で入力してください"),
+    v.regex(/^[^<>]*$/, "HTMLタグは使用できません"),
+    v.regex(
+      /^[\p{L}\p{N}\s\-.]+$/u,
+      "文字、数字、スペース、ハイフン、ドットのみ使用できます",
+    ),
   ),
   nameHiragana: v.pipe(
     v.string("ひらがな名前は有効な値を入力してください"),
     v.trim(),
     v.minLength(2, "ひらがな名前は2文字以上で入力してください"),
     v.maxLength(100, "ひらがな名前は100文字以内で入力してください"),
+    v.regex(/^[^<>]*$/, "HTMLタグは使用できません"),
     v.regex(/^[ひらがな\u3040-\u309F\u30FC\s]+$/, "ひらがなで入力してください"),
   ),
   dateOfBirth: v.pipe(

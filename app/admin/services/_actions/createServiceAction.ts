@@ -5,6 +5,7 @@ import * as v from "valibot";
 import { requireAdminAuth } from "@/lib/auth";
 import { createService } from "@/lib/db/services";
 import { ROUTES } from "@/lib/routes";
+import { safeLog } from "@/lib/sanitize";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
 import { serviceSchema } from "../_schemas/serviceSchema";
 
@@ -33,7 +34,7 @@ export async function createServiceAction(formData: FormData) {
       revalidatePath(ROUTES.ADMIN.SERVICES);
       return { success: true, data: result };
     } catch (error) {
-      console.error("Error creating service:", error);
+      safeLog.error("Error creating service:", error);
       return { error: "サービスの作成に失敗しました" };
     }
   });

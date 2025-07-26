@@ -1,6 +1,7 @@
 "use server";
 
 import { requireUserAuth } from "@/lib/auth";
+import { safeLog } from "@/lib/sanitize";
 import { createClient } from "@/lib/supabase/supabaseClientServer";
 
 export interface Booking {
@@ -39,7 +40,7 @@ export async function getBookingsAction(): Promise<{
         .order("start_time", { ascending: true });
 
       if (bookingsError) {
-        console.error("Bookings fetch error:", bookingsError);
+        safeLog.error("Bookings fetch error:", bookingsError);
         return {
           success: false,
           error: "予約情報の取得に失敗しました",
@@ -61,7 +62,7 @@ export async function getBookingsAction(): Promise<{
 
     return result;
   } catch (error) {
-    console.error("Unexpected error:", error);
+    safeLog.error("Unexpected error:", error);
     return {
       success: false,
       error: "予期しないエラーが発生しました",

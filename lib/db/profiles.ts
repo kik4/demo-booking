@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import * as v from "valibot";
 import { ROLE_CODES, type RoleCode } from "@/constants/roleCode";
 import { SEX_CODES, type SexCode } from "@/constants/sexCode";
+import { safeLog } from "@/lib/sanitize";
 import type { Database } from "@/types/database.types";
 
 const profileValidationSchema = v.object({
@@ -89,7 +90,7 @@ export const updateProfile = async (
     .select()
     .single();
   if (error || !data) {
-    console.error(error);
+    safeLog.error("Update profile failed:", error);
     throw error || new Error("データが取得できませんでした");
   }
   return data;

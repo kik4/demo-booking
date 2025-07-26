@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/routes";
+import { safeLog } from "@/lib/sanitize";
 import { supabase } from "@/lib/supabase/supabaseClient";
 
 export function DevLoginButtonContainer() {
@@ -13,9 +14,9 @@ export function DevLoginButtonContainer() {
       password: "password",
     });
     if (error) {
-      console.error("Dev login error:", error);
+      safeLog.error("Dev login error:", error);
     } else {
-      console.log("Dev user logged in");
+      safeLog.info("Dev user logged in");
       router.push(ROUTES.USER.HOME);
     }
   };

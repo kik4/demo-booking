@@ -208,7 +208,11 @@ describe("getBookingsAction", () => {
       expect(result.bookings).toBeUndefined();
       expect(consoleSpy).toHaveBeenCalledWith(
         "Unexpected error:",
-        expect.any(Error),
+        expect.objectContaining({
+          name: "Error",
+          message: "Unexpected error",
+          timestamp: expect.any(String),
+        }),
       );
 
       consoleSpy.mockRestore();

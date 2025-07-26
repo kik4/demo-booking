@@ -1057,7 +1057,10 @@ describe("updateProfile", () => {
       }
 
       // Verify console.error was called with the error
-      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Update profile failed:",
+        mockError,
+      );
       consoleSpy.mockRestore();
     });
 
@@ -1082,7 +1085,10 @@ describe("updateProfile", () => {
       }
 
       // Verify console.error was called with the error
-      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Update profile failed:",
+        mockError,
+      );
       consoleSpy.mockRestore();
     });
 
@@ -1106,7 +1112,10 @@ describe("updateProfile", () => {
       }
 
       // Verify console.error was called with the error
-      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Update profile failed:",
+        mockError,
+      );
       consoleSpy.mockRestore();
     });
 
@@ -1126,7 +1135,7 @@ describe("updateProfile", () => {
       }
 
       // Verify console.error was called with null
-      expect(consoleSpy).toHaveBeenCalledWith(null);
+      expect(consoleSpy).toHaveBeenCalledWith("Update profile failed:", null);
       consoleSpy.mockRestore();
     });
   });

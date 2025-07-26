@@ -423,7 +423,11 @@ describe("getAvailableTimeSlotsForDate", () => {
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         "Bookings fetch error:",
-        databaseError,
+        expect.objectContaining({
+          name: databaseError.name,
+          message: databaseError.message,
+          timestamp: expect.any(String),
+        }),
       );
     });
   });

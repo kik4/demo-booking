@@ -2,6 +2,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/lib/routes";
+import { safeLog } from "@/lib/sanitize";
 import { getServicesAction } from "../_actions/getServicesAction";
 import { getUserProfileAction } from "../_actions/getUserProfileAction";
 import type { Service } from "../_actions/types";
@@ -26,7 +27,7 @@ export function useBookingData(): UseBookingDataReturn {
         // Fetch customer profile
         const profileResult = await getUserProfileAction();
         if ("error" in profileResult) {
-          console.error("プロフィール取得エラー:", profileResult.error);
+          safeLog.error("プロフィール取得エラー:", profileResult.error);
           toast.error(profileResult.error);
           router.push(ROUTES.ROOT);
           return;
@@ -36,14 +37,14 @@ export function useBookingData(): UseBookingDataReturn {
         // Fetch services
         const servicesResult = await getServicesAction();
         if ("error" in servicesResult) {
-          console.error("サービス取得エラー:", servicesResult.error);
+          safeLog.error("サービス取得エラー:", servicesResult.error);
           toast.error(servicesResult.error);
           setError(servicesResult.error);
         } else {
           setServices(servicesResult.services);
         }
       } catch (error) {
-        console.error("データ取得エラー:", error);
+        safeLog.error("データ取得エラー:", error);
         const errorMessage = "データの取得に失敗しました";
         toast.error(errorMessage);
         setError(errorMessage);

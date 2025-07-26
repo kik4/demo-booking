@@ -1,4 +1,5 @@
 import { requireAdminAuth } from "@/lib/auth";
+import { safeLog } from "@/lib/sanitize";
 import {
   createClient,
   createServiceClient,
@@ -40,7 +41,7 @@ export async function getAllBookingsAction(
     return { authenticated: true };
   });
   if ("error" in authResult) {
-    console.error("Admin authentication failed:", authResult.error);
+    safeLog.error("Admin authentication failed:", authResult.error);
     return [];
   }
 
@@ -77,7 +78,7 @@ export async function getAllBookingsAction(
   const { data: bookings, error } = await query;
 
   if (error) {
-    console.error("Error fetching bookings:", error);
+    safeLog.error("Error fetching bookings:", error);
     return [];
   }
 

@@ -447,7 +447,11 @@ describe("createBookingAction", () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         "Unexpected error:",
-        expect.any(Error),
+        expect.objectContaining({
+          name: "Error",
+          message: "データベースエラー",
+          timestamp: expect.any(String),
+        }),
       );
       consoleSpy.mockRestore();
     });
