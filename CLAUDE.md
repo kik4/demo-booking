@@ -64,6 +64,15 @@
 - 日時選択、サービス選択、確認を含む予約システム
 - `types/database.types.ts`の生成型による型安全なデータベース操作
 
+### 管理画面機能
+- **予約一覧管理** (`/admin/bookings`)
+  - ソート可能な予約一覧テーブル（ID、予約者、サービス名、日時、備考、登録日時）
+  - 削除された予約のフィルタリング機能（`BookingSearchForm`コンポーネント）
+  - 削除予約の視覚的区別（薄い赤背景、削除済みバッジ、削除日時表示）
+  - URLパラメータによる状態管理（`includeDeleted`）
+- **ユーザー管理** (`/admin/users`) - ユーザー一覧と管理操作
+- **サービス管理** (`/admin/services`) - サービスの作成、編集、削除
+
 ### セキュリティライブラリ & ユーティリティ
 - **`lib/sanitize.ts`**: ログインジェクション対策とセキュアログ管理
   - `sanitizeForLog()`: 改行文字・制御文字の除去とログの整合性保護
@@ -78,7 +87,7 @@
 - `test/setup.ts` - Next.js env読み込みでのテスト環境設定
 - `middleware.ts` - ルート保護とロールベースアクセス制御
 - `next.config.ts` - Next.js設定
-- `components.json` - shadcn/ui コンポーネント設定
+- `components.json` - shadcn/ui コンポーネント設定（checkbox、button、form等のUIライブラリ）
 - `husky` + `lint-staged` - コード品質のためのプリコミットフック
 
 ### 開発ワークフロー
