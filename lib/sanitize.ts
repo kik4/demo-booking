@@ -70,9 +70,7 @@ export const safeLog = {
   /**
    * 情報ログ（低リスクなのでサニタイゼーションなし）
    */
-  info: (message: string, data?: unknown) => {
-    console.info(message, data);
-  },
+  info: console.info,
 } as const;
 
 /**
