@@ -98,8 +98,18 @@ export function BookingsTable({
         </TableHeader>
         <TableBody>
           {bookings.map((booking) => (
-            <TableRow key={booking.id}>
-              <TableCell className="font-medium">{booking.id}</TableCell>
+            <TableRow
+              key={booking.id}
+              className={booking.deleted_at ? "bg-red-50 opacity-75" : ""}
+            >
+              <TableCell className="font-medium">
+                {booking.id}
+                {booking.deleted_at && (
+                  <span className="ml-2 rounded bg-red-100 px-2 py-1 text-red-800 text-xs">
+                    削除済み
+                  </span>
+                )}
+              </TableCell>
               <TableCell>
                 <div>
                   <div className="font-medium">{booking.profile.name}</div>
@@ -117,7 +127,14 @@ export function BookingsTable({
                   {booking.notes || "-"}
                 </div>
               </TableCell>
-              <TableCell>{formatDateStringYMDHM(booking.created_at)}</TableCell>
+              <TableCell>
+                {formatDateStringYMDHM(booking.created_at)}
+                {booking.deleted_at && (
+                  <div className="text-red-600 text-xs">
+                    削除: {formatDateStringYMDHM(booking.deleted_at)}
+                  </div>
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

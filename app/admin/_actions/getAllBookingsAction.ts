@@ -12,6 +12,7 @@ export interface AdminBooking {
   end_time: string;
   notes: string;
   created_at: string;
+  deleted_at: string | null;
   profile: {
     id: number;
     name: string;
@@ -33,6 +34,7 @@ export type BookingSortDirection = "asc" | "desc";
 export async function getAllBookingsAction(
   sortKey: BookingSortKey = "start_time",
   sortDirection: BookingSortDirection = "desc",
+  includeDeleted = false,
 ): Promise<AdminBooking[]> {
   const supabase = await createClient();
 
@@ -48,22 +50,25 @@ export async function getAllBookingsAction(
   // Use service client for admin operations
   const serviceClient = await createServiceClient();
 
-  let query = serviceClient
-    .from("bookings")
-    .select(`
+  let query = serviceClient.from("bookings").select(`
       id,
       service_name,
       start_time,
       end_time,
       notes,
       created_at,
+      deleted_at,
       profile:profiles!bookings_profile_id_fkey(
         id,
         name,
         name_hiragana
       )
-    `)
-    .is("deleted_at", null);
+    `);
+
+  // Filter deleted bookings unless includeDeleted is true
+  if (!includeDeleted) {
+    query = query.is("deleted_at", null);
+  }
 
   // For profile name sorting, we need to reference the profiles table correctly
   if (sortKey === "profile_name") {
